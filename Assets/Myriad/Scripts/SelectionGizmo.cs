@@ -24,30 +24,27 @@ public class SelectionGizmo : MonoBehaviour
 #if UNITY_EDITOR
 	public void OnDrawGizmosSelected()
 	{
-		if (EditorApplication.isPlaying == false)
-		{
-			Gizmos.color = GizmoColor;
+		Gizmos.color = GizmoColor;
 			
-			Gizmos.matrix = (
-				transform.localToWorldMatrix * 
-				Matrix4x4.TRS(
-					LocalPosition, 
-					Quaternion.Euler(LocalRotation), 
-					LocalScale));
+		Gizmos.matrix = (
+			transform.localToWorldMatrix * 
+			Matrix4x4.TRS(
+				LocalPosition, 
+				Quaternion.Euler(LocalRotation), 
+				LocalScale));
 
-			switch (Shape)
-			{
-				case GizmoShape.WireCube:
-					Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
-					break;
+		switch (Shape)
+		{
+			case GizmoShape.WireCube:
+				Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
+				break;
 					
-				case GizmoShape.WireSphere:
-					Gizmos.DrawWireSphere(Vector3.zero, 0.5f);
-					break;
+			case GizmoShape.WireSphere:
+				Gizmos.DrawWireSphere(Vector3.zero, 0.5f);
+				break;
 
-				default:
-					throw new System.ComponentModel.InvalidEnumArgumentException();
-			}
+			default:
+				throw new System.ComponentModel.InvalidEnumArgumentException();
 		}
 	}
 #endif // UNITY_EDITOR
