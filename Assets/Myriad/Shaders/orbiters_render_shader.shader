@@ -51,14 +51,14 @@
 				UNITY_FOG_COORDS(1)
 			};
 
-			sampler2D u_main_texture;
-			float4 u_main_texture_ST; // Contains texture's (scale.x, scale.y, offset.x, offset.y)
-			float4 u_color;
-			float u_radius;
+			uniform sampler2D u_main_texture;
+			uniform float4 u_main_texture_ST; // Contains texture's (scale.x, scale.y, offset.x, offset.y)
+			uniform float4 u_color;
+			uniform float u_radius;
 
-			StructuredBuffer<s_orbiter_state> u_orbiters;
+			uniform StructuredBuffer<s_orbiter_state> u_orbiters;
 
-			float4x4 u_model_to_world_matrix; // We have to supply this manually because DrawProcedural is outside the normal mesh-rendering pipeline, so "unity_ObjectToWorld" is unfortunately always the identity matrix.
+			uniform float4x4 u_model_to_world_matrix; // We have to supply this manually because DrawProcedural is outside the normal mesh-rendering pipeline, so "unity_ObjectToWorld" is unfortunately always the identity matrix.
 			
 			s_vertex vertex_shader(
 				uint orbiter_index : SV_VertexID)
