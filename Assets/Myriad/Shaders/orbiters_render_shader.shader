@@ -57,6 +57,8 @@
 			float u_radius;
 
 			StructuredBuffer<s_orbiter_state> u_orbiters;
+
+			float4x4 u_model_to_world_matrix; // We have to supply this manually because DrawProcedural is outside the normal mesh-rendering pipeline, so "unity_ObjectToWorld" is unfortunately always the identity matrix.
 			
 			s_vertex vertex_shader(
 				uint orbiter_index : SV_VertexID)
@@ -104,6 +106,9 @@
 				point s_vertex source_vertex[1],
 				inout TriangleStream<s_vertex> triangle_stream)
 			{
+				float4x4 model_to_projection_matrix = 
+					mul(UNITY_MATRIX_VP, u_model_to_world_matrix);
+
 				s_vertex scratch_vertex;
 				scratch_vertex.normal = source_vertex[0].normal;
 				scratch_vertex.tangent = source_vertex[0].tangent;
@@ -111,7 +116,7 @@
 
 				float4 forward_position = 
 					mul(
-						UNITY_MATRIX_MVP,
+						model_to_projection_matrix,
 						build_geometry_vertex_position(
 							float3(0.0f, 0.0f, u_radius),
 							source_vertex[0].position,
@@ -121,7 +126,7 @@
 
 				float4 right_position = 
 					mul(
-						UNITY_MATRIX_MVP,
+						model_to_projection_matrix,
 						build_geometry_vertex_position(
 							float3(u_radius, 0.0f, (-1.0f * u_radius)),
 							source_vertex[0].position,
@@ -131,7 +136,7 @@
 				
 				float4 left_position = 
 					mul(
-						UNITY_MATRIX_MVP,
+						model_to_projection_matrix,
 						build_geometry_vertex_position(
 							float3((-1.0f * u_radius), 0.0f, (-1.0f * u_radius)),
 							source_vertex[0].position,

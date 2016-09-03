@@ -24,7 +24,7 @@ Material:
     m_Floats:
     - first:
         name: k_vertices_per_orbiter
-      second: 3
+      second: 6
     - first:
         name: u_radius
       second: 0.1

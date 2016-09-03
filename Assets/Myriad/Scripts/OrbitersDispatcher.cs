@@ -54,17 +54,19 @@ public class OrbitersDispatcher : MonoBehaviour
 			{
 				OrbitersMaterial.SetPass(0);
 				OrbitersMaterial.SetBuffer("u_orbiters", orbitersComputeBuffer);
+				OrbitersMaterial.SetMatrix("u_model_to_world_matrix", transform.localToWorldMatrix);
 				
 				int totalVertexCount = (
 					orbitersComputeBuffer.count *
 					OrbitersMaterial.GetInt("k_vertices_per_orbiter"));
-
-				Graphics.DrawProcedural(MeshTopology.Triangles, totalVertexCount);
 				
+
 				if (DebugEnabled)
 				{
-					Debug.Log("Drew something!");
+					Debug.LogFormat("[v_per_o={0}]", OrbitersMaterial.GetInt("k_vertices_per_orbiter"));
 				}
+
+				Graphics.DrawProcedural(MeshTopology.Triangles, totalVertexCount);
 			}
 		}
 	}
@@ -113,7 +115,7 @@ public class OrbitersDispatcher : MonoBehaviour
 					initialOrbiterStates[index] = new OrbiterState()
 					{
 						Position = Vector3.Scale(UnityEngine.Random.insideUnitSphere, transform.localScale),
-						Velocity = UnityEngine.Random.onUnitSphere,
+						Velocity = (0.1f * UnityEngine.Random.onUnitSphere),
 						Acceleration = Vector3.zero,
 					};
 				}
