@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5724f1ee539a9ec47ac5b01957a0daf4
+timeCreated: 1472856013
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - OrbitersComputeShader: {fileID: 7200000, guid: d2895d56c4cddf24c93685b2011c6f0f,
+      type: 3}
+  - OrbitersMaterial: {fileID: 2100000, guid: a1782f40afb523547a6dfc2d534650af, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
