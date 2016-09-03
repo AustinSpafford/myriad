@@ -5,6 +5,7 @@ struct s_orbiter_state
 {
 	float3 position;
 	float3 velocity;
+	float3 acceleration;
 };
 
 RWStructuredBuffer<s_orbiter_state> u_inout_orbiters;
@@ -16,7 +17,12 @@ float u_delta_time;
 [numthreads(64, 1, 1)]
 void compute_shader_main (uint3 thread_id : SV_DispatchThreadID)
 {
-	float3 position_step = (u_delta_time * u_inout_orbiters[thread_id.x].velocity);
-
-	u_inout_orbiters[thread_id.x].position += position_step;
+	u_inout_orbiters[thread_id.x].acceleration =
+		normalize(u_attractor_local_position - u_inout_orbiters[thread_id.x].position) * 0.1f;
+	
+	u_inout_orbiters[thread_id.x].velocity += 
+		(u_delta_time * u_inout_orbiters[thread_id.x].acceleration);
+	
+	u_inout_orbiters[thread_id.x].position += 
+		(u_delta_time * u_inout_orbiters[thread_id.x].velocity);
 }

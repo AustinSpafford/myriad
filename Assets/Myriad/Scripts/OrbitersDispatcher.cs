@@ -54,10 +54,10 @@ public class OrbitersDispatcher : MonoBehaviour
 			{
 				OrbitersMaterial.SetPass(0);
 				OrbitersMaterial.SetBuffer("u_orbiters", orbitersComputeBuffer);
-
-				int verticesPerOrbiter = OrbitersMaterial.GetInt("_VerticesPerOrbiter");
 				
-				int totalVertexCount = (verticesPerOrbiter * orbitersComputeBuffer.count);
+				int totalVertexCount = (
+					orbitersComputeBuffer.count *
+					OrbitersMaterial.GetInt("k_vertices_per_orbiter"));
 
 				Graphics.DrawProcedural(MeshTopology.Triangles, totalVertexCount);
 				
@@ -73,6 +73,7 @@ public class OrbitersDispatcher : MonoBehaviour
 	{
 		public Vector3 Position;
 		public Vector3 Velocity;
+		public Vector3 Acceleration;
 	}
 
 	private ComputeBuffer orbitersComputeBuffer;
@@ -113,6 +114,7 @@ public class OrbitersDispatcher : MonoBehaviour
 					{
 						Position = Vector3.Scale(UnityEngine.Random.insideUnitSphere, transform.localScale),
 						Velocity = UnityEngine.Random.onUnitSphere,
+						Acceleration = Vector3.zero,
 					};
 				}
 

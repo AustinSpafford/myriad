@@ -2,59 +2,181 @@
 {
 	Properties
 	{
-		_MainTex ("Texture", 2D) = "white" {}
+		u_main_texture("Texture", 2D) = "white" {}
+		u_color("Color", Color) = (1, 1, 1, 1)
+		u_radius("Radius", Float) = 0.1
 
-		[HideInInspector] _VerticesPerOrbiter ("VerticesPerOrbiter", Int) = 3
+		// Constants that our parent can query.
+		[HideInInspector] k_vertices_per_orbiter("<hidden>", Int) = 3
 	}
 
 	SubShader
 	{
-		Tags { "RenderType"="Opaque" }
+		Tags { "Queue"="Geometry" "RenderType"="Opaque" }
+
 		LOD 100
 
 		Pass
 		{
 			CGPROGRAM
-			#pragma vertex vert
-			#pragma fragment frag
-			// make fog work
+
+			// TODO: Try targetting just "4.5", since that seems to be the actual minimum needed.
+			// https://docs.unity3d.com/Manual/SL-ShaderCompileTargets.html
+			#pragma target 5.0
+
+			// Identify our entry-point functions.
+			#pragma vertex vertex_shader
+			#pragma geometry geometry_shader
+			#pragma fragment fragment_shader
+
+			// Enable support for fog-calculations.
 			#pragma multi_compile_fog
 			
 			#include "UnityCG.cginc"
 
-			struct appdata
+			struct s_orbiter_state
 			{
-				float4 vertex : POSITION;
-				float2 uv : TEXCOORD0;
+				float3 position;
+				float3 velocity;
+				float3 acceleration;
 			};
 
-			struct v2f
+			struct s_vertex
 			{
+				float4 position : SV_POSITION;
+				float3 normal : NORMAL;
+				float3 tangent : TANGENT;
 				float2 uv : TEXCOORD0;
 				UNITY_FOG_COORDS(1)
-				float4 vertex : SV_POSITION;
 			};
 
-			sampler2D _MainTex;
-			float4 _MainTex_ST;
+			sampler2D u_main_texture;
+			float4 u_main_texture_ST; // Contains texture's (scale.x, scale.y, offset.x, offset.y)
+			float4 u_color;
+			float u_radius;
+
+			StructuredBuffer<s_orbiter_state> u_orbiters;
 			
-			v2f vert (appdata v)
+			s_vertex vertex_shader(
+				uint orbiter_index : SV_VertexID)
 			{
-				v2f o;
-				o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
-				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				UNITY_TRANSFER_FOG(o,o.vertex);
-				return o;
+				s_vertex result;
+				
+				result.position = float4(u_orbiters[orbiter_index].position, 1.0f);
+
+				// Orient the orbiter so "up" is away from the center of gravity.
+				result.normal = normalize(-1.0f * u_orbiters[orbiter_index].acceleration);
+
+				// Orient the orbiter so it's pointing in the direction of motion.
+				result.tangent =
+					normalize(cross(
+						u_orbiters[orbiter_index].velocity,
+						result.normal.xyz));
+
+				// Initializing all remaining members to silence compilation failures.
+				result.uv = float2(0.0f, 0.0f);
+
+				return result;
+			}
+
+			float4 build_geometry_vertex_position(
+				float3 vertex_in_instance_space,
+				float4 instance_position_in_model_space,
+				float3 instance_x_axis,
+				float3 instance_y_axis,
+				float3 instance_z_axis)
+			{
+				float3 result = instance_position_in_model_space.xyz;
+
+				result += (vertex_in_instance_space.x * instance_x_axis);
+				result += (vertex_in_instance_space.y * instance_y_axis);
+				result += (vertex_in_instance_space.z * instance_z_axis);
+
+				return float4(result, instance_position_in_model_space.w);
+			}
+
+			[maxvertexcount(3)]
+			void geometry_shader(
+				point s_vertex source_vertex[1],
+				inout TriangleStream<s_vertex> triangle_stream)
+			{
+				s_vertex scratch_vertex;
+				scratch_vertex.normal = source_vertex[0].normal;
+				scratch_vertex.tangent = source_vertex[0].tangent;
+
+				float3 binormal = cross(source_vertex[0].normal, source_vertex[0].tangent);
+
+				// Forward.
+				{
+					scratch_vertex.position =
+						mul(
+							UNITY_MATRIX_MVP,
+							build_geometry_vertex_position(
+								float3(0.0f, 0.0f, u_radius),
+								source_vertex[0].position,
+								scratch_vertex.tangent,
+								scratch_vertex.normal,
+								binormal));
+
+					scratch_vertex.uv = TRANSFORM_TEX(float2(0.5f, 1.0f), u_main_texture);
+
+					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
+
+					triangle_stream.Append(scratch_vertex);
+				}
+
+				// Right.
+				{
+					scratch_vertex.position =
+						mul(
+							UNITY_MATRIX_MVP,
+							build_geometry_vertex_position(
+								float3(u_radius, 0.0f, (-1.0f * u_radius)),
+								source_vertex[0].position,
+								scratch_vertex.tangent,
+								scratch_vertex.normal,
+								binormal));
+
+					scratch_vertex.uv = TRANSFORM_TEX(float2(1.0f, 0.0f), u_main_texture);
+
+					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
+
+					triangle_stream.Append(scratch_vertex);
+				}
+
+				// Left.
+				{
+					scratch_vertex.position =
+						mul(
+							UNITY_MATRIX_MVP,
+							build_geometry_vertex_position(
+								float3((-1.0f * u_radius), 0.0f, (-1.0f * u_radius)),
+								source_vertex[0].position,
+								scratch_vertex.tangent,
+								scratch_vertex.normal,
+								binormal));
+
+					scratch_vertex.uv = TRANSFORM_TEX(float2(1.0f, 0.0f), u_main_texture);
+
+					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
+
+					triangle_stream.Append(scratch_vertex);
+				}
 			}
 			
-			fixed4 frag (v2f i) : SV_Target
+			fixed4 fragment_shader(
+				s_vertex interpolated_vertex) : 
+					SV_Target
 			{
-				// sample the texture
-				fixed4 col = tex2D(_MainTex, i.uv);
-				// apply fog
-				UNITY_APPLY_FOG(i.fogCoord, col);
-				return col;
+				fixed4 result = (
+					tex2D(u_main_texture, interpolated_vertex.uv) *
+					u_color);
+				
+				UNITY_APPLY_FOG(interpolated_vertex.fogCoord, result);
+
+				return result;
 			}
+
 			ENDCG
 		}
 	}
