@@ -33,7 +33,7 @@ public class OrbitersDispatcher : MonoBehaviour
 			OrbitersComputeShader.SetFloat("u_max_velocity_as_escape_velocity_fraction", 0.9f);
 			OrbitersComputeShader.SetFloat("u_delta_time", Time.deltaTime);
 
-			// Queue the request permute the entire orbiters-buffer.
+			// Queue the request to permute the entire orbiters-buffer.
 			{
 				uint threadGroupSizeX, threadGroupSizeY, threadGroupSizeZ;
 				OrbitersComputeShader.GetKernelThreadGroupSizes(
@@ -47,7 +47,11 @@ public class OrbitersDispatcher : MonoBehaviour
 				int totalThreadGroupCount = 
 					((OrbiterCount + (threadsPerGroup - 1)) / threadsPerGroup);
 
-				OrbitersComputeShader.Dispatch(computeKernalIndex, totalThreadGroupCount, 1, 1);
+				OrbitersComputeShader.Dispatch(
+					computeKernalIndex, 
+					totalThreadGroupCount, // threadGroupsX
+					1, // threadGroupsY
+					1); // threadGroupsZ
 			}
 			
 			if (OrbitersMaterial != null)
@@ -59,14 +63,8 @@ public class OrbitersDispatcher : MonoBehaviour
 				int totalVertexCount = (
 					orbitersComputeBuffer.count *
 					OrbitersMaterial.GetInt("k_vertices_per_orbiter"));
-				
 
-				if (DebugEnabled)
-				{
-					Debug.LogFormat("[v_per_o={0}]", OrbitersMaterial.GetInt("k_vertices_per_orbiter"));
-				}
-
-				Graphics.DrawProcedural(MeshTopology.Triangles, totalVertexCount);
+				Graphics.DrawProcedural(MeshTopology.Points, totalVertexCount);
 			}
 		}
 	}
@@ -108,19 +106,19 @@ public class OrbitersDispatcher : MonoBehaviour
 
 			// Initialize the orbiters.
 			{
-				OrbiterState[] initialOrbiterStates = new OrbiterState[orbitersComputeBuffer.count];
+				OrbiterState[] initialOrbiters = new OrbiterState[orbitersComputeBuffer.count];
 				
-				for (int index = 0; index < initialOrbiterStates.Length; ++index)
+				for (int index = 0; index < initialOrbiters.Length; ++index)
 				{
-					initialOrbiterStates[index] = new OrbiterState()
+					initialOrbiters[index] = new OrbiterState()
 					{
 						Position = Vector3.Scale(UnityEngine.Random.insideUnitSphere, transform.localScale),
-						Velocity = (0.1f * UnityEngine.Random.onUnitSphere),
+						Velocity = UnityEngine.Random.onUnitSphere,
 						Acceleration = Vector3.zero,
 					};
 				}
 
-				orbitersComputeBuffer.SetData(initialOrbiterStates);
+				orbitersComputeBuffer.SetData(initialOrbiters);
 			}
 			
 			if ((computeKernalIndex != -1) &&
