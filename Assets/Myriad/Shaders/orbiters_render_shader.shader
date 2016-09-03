@@ -7,7 +7,7 @@
 		u_radius("Radius", Float) = 0.1
 
 		// Constants that our parent can query.
-		[HideInInspector] k_vertices_per_orbiter("<hidden>", Int) = 3
+		[HideInInspector] k_vertices_per_orbiter("<hidden>", Int) = 6
 	}
 
 	SubShader
@@ -99,7 +99,7 @@
 				return float4(result, instance_position_in_model_space.w);
 			}
 
-			[maxvertexcount(3)]
+			[maxvertexcount(6)]
 			void geometry_shader(
 				point s_vertex source_vertex[1],
 				inout TriangleStream<s_vertex> triangle_stream)
@@ -109,61 +109,80 @@
 				scratch_vertex.tangent = source_vertex[0].tangent;
 				scratch_vertex.binormal = source_vertex[0].binormal;
 
-				// Forward.
-				{
-					scratch_vertex.position =
-						mul(
-							UNITY_MATRIX_MVP,
-							build_geometry_vertex_position(
-								float3(0.0f, 0.0f, u_radius),
-								source_vertex[0].position,
-								scratch_vertex.tangent,
-								scratch_vertex.normal,
-								scratch_vertex.binormal));
+				float4 forward_position = 
+					mul(
+						UNITY_MATRIX_MVP,
+						build_geometry_vertex_position(
+							float3(0.0f, 0.0f, u_radius),
+							source_vertex[0].position,
+							scratch_vertex.tangent,
+							scratch_vertex.normal,
+							scratch_vertex.binormal));
 
+				float4 right_position = 
+					mul(
+						UNITY_MATRIX_MVP,
+						build_geometry_vertex_position(
+							float3(u_radius, 0.0f, (-1.0f * u_radius)),
+							source_vertex[0].position,
+							scratch_vertex.tangent,
+							scratch_vertex.normal,
+							scratch_vertex.binormal));
+				
+				float4 left_position = 
+					mul(
+						UNITY_MATRIX_MVP,
+						build_geometry_vertex_position(
+							float3((-1.0f * u_radius), 0.0f, (-1.0f * u_radius)),
+							source_vertex[0].position,
+							scratch_vertex.tangent,
+							scratch_vertex.normal,
+							scratch_vertex.binormal));
+
+				// Emit the top-face.
+				{
+					scratch_vertex.position = forward_position;
 					scratch_vertex.uv = TRANSFORM_TEX(float2(0.5f, 1.0f), u_main_texture);
-
 					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
-
 					triangle_stream.Append(scratch_vertex);
-				}
-
-				// Right.
-				{
-					scratch_vertex.position =
-						mul(
-							UNITY_MATRIX_MVP,
-							build_geometry_vertex_position(
-								float3(u_radius, 0.0f, (-1.0f * u_radius)),
-								source_vertex[0].position,
-								scratch_vertex.tangent,
-								scratch_vertex.normal,
-								scratch_vertex.binormal));
-
+					
+					scratch_vertex.position = right_position;
 					scratch_vertex.uv = TRANSFORM_TEX(float2(1.0f, 0.0f), u_main_texture);
-
 					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
-
 					triangle_stream.Append(scratch_vertex);
+					
+					scratch_vertex.position = left_position;
+					scratch_vertex.uv = TRANSFORM_TEX(float2(0.0f, 0.0f), u_main_texture);
+					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
+					triangle_stream.Append(scratch_vertex);
+					
+					triangle_stream.RestartStrip();
 				}
 
-				// Left.
+				// Emit the bottom-face.
 				{
-					scratch_vertex.position =
-						mul(
-							UNITY_MATRIX_MVP,
-							build_geometry_vertex_position(
-								float3((-1.0f * u_radius), 0.0f, (-1.0f * u_radius)),
-								source_vertex[0].position,
-								scratch_vertex.tangent,
-								scratch_vertex.normal,
-								scratch_vertex.binormal));
+					scratch_vertex.normal *= -1.0f;
+					scratch_vertex.tangent *= -1.0f;
 
-					scratch_vertex.uv = TRANSFORM_TEX(float2(0.0f, 0.0f), u_main_texture);
-
+					scratch_vertex.position = forward_position;
+					scratch_vertex.uv = TRANSFORM_TEX(float2(0.5f, 1.0f), u_main_texture);
 					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
-
 					triangle_stream.Append(scratch_vertex);
+					
+					scratch_vertex.position = left_position;
+					scratch_vertex.uv = TRANSFORM_TEX(float2(0.0f, 0.0f), u_main_texture);
+					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
+					triangle_stream.Append(scratch_vertex);
+					
+					scratch_vertex.position = right_position;
+					scratch_vertex.uv = TRANSFORM_TEX(float2(1.0f, 0.0f), u_main_texture);
+					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
+					triangle_stream.Append(scratch_vertex);
+					
+					triangle_stream.RestartStrip();
+
+					scratch_vertex.normal *= -1.0f;
+					scratch_vertex.tangent *= -1.0f;
 				}
 			}
 			
