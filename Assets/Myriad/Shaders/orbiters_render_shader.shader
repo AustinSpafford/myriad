@@ -46,6 +46,7 @@
 				float4 position : SV_POSITION;
 				float3 normal : NORMAL;
 				float3 tangent : TANGENT;
+				float3 binormal : BINORMAL;
 				float2 uv : TEXCOORD0;
 				UNITY_FOG_COORDS(1)
 			};
@@ -64,14 +65,17 @@
 				
 				result.position = float4(u_orbiters[orbiter_index].position, 1.0f);
 
-				// Orient the orbiter so "up" is away from the center of gravity.
-				result.normal = normalize(-1.0f * u_orbiters[orbiter_index].acceleration);
+				// Keep the nose of the orbiter pointed in its direction of motion.
+				result.binormal = normalize(u_orbiters[orbiter_index].velocity);
 
-				// Orient the orbiter so it's pointing in the direction of motion.
+				// Rolll the orbiter over so "down" points to the center of gravity.
 				result.tangent =
 					normalize(cross(
-						u_orbiters[orbiter_index].velocity,
-						result.normal.xyz));
+						result.binormal,
+						(-1.0f * u_orbiters[orbiter_index].acceleration)));
+
+				// The normal is now strictly implied.
+				result.normal = cross(result.tangent, result.binormal);
 
 				// Initializing all remaining members to silence compilation failures.
 				result.uv = float2(0.0f, 0.0f);
@@ -103,8 +107,7 @@
 				s_vertex scratch_vertex;
 				scratch_vertex.normal = source_vertex[0].normal;
 				scratch_vertex.tangent = source_vertex[0].tangent;
-
-				float3 binormal = cross(source_vertex[0].normal, source_vertex[0].tangent);
+				scratch_vertex.binormal = source_vertex[0].binormal;
 
 				// Forward.
 				{
@@ -116,7 +119,7 @@
 								source_vertex[0].position,
 								scratch_vertex.tangent,
 								scratch_vertex.normal,
-								binormal));
+								scratch_vertex.binormal));
 
 					scratch_vertex.uv = TRANSFORM_TEX(float2(0.5f, 1.0f), u_main_texture);
 
@@ -135,7 +138,7 @@
 								source_vertex[0].position,
 								scratch_vertex.tangent,
 								scratch_vertex.normal,
-								binormal));
+								scratch_vertex.binormal));
 
 					scratch_vertex.uv = TRANSFORM_TEX(float2(1.0f, 0.0f), u_main_texture);
 
@@ -154,9 +157,9 @@
 								source_vertex[0].position,
 								scratch_vertex.tangent,
 								scratch_vertex.normal,
-								binormal));
+								scratch_vertex.binormal));
 
-					scratch_vertex.uv = TRANSFORM_TEX(float2(1.0f, 0.0f), u_main_texture);
+					scratch_vertex.uv = TRANSFORM_TEX(float2(0.0f, 0.0f), u_main_texture);
 
 					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
 
