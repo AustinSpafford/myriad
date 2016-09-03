@@ -45,7 +45,7 @@ public class OrbitersDispatcher : MonoBehaviour
 				int threadsPerGroup = (int)(threadGroupSizeX * threadGroupSizeY * threadGroupSizeZ);
 
 				int totalThreadGroupCount = 
-					((OrbiterCount + (threadsPerGroup - 1)) / threadsPerGroup);
+					((orbitersComputeBuffer.count + (threadsPerGroup - 1)) / threadsPerGroup);
 
 				OrbitersComputeShader.Dispatch(
 					computeKernalIndex, 
@@ -112,8 +112,8 @@ public class OrbitersDispatcher : MonoBehaviour
 				{
 					initialOrbiters[index] = new OrbiterState()
 					{
-						Position = Vector3.Scale(UnityEngine.Random.insideUnitSphere, transform.localScale),
-						Velocity = UnityEngine.Random.onUnitSphere,
+						Position = (0.5f * Vector3.Scale(UnityEngine.Random.insideUnitSphere, transform.localScale)),
+						Velocity = (0.1f * UnityEngine.Random.onUnitSphere),
 						Acceleration = Vector3.zero,
 					};
 				}
