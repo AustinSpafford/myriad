@@ -27,7 +27,7 @@ Material:
       second: 6
     - first:
         name: u_radius
-      second: 0.1
+      second: 0.05
     m_Colors:
     - first:
         name: u_color

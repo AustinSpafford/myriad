@@ -100,6 +100,7 @@ GameObject:
   - 4: {fileID: 643449901}
   - 114: {fileID: 643449902}
   - 114: {fileID: 643449903}
+  - 114: {fileID: 643449904}
   m_Layer: 0
   m_Name: gravity_swarm
   m_TagString: Untagged
@@ -132,12 +133,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   OrbiterCount: 10000
-  AttractorLocalPosition: {x: 0, y: 0, z: 0}
-  AttractorGravityScalar: 0.5
+  MaxAttractorCount: 16
   OrbitersComputeShader: {fileID: 7200000, guid: d2895d56c4cddf24c93685b2011c6f0f,
     type: 3}
   OrbitersMaterial: {fileID: 2100000, guid: a1782f40afb523547a6dfc2d534650af, type: 2}
-  DebugEnabled: 1
+  DebugAttractorLocalPosition: {x: 0, y: 1, z: 0}
+  DebugAttractorGravityScalar: 0
+  DebugEnabled: 0
 --- !u!114 &643449903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -154,6 +156,18 @@ MonoBehaviour:
   LocalPosition: {x: 0, y: 0, z: 0}
   LocalRotation: {x: 0, y: 0, z: 0}
   LocalScale: {x: 1, y: 1, z: 1}
+--- !u!114 &643449904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 643449900}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f5d2acd1980ef64bafc7e26afbfd5c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DebugEnabled: 0
 --- !u!1 &907697134
 GameObject:
   m_ObjectHideFlags: 0
@@ -233,7 +247,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
---- !u!21 &1204350847
+--- !u!21 &1197069823
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
@@ -301,14 +315,14 @@ Prefab:
       propertyPath: m_RootOrder
       value: 3
       objectReference: {fileID: 0}
-    - target: {fileID: 3380982, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 2107941240}
     - target: {fileID: 2348914, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 1204350847}
+      objectReference: {fileID: 1197069823}
+    - target: {fileID: 3380982, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 1754941639}
     m_RemovedComponents:
     - {fileID: 11420968, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
@@ -376,7 +390,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!43 &2107941240
+--- !u!43 &1754941639
 Mesh:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}

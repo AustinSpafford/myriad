@@ -7,6 +7,7 @@
 		u_radius("Radius", Float) = 0.1
 
 		// Constants that our parent can query.
+		// NOTE: When this value changes, unfortunately materials referencing this shader will have to be updated, as there's currently no support for [NonSerialized].
 		[HideInInspector] k_vertices_per_orbiter("<hidden>", Int) = 6
 	}
 
@@ -70,7 +71,7 @@
 				// Keep the nose of the orbiter pointed in its direction of motion.
 				result.binormal = normalize(u_orbiters[orbiter_index].velocity);
 
-				// Rolll the orbiter over so "down" points to the center of gravity.
+				// Set the orbiter's roll such that "down" points to the center of gravity.
 				result.tangent =
 					normalize(cross(
 						result.binormal,

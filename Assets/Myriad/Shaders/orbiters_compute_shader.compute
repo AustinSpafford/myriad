@@ -1,6 +1,12 @@
 ﻿// We must identify the kernal (entry-point) functions.
 #pragma kernel compute_shader_main
 
+struct s_attractor_state
+{
+	float3 position;
+	float unitized_gravity; // The resulting acceleration at a distance of 1 meter.
+};
+
 struct s_orbiter_state
 {
 	float3 position;
@@ -8,20 +14,43 @@ struct s_orbiter_state
 	float3 acceleration;
 };
 
-RWStructuredBuffer<s_orbiter_state> u_inout_orbiters;
-float3 u_attractor_local_position;
-float u_attractor_unitized_gravity; // The resulting acceleration at a distance of 1 meter.
-float u_max_velocity_as_escape_velocity_fraction; // https://en.wikipedia.org/wiki/Escape_velocity
-float u_delta_time;
+uniform RWStructuredBuffer<s_orbiter_state> u_inout_orbiters;
+
+uniform StructuredBuffer<s_attractor_state> u_attractors;
+uniform int u_attractor_count;
+
+uniform float u_max_velocity_as_escape_velocity_fraction; // https://en.wikipedia.org/wiki/Escape_velocity
+uniform float u_delta_time;
 
 [numthreads(64, 1, 1)]
 void compute_shader_main (uint3 thread_id : SV_DispatchThreadID)
 {
-	u_inout_orbiters[thread_id.x].acceleration =
-		normalize(u_attractor_local_position - u_inout_orbiters[thread_id.x].position) * 0.1f;
-	
+	float3 summedAcceleration = float3(0.0f, 0.0f, 0.0f);
+
+	for (int attractor_index = 0; attractor_index < u_attractor_count; ++attractor_index)
+	{
+		float3 position_delta = 
+			(u_attractors[attractor_index].position - u_inout_orbiters[thread_id.x].position);
+
+		// From "f = (gravity_const * mass1 * mass2) / distance^2", but
+		// where "unitized_gravity" is equal to "gravity_const * mass1" and "mass2 = 1kg".
+		float force = (
+			u_attractors[attractor_index].unitized_gravity / 
+			dot(position_delta, position_delta));
+
+		// HAX!
+		force = lerp(0.0f, 0.1f, (5.0f * length(position_delta))) * u_attractors[attractor_index].unitized_gravity;
+		
+		summedAcceleration += (force * normalize(position_delta));
+	}
+
+	u_inout_orbiters[thread_id.x].acceleration = summedAcceleration;
+
 	u_inout_orbiters[thread_id.x].velocity += 
 		(u_delta_time * u_inout_orbiters[thread_id.x].acceleration);
+
+	// HAX!
+	u_inout_orbiters[thread_id.x].velocity *= lerp(1.0f, 0.9f, smoothstep(0.5f, 1.0f, length(u_inout_orbiters[thread_id.x].velocity)));
 	
 	u_inout_orbiters[thread_id.x].position += 
 		(u_delta_time * u_inout_orbiters[thread_id.x].velocity);
