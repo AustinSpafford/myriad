@@ -66,11 +66,11 @@
 				// Keep the nose of the swarmer pointed in its direction of motion.
 				result.binormal = normalize(u_swarmers[swarmer_index].velocity);
 
-				// Set the swarmer's roll such that "down" points to the center of attraction.
+				// Set the swarmer's roll to respect its desired "down".
 				result.tangent =
 					normalize(cross(
 						result.binormal,
-						(-1.0f * u_swarmers[swarmer_index].acceleration)));
+						u_swarmers[swarmer_index].local_up));
 
 				// The normal is now strictly implied.
 				result.normal = cross(result.tangent, result.binormal);

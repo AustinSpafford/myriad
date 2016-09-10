@@ -208,6 +208,12 @@ public class SwarmSimulator : MonoBehaviour
 					"u_inout_swarmers",
 					swarmersComputeBuffer);
 
+				// NOTE: The shader is able to query this value, but by using this method we can
+				// opt to dynamically vary the number of simulated swarmers.
+				SwarmComputeShader.SetInt(
+					"u_swarmer_count", 
+					swarmersComputeBuffer.count);
+
 				// Initialize the swarm.
 				{
 					ShaderSwarmerState[] initialSwarmers = new ShaderSwarmerState[swarmersComputeBuffer.count];

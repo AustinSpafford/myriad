@@ -4,6 +4,7 @@
 #include "swarm_types.cginc"
 
 uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
+uniform int u_swarmer_count;
 
 uniform StructuredBuffer<s_attractor_state> u_attractors;
 uniform int u_attractor_count;
@@ -11,35 +12,38 @@ uniform int u_attractor_count;
 uniform float u_delta_time;
 
 [numthreads(64, 1, 1)]
-void compute_shader_main (uint3 thread_id : SV_DispatchThreadID)
+void compute_shader_main (
+	uint3 thread_id : SV_DispatchThreadID)
 {
 	float3 summedAcceleration = float3(0.0f, 0.0f, 0.0f);
 
 	for (int attractor_index = 0; attractor_index < u_attractor_count; ++attractor_index)
 	{
-		float3 position_delta = 
+		float3 swarmer_to_attractor = 
 			(u_attractors[attractor_index].position - u_inout_swarmers[thread_id.x].position);
 
 		// From "f = (gravity_const * mass1 * mass2) / distance^2", but
 		// where "attraction_scalar" is equal to "gravity_const * mass1" and "mass2 = 1kg".
 		float force = (
 			u_attractors[attractor_index].attraction_scalar / 
-			dot(position_delta, position_delta));
+			dot(swarmer_to_attractor, swarmer_to_attractor));
 
 		// HAX!
-		force = lerp(0.0f, 0.1f, (5.0f * length(position_delta))) * u_attractors[attractor_index].attraction_scalar;
+		force = lerp(0.0f, 0.1f, (5.0f * length(swarmer_to_attractor))) * u_attractors[attractor_index].attraction_scalar;
 		
-		summedAcceleration += (force * normalize(position_delta));
+		summedAcceleration += (force * normalize(swarmer_to_attractor));
 	}
 
-	u_inout_swarmers[thread_id.x].acceleration = summedAcceleration;
-
-	u_inout_swarmers[thread_id.x].velocity += 
-		(u_delta_time * u_inout_swarmers[thread_id.x].acceleration);
+	u_inout_swarmers[thread_id.x].velocity += (u_delta_time * summedAcceleration);
 
 	// HAX!
 	u_inout_swarmers[thread_id.x].velocity *= lerp(1.0f, 0.9f, smoothstep(0.5f, 1.0f, length(u_inout_swarmers[thread_id.x].velocity)));
 	
 	u_inout_swarmers[thread_id.x].position += 
 		(u_delta_time * u_inout_swarmers[thread_id.x].velocity);
+
+	u_inout_swarmers[thread_id.x].local_up = 
+		any(summedAcceleration) ? 
+			normalize(summedAcceleration) :
+			float3(0.0f, 1.0f, 0.0f);
 }

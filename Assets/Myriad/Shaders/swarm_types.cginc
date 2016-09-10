@@ -10,5 +10,5 @@ struct s_swarmer_state
 {
 	float3 position;
 	float3 velocity;
-	float3 acceleration;
+	float3 local_up; // For determining orientation.
 };

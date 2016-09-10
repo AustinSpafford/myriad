@@ -5,6 +5,12 @@ using Valve.VR;
 
 public class TrackedControllersSwarmAttractor : SwarmAttractorBase
 {
+	public float IdleAttractionScalar = 1.0f;
+	public float GrippedAttractionScalar = -1.0f;
+
+	public float IdleThrustScalar = 0.0f;
+	public float TriggerPulledThrustScalar = 1.0f;
+
 	public void Awake()
 	{
 		controllerManager = GameObject.FindObjectOfType<SteamVR_ControllerManager>();
