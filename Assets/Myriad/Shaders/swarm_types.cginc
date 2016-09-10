@@ -6,7 +6,7 @@ struct s_attractor_state
 	float attraction_scalar;
 };
 
-struct s_orbiter_state
+struct s_swarmer_state
 {
 	float3 position;
 	float3 velocity;

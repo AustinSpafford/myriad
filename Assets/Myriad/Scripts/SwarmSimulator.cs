@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 
 public class SwarmSimulator : MonoBehaviour
 {
-	public int OrbiterCount = 1000;
+	public int SwarmerCount = 1000;
 	public int MaxAttractorCount = 16;
 
-	public ComputeShader OrbitersComputeShader;
-	public Material OrbitersMaterial;
+	public ComputeShader SwarmComputeShader;
+	public Material SwarmMaterial;
 
 	public Vector3 DebugAttractorLocalPosition = Vector3.zero;
 	public float DebugAttractorAttractionScalar = 0.5f;
@@ -33,7 +33,7 @@ public class SwarmSimulator : MonoBehaviour
 
 	public void OnRenderObject()
 	{
-		if (OrbitersComputeShader != null)
+		if (SwarmComputeShader != null)
 		{
 			ComputeBuffer attractorsComputeBuffer;
 			int activeAttractorCount;
@@ -41,16 +41,15 @@ public class SwarmSimulator : MonoBehaviour
 				out attractorsComputeBuffer,
 				out activeAttractorCount);
 
-			OrbitersComputeShader.SetBuffer(computeKernalIndex, "u_attractors", attractorsComputeBuffer);
-			OrbitersComputeShader.SetInt("u_attractor_count", activeAttractorCount);
+			SwarmComputeShader.SetBuffer(computeKernalIndex, "u_attractors", attractorsComputeBuffer);
+			SwarmComputeShader.SetInt("u_attractor_count", activeAttractorCount);
+			
+			SwarmComputeShader.SetFloat("u_delta_time", Time.deltaTime);
 
-			OrbitersComputeShader.SetFloat("u_max_velocity_as_escape_velocity_fraction", 0.9f);
-			OrbitersComputeShader.SetFloat("u_delta_time", Time.deltaTime);
-
-			// Queue the request to permute the entire orbiters-buffer.
+			// Queue the request to permute the entire swarmers-buffer.
 			{
 				uint threadGroupSizeX, threadGroupSizeY, threadGroupSizeZ;
-				OrbitersComputeShader.GetKernelThreadGroupSizes(
+				SwarmComputeShader.GetKernelThreadGroupSizes(
 					computeKernalIndex, 
 					out threadGroupSizeX, 
 					out threadGroupSizeY, 
@@ -59,37 +58,37 @@ public class SwarmSimulator : MonoBehaviour
 				int threadsPerGroup = (int)(threadGroupSizeX * threadGroupSizeY * threadGroupSizeZ);
 
 				int totalThreadGroupCount = 
-					((orbitersComputeBuffer.count + (threadsPerGroup - 1)) / threadsPerGroup);
+					((swarmersComputeBuffer.count + (threadsPerGroup - 1)) / threadsPerGroup);
 
-				OrbitersComputeShader.Dispatch(
+				SwarmComputeShader.Dispatch(
 					computeKernalIndex, 
 					totalThreadGroupCount, // threadGroupsX
 					1, // threadGroupsY
 					1); // threadGroupsZ
 			}
 			
-			if (OrbitersMaterial != null)
+			if (SwarmMaterial != null)
 			{
-				OrbitersMaterial.SetPass(0);
-				OrbitersMaterial.SetBuffer("u_orbiters", orbitersComputeBuffer);
-				OrbitersMaterial.SetMatrix("u_model_to_world_matrix", transform.localToWorldMatrix);
+				SwarmMaterial.SetPass(0);
+				SwarmMaterial.SetBuffer("u_swarmers", swarmersComputeBuffer);
+				SwarmMaterial.SetMatrix("u_model_to_world_matrix", transform.localToWorldMatrix);
 				
 				int totalVertexCount = (
-					orbitersComputeBuffer.count *
-					OrbitersMaterial.GetInt("k_vertices_per_orbiter"));
+					swarmersComputeBuffer.count *
+					SwarmMaterial.GetInt("k_vertices_per_swarmer"));
 
 				Graphics.DrawProcedural(MeshTopology.Points, totalVertexCount);
 			}
 		}
 	}
 
-	private struct ShaderAttractorState
+	private struct ShaderAttractorState // Represents: s_attractor_state.
 	{
 		public Vector3 Position;
 		public float AttractionScalar;
 	}
 
-	private struct ShaderOrbiterState
+	private struct ShaderSwarmerState // Represents: s_swarmer_state.
 	{
 		public Vector3 Position;
 		public Vector3 Velocity;
@@ -99,7 +98,7 @@ public class SwarmSimulator : MonoBehaviour
 	private const int AttractorComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
 	
 	private Queue<ComputeBuffer> attractorsComputeBufferQueue = null;
-	private ComputeBuffer orbitersComputeBuffer = null;
+	private ComputeBuffer swarmersComputeBuffer = null;
 
 	private int computeKernalIndex = -1;
 
@@ -177,10 +176,10 @@ public class SwarmSimulator : MonoBehaviour
 		{
 			Debug.LogError("Compute shaders are not supported on this machine. Is DX11 or later installed?");
 		}
-		else if (OrbitersComputeShader != null)
+		else if (SwarmComputeShader != null)
 		{
 			computeKernalIndex = 
-				OrbitersComputeShader.FindKernel("compute_shader_main");
+				SwarmComputeShader.FindKernel("compute_shader_main");
 
 			if (attractorsComputeBufferQueue == null)
 			{
@@ -197,25 +196,25 @@ public class SwarmSimulator : MonoBehaviour
 				// NOTE: There's no need to immediately initialize the buffers, since they will be populated per-frame.
 			}
 
-			if (orbitersComputeBuffer == null)
+			if (swarmersComputeBuffer == null)
 			{
-				orbitersComputeBuffer =
+				swarmersComputeBuffer =
 					new ComputeBuffer(
-						OrbiterCount, 
-						Marshal.SizeOf(typeof(ShaderOrbiterState)));
+						SwarmerCount, 
+						Marshal.SizeOf(typeof(ShaderSwarmerState)));
 
-				OrbitersComputeShader.SetBuffer(
+				SwarmComputeShader.SetBuffer(
 					computeKernalIndex,
-					"u_inout_orbiters",
-					orbitersComputeBuffer);
+					"u_inout_swarmers",
+					swarmersComputeBuffer);
 
-				// Initialize the orbiters.
+				// Initialize the swarm.
 				{
-					ShaderOrbiterState[] initialOrbiters = new ShaderOrbiterState[orbitersComputeBuffer.count];
+					ShaderSwarmerState[] initialSwarmers = new ShaderSwarmerState[swarmersComputeBuffer.count];
 				
-					for (int index = 0; index < initialOrbiters.Length; ++index)
+					for (int index = 0; index < initialSwarmers.Length; ++index)
 					{
-						initialOrbiters[index] = new ShaderOrbiterState()
+						initialSwarmers[index] = new ShaderSwarmerState()
 						{
 							Position = (0.5f * Vector3.Scale(UnityEngine.Random.insideUnitSphere, transform.localScale)),
 							Velocity = (0.05f * UnityEngine.Random.onUnitSphere),
@@ -223,13 +222,13 @@ public class SwarmSimulator : MonoBehaviour
 						};
 					}
 
-					orbitersComputeBuffer.SetData(initialOrbiters);
+					swarmersComputeBuffer.SetData(initialSwarmers);
 				}
 			}
 			
 			if ((computeKernalIndex != -1) &&
 				(attractorsComputeBufferQueue != null) &&
-				(orbitersComputeBuffer != null))
+				(swarmersComputeBuffer != null))
 			{
 				result = true;
 			}
@@ -247,7 +246,7 @@ public class SwarmSimulator : MonoBehaviour
 	{
 		bool result = false;
 
-		if (orbitersComputeBuffer != null)
+		if (swarmersComputeBuffer != null)
 		{
 			// Release all of the attractor compute buffers.
 			{
@@ -259,8 +258,8 @@ public class SwarmSimulator : MonoBehaviour
 				attractorsComputeBufferQueue = null;
 			}
 
-			orbitersComputeBuffer.Release();
-			orbitersComputeBuffer = null;
+			swarmersComputeBuffer.Release();
+			swarmersComputeBuffer = null;
 
 			result = true;
 		}

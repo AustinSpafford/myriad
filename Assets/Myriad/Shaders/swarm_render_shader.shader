@@ -1,4 +1,4 @@
-﻿Shader "Myriad/orbiters_render_shader"
+﻿Shader "Myriad/swarm_render_shader"
 {
 	Properties
 	{
@@ -8,7 +8,7 @@
 
 		// Constants that our parent can query.
 		// NOTE: When this value changes, unfortunately materials referencing this shader will have to be updated, as there's currently no support for [NonSerialized].
-		[HideInInspector] k_vertices_per_orbiter("<hidden>", Int) = 6
+		[HideInInspector] k_vertices_per_swarmer("<hidden>", Int) = 6
 	}
 
 	SubShader
@@ -52,25 +52,25 @@
 			uniform float4 u_color;
 			uniform float u_radius;
 
-			uniform StructuredBuffer<s_orbiter_state> u_orbiters;
+			uniform StructuredBuffer<s_swarmer_state> u_swarmers;
 
 			uniform float4x4 u_model_to_world_matrix; // We have to supply this manually because DrawProcedural is outside the normal mesh-rendering pipeline, so "unity_ObjectToWorld" is unfortunately always the identity matrix.
 			
 			s_vertex vertex_shader(
-				uint orbiter_index : SV_VertexID)
+				uint swarmer_index : SV_VertexID)
 			{
 				s_vertex result;
 				
-				result.position = float4(u_orbiters[orbiter_index].position, 1.0f);
+				result.position = float4(u_swarmers[swarmer_index].position, 1.0f);
 
-				// Keep the nose of the orbiter pointed in its direction of motion.
-				result.binormal = normalize(u_orbiters[orbiter_index].velocity);
+				// Keep the nose of the swarmer pointed in its direction of motion.
+				result.binormal = normalize(u_swarmers[swarmer_index].velocity);
 
-				// Set the orbiter's roll such that "down" points to the center of attraction.
+				// Set the swarmer's roll such that "down" points to the center of attraction.
 				result.tangent =
 					normalize(cross(
 						result.binormal,
-						(-1.0f * u_orbiters[orbiter_index].acceleration)));
+						(-1.0f * u_swarmers[swarmer_index].acceleration)));
 
 				// The normal is now strictly implied.
 				result.normal = cross(result.tangent, result.binormal);

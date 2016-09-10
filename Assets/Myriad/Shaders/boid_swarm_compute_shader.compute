@@ -3,12 +3,11 @@
 
 #include "swarm_types.cginc"
 
-uniform RWStructuredBuffer<s_orbiter_state> u_inout_orbiters;
+uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
 
 uniform StructuredBuffer<s_attractor_state> u_attractors;
 uniform int u_attractor_count;
 
-uniform float u_max_velocity_as_escape_velocity_fraction; // https://en.wikipedia.org/wiki/Escape_velocity
 uniform float u_delta_time;
 
 [numthreads(64, 1, 1)]
@@ -19,7 +18,7 @@ void compute_shader_main (uint3 thread_id : SV_DispatchThreadID)
 	for (int attractor_index = 0; attractor_index < u_attractor_count; ++attractor_index)
 	{
 		float3 position_delta = 
-			(u_attractors[attractor_index].position - u_inout_orbiters[thread_id.x].position);
+			(u_attractors[attractor_index].position - u_inout_swarmers[thread_id.x].position);
 
 		// From "f = (gravity_const * mass1 * mass2) / distance^2", but
 		// where "attraction_scalar" is equal to "gravity_const * mass1" and "mass2 = 1kg".
@@ -33,14 +32,14 @@ void compute_shader_main (uint3 thread_id : SV_DispatchThreadID)
 		summedAcceleration += (force * normalize(position_delta));
 	}
 
-	u_inout_orbiters[thread_id.x].acceleration = summedAcceleration;
+	u_inout_swarmers[thread_id.x].acceleration = summedAcceleration;
 
-	u_inout_orbiters[thread_id.x].velocity += 
-		(u_delta_time * u_inout_orbiters[thread_id.x].acceleration);
+	u_inout_swarmers[thread_id.x].velocity += 
+		(u_delta_time * u_inout_swarmers[thread_id.x].acceleration);
 
 	// HAX!
-	u_inout_orbiters[thread_id.x].velocity *= lerp(1.0f, 0.9f, smoothstep(0.5f, 1.0f, length(u_inout_orbiters[thread_id.x].velocity)));
+	u_inout_swarmers[thread_id.x].velocity *= lerp(1.0f, 0.9f, smoothstep(0.5f, 1.0f, length(u_inout_swarmers[thread_id.x].velocity)));
 	
-	u_inout_orbiters[thread_id.x].position += 
-		(u_delta_time * u_inout_orbiters[thread_id.x].velocity);
+	u_inout_swarmers[thread_id.x].position += 
+		(u_delta_time * u_inout_swarmers[thread_id.x].velocity);
 }
