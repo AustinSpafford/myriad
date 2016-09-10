@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-public class OrbitersDispatcher : MonoBehaviour
+public class SwarmSimulator : MonoBehaviour
 {
 	public int OrbiterCount = 1000;
 	public int MaxAttractorCount = 16;
@@ -12,7 +12,7 @@ public class OrbitersDispatcher : MonoBehaviour
 	public Material OrbitersMaterial;
 
 	public Vector3 DebugAttractorLocalPosition = Vector3.zero;
-	public float DebugAttractorGravityScalar = 0.5f;
+	public float DebugAttractorAttractionScalar = 0.5f;
 
 	public bool DebugEnabled = false;
 
@@ -86,7 +86,7 @@ public class OrbitersDispatcher : MonoBehaviour
 	private struct ShaderAttractorState
 	{
 		public Vector3 Position;
-		public float UnitizedGravity;
+		public float AttractionScalar;
 	}
 
 	private struct ShaderOrbiterState
@@ -125,12 +125,12 @@ public class OrbitersDispatcher : MonoBehaviour
 				swarmAttractorSource.AppendActiveAttractors(ref scratchAttractorStateList);
 			}
 
-			if (Mathf.Approximately(DebugAttractorGravityScalar, 0.0f) == false)
+			if (Mathf.Approximately(DebugAttractorAttractionScalar, 0.0f) == false)
 			{
 				scratchAttractorStateList.Add(new SwarmAttractorBase.AttractorState()
 				{
 					Position = DebugAttractorLocalPosition,
-					UnitizedGravity = DebugAttractorGravityScalar,
+					AttractionScalar = DebugAttractorAttractionScalar,
 				});
 			}
 
@@ -158,7 +158,7 @@ public class OrbitersDispatcher : MonoBehaviour
 				scratchShaderAttractorStateList.Add(new ShaderAttractorState()
 				{
 					Position = worldToLocalMatrix.MultiplyPoint(attractorState.Position),
-					UnitizedGravity = attractorState.UnitizedGravity,
+					AttractionScalar = attractorState.AttractionScalar,
 				});
 			}
 		}

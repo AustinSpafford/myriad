@@ -5,8 +5,6 @@ using Valve.VR;
 
 public class TrackedControllersSwarmAttractor : SwarmAttractorBase
 {
-	public bool DebugEnabled = false;
-
 	public void Awake()
 	{
 		controllerManager = GameObject.FindObjectOfType<SteamVR_ControllerManager>();
@@ -40,19 +38,11 @@ public class TrackedControllersSwarmAttractor : SwarmAttractorBase
 					{
 						Position = trackedObject.transform.position,
 						Rotation = trackedObject.transform.rotation,
-						UnitizedGravity = (gripPressed ? -1.0f : 1.0f),
+						AttractionScalar = (gripPressed ? -1.0f : 1.0f),
 						ThrustScalar = (triggerPressed ? 1.0f : 0.0f),
 					};
 
 					attractors.Add(attractor);
-
-					if (DebugEnabled)
-					{
-						Debug.LogFormat(
-							"Emitted attractor for controller [index:{0}], [position:{1}]",
-							trackedObject.index,
-							attractor.Position);
-					}
 				}
 			}
 		}

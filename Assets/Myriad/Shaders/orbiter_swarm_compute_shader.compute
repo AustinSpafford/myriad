@@ -4,7 +4,7 @@
 struct s_attractor_state
 {
 	float3 position;
-	float unitized_gravity; // The resulting acceleration at a distance of 1 meter.
+	float attraction_scalar;
 };
 
 struct s_orbiter_state
@@ -33,13 +33,13 @@ void compute_shader_main (uint3 thread_id : SV_DispatchThreadID)
 			(u_attractors[attractor_index].position - u_inout_orbiters[thread_id.x].position);
 
 		// From "f = (gravity_const * mass1 * mass2) / distance^2", but
-		// where "unitized_gravity" is equal to "gravity_const * mass1" and "mass2 = 1kg".
+		// where "attraction_scalar" is equal to "gravity_const * mass1" and "mass2 = 1kg".
 		float force = (
-			u_attractors[attractor_index].unitized_gravity / 
+			u_attractors[attractor_index].attraction_scalar / 
 			dot(position_delta, position_delta));
 
 		// HAX!
-		force = lerp(0.0f, 0.1f, (5.0f * length(position_delta))) * u_attractors[attractor_index].unitized_gravity;
+		force = lerp(0.0f, 0.1f, (5.0f * length(position_delta))) * u_attractors[attractor_index].attraction_scalar;
 		
 		summedAcceleration += (force * normalize(position_delta));
 	}

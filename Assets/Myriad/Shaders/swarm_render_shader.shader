@@ -71,7 +71,7 @@
 				// Keep the nose of the orbiter pointed in its direction of motion.
 				result.binormal = normalize(u_orbiters[orbiter_index].velocity);
 
-				// Set the orbiter's roll such that "down" points to the center of gravity.
+				// Set the orbiter's roll such that "down" points to the center of attraction.
 				result.tangent =
 					normalize(cross(
 						result.binormal,

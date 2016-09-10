@@ -99,8 +99,8 @@ GameObject:
   m_Component:
   - 4: {fileID: 643449901}
   - 114: {fileID: 643449902}
-  - 114: {fileID: 643449903}
   - 114: {fileID: 643449904}
+  - 114: {fileID: 643449903}
   m_Layer: 0
   m_Name: gravity_swarm
   m_TagString: Untagged
@@ -138,7 +138,7 @@ MonoBehaviour:
     type: 3}
   OrbitersMaterial: {fileID: 2100000, guid: a1782f40afb523547a6dfc2d534650af, type: 2}
   DebugAttractorLocalPosition: {x: 0, y: 1, z: 0}
-  DebugAttractorGravityScalar: 0
+  DebugAttractorGravityScalar: 0.5
   DebugEnabled: 0
 --- !u!114 &643449903
 MonoBehaviour:
@@ -167,7 +167,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f5d2acd1980ef64bafc7e26afbfd5c6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DebugEnabled: 0
 --- !u!1 &907697134
 GameObject:
   m_ObjectHideFlags: 0
@@ -247,35 +246,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
---- !u!21 &1197069823
-Material:
-  serializedVersion: 6
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_Name: Sprites/Default
-  m_Shader: {fileID: 10753, guid: 0000000000000000f000000000000000, type: 0}
-  m_ShaderKeywords: 
-  m_LightmapFlags: 5
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  m_SavedProperties:
-    serializedVersion: 2
-    m_TexEnvs:
-    - first:
-        name: _MainTex
-      second:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Floats:
-    - first:
-        name: PixelSnap
-      second: 0
-    m_Colors:
-    - first:
-        name: _Color
-      second: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1001 &1206856697
 Prefab:
   m_ObjectHideFlags: 0
@@ -318,15 +288,44 @@ Prefab:
     - target: {fileID: 2348914, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 1197069823}
+      objectReference: {fileID: 1296875989}
     - target: {fileID: 3380982, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 1754941639}
+      objectReference: {fileID: 1853788393}
     m_RemovedComponents:
     - {fileID: 11420968, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
   m_IsPrefabParent: 0
+--- !u!21 &1296875989
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: Sprites/Default
+  m_Shader: {fileID: 10753, guid: 0000000000000000f000000000000000, type: 0}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 5
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  m_SavedProperties:
+    serializedVersion: 2
+    m_TexEnvs:
+    - first:
+        name: _MainTex
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - first:
+        name: PixelSnap
+      second: 0
+    m_Colors:
+    - first:
+        name: _Color
+      second: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &1403229493
 GameObject:
   m_ObjectHideFlags: 0
@@ -390,7 +389,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!43 &1754941639
+--- !u!43 &1853788393
 Mesh:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}

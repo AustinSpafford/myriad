@@ -8,8 +8,8 @@ public abstract class SwarmAttractorBase : MonoBehaviour
 	{
 		public Vector3 Position;
 		public Quaternion Rotation;
-		public float UnitizedGravity;
-		public float ThrustScalar; // Pointing in the direction of "rotation".
+		public float AttractionScalar;
+		public float ThrustScalar; // In the direction of "Rotation * (0, 0, 1)".
 	}
 
 	public abstract void AppendActiveAttractors(
