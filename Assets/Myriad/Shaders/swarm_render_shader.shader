@@ -35,13 +35,8 @@
 			
 			#include "UnityCG.cginc"
 
-			struct s_orbiter_state
-			{
-				float3 position;
-				float3 velocity;
-				float3 acceleration;
-			};
-
+			#include "swarm_types.cginc"
+			
 			struct s_vertex
 			{
 				float4 position : SV_POSITION;

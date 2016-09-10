@@ -20,6 +20,8 @@ obj/
 *.user
 *.unityproj
 *.booproj
+*.sdf
+*.VC.opendb
 
 # ============ #
 # OS generated #
