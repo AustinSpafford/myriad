@@ -5,7 +5,10 @@ using Valve.VR;
 
 public class TrackedCamerasSwarmAttractor : SwarmAttractorBase
 {
-	public float IdleAttractionScalar = -0.5f;
+	public float FalloffInnerRadius = 0.2f;
+	public float FalloffOuterRadius = 0.4f;
+
+	public float IdleAttractionScalar = -5.0f;
 
 	public float IdleThrustScalar = 0.0f;
 
@@ -15,16 +18,18 @@ public class TrackedCamerasSwarmAttractor : SwarmAttractorBase
 	}
 
 	public override void AppendActiveAttractors(
-		ref List<AttractorState> attractors)
+		ref List<SwarmShaderAttractorState> attractors)
 	{
 		if ((trackedCamera != null) &&
 			trackedCamera.isActiveAndEnabled)
 		{
-			AttractorState attractor = new AttractorState()
+			var attractor = new SwarmShaderAttractorState()
 			{
 				Position = trackedCamera.transform.position,
-				Rotation = trackedCamera.transform.rotation,
+				FalloffInnerRadius = this.FalloffInnerRadius,
+				FalloffOuterRadius = this.FalloffOuterRadius,
 				AttractionScalar = IdleAttractionScalar,
+				ThrustDirection = trackedCamera.transform.forward,
 				ThrustScalar = IdleThrustScalar,
 			};
 

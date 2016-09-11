@@ -35,7 +35,7 @@
 			
 			#include "UnityCG.cginc"
 
-			#include "swarm_types.cginc"
+			#include "swarm_shader_types.cginc"
 			
 			struct s_vertex
 			{

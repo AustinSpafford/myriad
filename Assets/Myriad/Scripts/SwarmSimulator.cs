@@ -82,19 +82,6 @@ public class SwarmSimulator : MonoBehaviour
 		}
 	}
 
-	private struct ShaderAttractorState // Represents: s_attractor_state.
-	{
-		public Vector3 Position;
-		public float AttractionScalar;
-	}
-
-	private struct ShaderSwarmerState // Represents: s_swarmer_state.
-	{
-		public Vector3 Position;
-		public Vector3 Velocity;
-		public Vector3 Acceleration;
-	}
-
 	private const int AttractorComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
 	
 	private Queue<ComputeBuffer> attractorsComputeBufferQueue = null;
@@ -104,8 +91,7 @@ public class SwarmSimulator : MonoBehaviour
 
 	private SwarmAttractorBase[] swarmAttractorSources = null;
 
-	private List<SwarmAttractorBase.AttractorState> scratchAttractorStateList = new List<SwarmAttractorBase.AttractorState>();
-	private List<ShaderAttractorState> scratchShaderAttractorStateList = new List<ShaderAttractorState>();
+	private List<SwarmShaderAttractorState> scratchAttractorStateList = new List<SwarmShaderAttractorState>();
 
 	private void BuildAttractorsBuffer(
 		out ComputeBuffer outPooledAttractorComputeBuffer,
@@ -126,10 +112,14 @@ public class SwarmSimulator : MonoBehaviour
 
 			if (Mathf.Approximately(DebugAttractorAttractionScalar, 0.0f) == false)
 			{
-				scratchAttractorStateList.Add(new SwarmAttractorBase.AttractorState()
+				scratchAttractorStateList.Add(new SwarmShaderAttractorState()
 				{
 					Position = DebugAttractorLocalPosition,
+					FalloffInnerRadius = 100.0f,
+					FalloffOuterRadius = 100.0f,
 					AttractionScalar = DebugAttractorAttractionScalar,
+					ThrustDirection = transform.forward,
+					ThrustScalar = 0.0f,
 				});
 			}
 
@@ -146,26 +136,28 @@ public class SwarmSimulator : MonoBehaviour
 			}
 		}
 		
-		// Convert the behavior-facing attractors into the shader's format.
+		// Transform the attractors into local-space.
 		{
-			scratchShaderAttractorStateList.Clear();
-
 			Matrix4x4 worldToLocalMatrix = transform.worldToLocalMatrix;
 
-			foreach (var attractorState in scratchAttractorStateList)
+			for (int index = 0; index < scratchAttractorStateList.Count; ++index)
 			{
-				scratchShaderAttractorStateList.Add(new ShaderAttractorState()
-				{
-					Position = worldToLocalMatrix.MultiplyPoint(attractorState.Position),
-					AttractionScalar = attractorState.AttractionScalar,
-				});
+				var transformedAttractorState = scratchAttractorStateList[index];
+
+				transformedAttractorState.Position = 
+					worldToLocalMatrix.MultiplyPoint(transformedAttractorState.Position);
+
+				transformedAttractorState.ThrustDirection = 
+					worldToLocalMatrix.MultiplyVector(transformedAttractorState.ThrustDirection);
+
+				scratchAttractorStateList[index] = transformedAttractorState;
 			}
 		}
 
-		targetComputeBuffer.SetData(scratchShaderAttractorStateList.ToArray());
+		targetComputeBuffer.SetData(scratchAttractorStateList.ToArray());
 
 		outPooledAttractorComputeBuffer = targetComputeBuffer;
-		outActiveAttractorCount = scratchShaderAttractorStateList.Count;
+		outActiveAttractorCount = scratchAttractorStateList.Count;
 	}
 
 	private bool TryAllocateBuffers()
@@ -190,7 +182,7 @@ public class SwarmSimulator : MonoBehaviour
 					attractorsComputeBufferQueue.Enqueue(
 						new ComputeBuffer(
 							MaxAttractorCount, 
-							Marshal.SizeOf(typeof(ShaderAttractorState))));
+							Marshal.SizeOf(typeof(SwarmShaderAttractorState))));
 				}
 
 				// NOTE: There's no need to immediately initialize the buffers, since they will be populated per-frame.
@@ -201,7 +193,7 @@ public class SwarmSimulator : MonoBehaviour
 				swarmersComputeBuffer =
 					new ComputeBuffer(
 						SwarmerCount, 
-						Marshal.SizeOf(typeof(ShaderSwarmerState)));
+						Marshal.SizeOf(typeof(SwarmShaderSwarmerState)));
 
 				SwarmComputeShader.SetBuffer(
 					computeKernalIndex,
@@ -216,15 +208,15 @@ public class SwarmSimulator : MonoBehaviour
 
 				// Initialize the swarm.
 				{
-					ShaderSwarmerState[] initialSwarmers = new ShaderSwarmerState[swarmersComputeBuffer.count];
+					SwarmShaderSwarmerState[] initialSwarmers = new SwarmShaderSwarmerState[swarmersComputeBuffer.count];
 				
 					for (int index = 0; index < initialSwarmers.Length; ++index)
 					{
-						initialSwarmers[index] = new ShaderSwarmerState()
+						initialSwarmers[index] = new SwarmShaderSwarmerState()
 						{
-							Position = (0.5f * Vector3.Scale(UnityEngine.Random.insideUnitSphere, transform.localScale)),
-							Velocity = (0.05f * UnityEngine.Random.onUnitSphere),
-							Acceleration = Vector3.zero,
+							Position = (0.5f * Vector3.Scale(UnityEngine.Random.onUnitSphere, transform.localScale)),
+							Velocity = (0.05f * UnityEngine.Random.onUnitSphere), // Just a gentle nudge to indicate a direction.
+							LocalUp = UnityEngine.Random.onUnitSphere,
 						};
 					}
 

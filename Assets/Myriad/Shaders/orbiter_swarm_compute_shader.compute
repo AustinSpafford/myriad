@@ -1,7 +1,7 @@
 ﻿// We must identify the kernal (entry-point) functions.
 #pragma kernel compute_shader_main
 
-#include "swarm_types.cginc"
+#include "swarm_shader_types.cginc"
 
 uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
 uniform int u_swarmer_count;
@@ -12,7 +12,7 @@ uniform int u_attractor_count;
 uniform float u_delta_time;
 
 [numthreads(64, 1, 1)]
-void compute_shader_main (
+void compute_shader_main(
 	uint3 thread_id : SV_DispatchThreadID)
 {
 	float3 summedAcceleration = float3(0.0f, 0.0f, 0.0f);

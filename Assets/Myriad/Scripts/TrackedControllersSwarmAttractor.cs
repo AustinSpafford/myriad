@@ -5,11 +5,14 @@ using Valve.VR;
 
 public class TrackedControllersSwarmAttractor : SwarmAttractorBase
 {
-	public float IdleAttractionScalar = 1.0f;
-	public float GrippedAttractionScalar = -1.0f;
+	public float FalloffInnerRadius = 0.5f;
+	public float FalloffOuterRadius = 1.0f;
+
+	public float IdleAttractionScalar = -0.2f;
+	public float GrippedAttractionScalar = 1.0f;
 
 	public float IdleThrustScalar = 0.0f;
-	public float TriggerPulledThrustScalar = 1.0f;
+	public float TriggerPulledThrustScalar = 5.0f;
 
 	public void Awake()
 	{
@@ -17,7 +20,7 @@ public class TrackedControllersSwarmAttractor : SwarmAttractorBase
 	}
 
 	public override void AppendActiveAttractors(
-		ref List<AttractorState> attractors)
+		ref List<SwarmShaderAttractorState> attractors)
 	{
 		var openVrSystem = OpenVR.System;
 
@@ -28,27 +31,30 @@ public class TrackedControllersSwarmAttractor : SwarmAttractorBase
 			{
 				SteamVR_TrackedObject trackedObject = controllerObject.GetComponent<SteamVR_TrackedObject>();
 				
-				VRControllerState_t controllerState = new VRControllerState_t();
-
-				if ((trackedObject != null) &&
-					trackedObject.isActiveAndEnabled &&
-					openVrSystem.GetControllerState((uint)trackedObject.index, ref controllerState))
+				if (trackedObject.index != SteamVR_TrackedObject.EIndex.None)
 				{
-					bool gripPressed = 
-						((controllerState.ulButtonPressed & (1UL << ((int)EVRButtonId.k_EButton_Grip))) != 0);
-					
-					bool triggerPressed = 
-						((controllerState.ulButtonPressed & (1UL << ((int)EVRButtonId.k_EButton_SteamVR_Trigger))) != 0);
+					var controllerDevice = SteamVR_Controller.Input((int)trackedObject.index);
 
-					AttractorState attractor = new AttractorState()
+					if ((trackedObject != null) &&
+						trackedObject.isActiveAndEnabled &&
+						controllerDevice.valid)
 					{
-						Position = trackedObject.transform.position,
-						Rotation = trackedObject.transform.rotation,
-						AttractionScalar = (gripPressed ? -1.0f : 1.0f),
-						ThrustScalar = (triggerPressed ? 1.0f : 0.0f),
-					};
+						bool gripPressed = controllerDevice.GetPress(EVRButtonId.k_EButton_Grip);
+					
+						float triggerFraction = controllerDevice.GetAxis(EVRButtonId.k_EButton_SteamVR_Trigger).x;
+						
+						var attractor = new SwarmShaderAttractorState()
+						{
+							Position = trackedObject.transform.position,
+							FalloffInnerRadius = this.FalloffInnerRadius,
+							FalloffOuterRadius = this.FalloffOuterRadius,
+							AttractionScalar = (gripPressed ? GrippedAttractionScalar : IdleAttractionScalar),
+							ThrustDirection = trackedObject.transform.forward,
+							ThrustScalar = Mathf.Lerp(IdleThrustScalar, TriggerPulledThrustScalar, triggerFraction),
+						};
 
-					attractors.Add(attractor);
+						attractors.Add(attractor);
+					}
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 ﻿// We must identify the kernal (entry-point) functions.
 #pragma kernel compute_shader_main
 
-#include "swarm_types.cginc"
+#include "swarm_shader_types.cginc"
 
 uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
 uniform int u_swarmer_count;
@@ -17,28 +17,54 @@ static const float k_idle_swarmer_speed = 0.1f;
 
 static const float k_ground_avoidance_max_distance = 0.25f;
 
-static const float k_neighbor_weight_max_distance = 0.5f;
+static const float k_is_neighbor_fraction_max_distance = 0.5f;
 static const float k_neighbor_attraction_scalar = 0.1f;
 static const float k_neighbor_avoidance_scalar = 1.0f;
 
+float3 build_attractor_impulse(
+	uint swarmer_index)
+{
+	float3 total_attractor_impulse = (float3)0.0f;
+
+	for (int attractor_index = 0; 
+		attractor_index < u_attractor_count; 
+		++attractor_index)
+	{
+		float3 swarmer_to_attractor =
+			(u_attractors[attractor_index].position - u_inout_swarmers[swarmer_index].position);
+
+		float distance = length(swarmer_to_attractor);
+
+		float effect_fraction = (
+			1.0f -
+			smoothstep(
+				u_attractors[attractor_index].falloff_inner_radius,
+				u_attractors[attractor_index].falloff_outer_radius,
+				distance));
+
+		total_attractor_impulse += (
+			effect_fraction * 
+			u_attractors[attractor_index].attraction_scalar *
+			(swarmer_to_attractor / distance));
+
+		total_attractor_impulse += (
+			effect_fraction * 
+			u_attractors[attractor_index].thrust_scalar *
+			u_attractors[attractor_index].thrust_direction);
+	}
+
+	return total_attractor_impulse;
+}
+
 [numthreads(64, 1, 1)]
-void compute_shader_main (
+void compute_shader_main(
 	uint3 thread_id : SV_DispatchThreadID)
 {
 	// Default to idling forwards.
 	float3 idealVelocity = 
 		(k_idle_swarmer_speed * normalize(u_inout_swarmers[thread_id.x].velocity));
 
-	// Factor in the attractors.
-	for (int attractor_index = 0; attractor_index < u_attractor_count; ++attractor_index)
-	{
-		float3 swarmer_to_attractor =
-			(u_attractors[attractor_index].position - u_inout_swarmers[thread_id.x].position);
-
-		idealVelocity += (
-			u_attractors[attractor_index].attraction_scalar * 
-			normalize(swarmer_to_attractor));
-	}
+	idealVelocity += build_attractor_impulse(thread_id.x);
 
 	// Factor in the other boids.
 	for (int neighbor_index = 0; neighbor_index < u_swarmer_count; ++neighbor_index)
@@ -50,16 +76,16 @@ void compute_shader_main (
 
 		float3 swarmer_to_neighbor_direction = (swarmer_to_neighbor / distance);
 
-		float neighbor_weight = (
+		float is_neighbor_fraction = (
 			(neighbor_index != (int)thread_id.x) * // Ignore comparisons against ourselves (without disrupting branching).
-			(distance < k_neighbor_weight_max_distance));
+			(distance < k_is_neighbor_fraction_max_distance));
 
-		float distance_fraction = saturate(distance / k_neighbor_weight_max_distance);
+		float distance_fraction = saturate(distance / k_is_neighbor_fraction_max_distance);
 
 		// Attraction.
 		{
 			idealVelocity += (
-				neighbor_weight *
+				is_neighbor_fraction *
 				k_neighbor_attraction_scalar *
 				swarmer_to_neighbor_direction);
 		}
@@ -69,7 +95,18 @@ void compute_shader_main (
 			float proximity_fraction = (1.0f - distance_fraction);
 
 			idealVelocity += (
-				neighbor_weight *
+				is_neighbor_fraction *
+				k_neighbor_avoidance_scalar *
+				(proximity_fraction * proximity_fraction) *
+				(-1 * swarmer_to_neighbor_direction));
+		}
+
+		// Alignment.
+		{
+			float proximity_fraction = (1.0f - distance_fraction);
+
+			idealVelocity += (
+				is_neighbor_fraction *
 				k_neighbor_avoidance_scalar *
 				(proximity_fraction * proximity_fraction) *
 				(-1 * swarmer_to_neighbor_direction));
