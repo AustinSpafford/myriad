@@ -19,12 +19,13 @@ static const float k_ground_avoidance_max_distance = 0.25f;
 
 static const float k_is_neighbor_fraction_max_distance = 0.5f;
 static const float k_neighbor_attraction_scalar = 0.1f;
-static const float k_neighbor_avoidance_scalar = 1.0f;
+static const float k_neighbor_collision_avoidance_scalar = 1.0f;
+static const float k_neighbor_alignment_scalar = 0.1f;
 
-float3 build_attractor_impulse(
+float3 build_attractors_impulse(
 	uint swarmer_index)
 {
-	float3 total_attractor_impulse = (float3)0.0f;
+	float3 result = (float3)0.0f;
 
 	for (int attractor_index = 0; 
 		attractor_index < u_attractor_count; 
@@ -42,18 +43,67 @@ float3 build_attractor_impulse(
 				u_attractors[attractor_index].falloff_outer_radius,
 				distance));
 
-		total_attractor_impulse += (
+		result += (
 			effect_fraction * 
 			u_attractors[attractor_index].attraction_scalar *
 			(swarmer_to_attractor / distance));
 
-		total_attractor_impulse += (
+		result += (
 			effect_fraction * 
 			u_attractors[attractor_index].thrust_scalar *
 			u_attractors[attractor_index].thrust_direction);
 	}
 
-	return total_attractor_impulse;
+	return result;
+}
+
+float3 build_flocking_impulse(
+	uint swarmer_index)
+{
+	float neighbor_count = 0.0001f;
+	float3 attraction_summation = (float3)0.0f;
+	float3 collision_avoidance_summation = (float3)0.0f;
+	float3 alignment_summation = (float3)0.0f;
+
+	// Factor in the other boids.
+	for (int neighbor_index = 0; neighbor_index < u_swarmer_count; ++neighbor_index)
+	{
+		float3 swarmer_to_neighbor =
+			(u_inout_swarmers[neighbor_index].position - u_inout_swarmers[swarmer_index].position);
+
+		float distance = max(0.001, length(swarmer_to_neighbor)); // Minimum-distance avoids a potential divide-by-zero.
+
+		float3 swarmer_to_neighbor_direction = (swarmer_to_neighbor / distance);
+
+		float is_neighbor_fraction = (
+			(neighbor_index != (int)swarmer_index) * // Ignore comparisons against ourselves (without disrupting branching).
+			(distance < k_is_neighbor_fraction_max_distance));
+
+		float distance_fraction = saturate(distance / k_is_neighbor_fraction_max_distance);
+		float proximity_fraction = (1.0f - distance_fraction);
+
+		neighbor_count += is_neighbor_fraction;
+
+		attraction_summation += (
+			is_neighbor_fraction *
+			swarmer_to_neighbor_direction);
+
+		collision_avoidance_summation += (
+			is_neighbor_fraction *
+			(proximity_fraction * proximity_fraction) *
+			(-1 * swarmer_to_neighbor_direction));
+
+		alignment_summation += (
+			is_neighbor_fraction *
+			u_inout_swarmers[neighbor_index].velocity);
+	}
+
+	float3 flocking_summation = (
+		(k_neighbor_attraction_scalar * attraction_summation) +
+		(k_neighbor_collision_avoidance_scalar * collision_avoidance_summation) +
+		(k_neighbor_alignment_scalar * alignment_summation));
+
+	return (flocking_summation / neighbor_count);
 }
 
 [numthreads(64, 1, 1)]
@@ -64,54 +114,9 @@ void compute_shader_main(
 	float3 idealVelocity = 
 		(k_idle_swarmer_speed * normalize(u_inout_swarmers[thread_id.x].velocity));
 
-	idealVelocity += build_attractor_impulse(thread_id.x);
+	idealVelocity += build_attractors_impulse(thread_id.x);
 
-	// Factor in the other boids.
-	for (int neighbor_index = 0; neighbor_index < u_swarmer_count; ++neighbor_index)
-	{
-		float3 swarmer_to_neighbor =
-			(u_inout_swarmers[neighbor_index].position - u_inout_swarmers[thread_id.x].position);
-
-		float distance = max(0.001, length(swarmer_to_neighbor)); // Minimum-distance avoids a potential divide-by-zero.
-
-		float3 swarmer_to_neighbor_direction = (swarmer_to_neighbor / distance);
-
-		float is_neighbor_fraction = (
-			(neighbor_index != (int)thread_id.x) * // Ignore comparisons against ourselves (without disrupting branching).
-			(distance < k_is_neighbor_fraction_max_distance));
-
-		float distance_fraction = saturate(distance / k_is_neighbor_fraction_max_distance);
-
-		// Attraction.
-		{
-			idealVelocity += (
-				is_neighbor_fraction *
-				k_neighbor_attraction_scalar *
-				swarmer_to_neighbor_direction);
-		}
-
-		// Collision-avoidance.
-		{
-			float proximity_fraction = (1.0f - distance_fraction);
-
-			idealVelocity += (
-				is_neighbor_fraction *
-				k_neighbor_avoidance_scalar *
-				(proximity_fraction * proximity_fraction) *
-				(-1 * swarmer_to_neighbor_direction));
-		}
-
-		// Alignment.
-		{
-			float proximity_fraction = (1.0f - distance_fraction);
-
-			idealVelocity += (
-				is_neighbor_fraction *
-				k_neighbor_avoidance_scalar *
-				(proximity_fraction * proximity_fraction) *
-				(-1 * swarmer_to_neighbor_direction));
-		}
-	}
+	idealVelocity += build_flocking_impulse(thread_id.x);
 
 	u_inout_swarmers[thread_id.x].velocity = 
 		lerp(
