@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -9,7 +10,6 @@ public class SwarmSimulator : MonoBehaviour
 	public int MaxAttractorCount = 16;
 
 	public ComputeShader SwarmComputeShader;
-	public Material SwarmMaterial;
 
 	public Vector3 DebugAttractorLocalPosition = Vector3.zero;
 	public float DebugAttractorAttractionScalar = 0.5f;
@@ -31,10 +31,31 @@ public class SwarmSimulator : MonoBehaviour
 		TryReleaseBuffers();
 	}
 
-	public void OnRenderObject()
+	public ComputeBuffer TryBuildSwarmersForRenderFrameIndex(
+		int frameIndex)
 	{
-		if (SwarmComputeShader != null)
+		// If the swarm needs to be advanced to the requested frame.
+		if ((SwarmComputeShader != null) &&
+			(lastRenderedFrameIndex != frameIndex))
 		{
+			DateTime currentTime = DateTime.UtcNow;
+
+			// Step ourselves based on the *graphics* framerate (since we're part of the rendering pipeline),
+			// but make sure to avoid giant steps whenever rendering is paused.
+			float localDeltaTime = 
+				Mathf.Min(
+					(float)(Time.timeScale * (currentTime - lastRenderedDateTime).TotalSeconds),
+					Time.maximumDeltaTime);
+
+			if (DebugEnabled)
+			{
+				Debug.LogFormat(
+					"Updating swarmers from frame [{0}] to frame [{1}], over [{2}] seconds.", 
+					lastRenderedFrameIndex,
+					frameIndex,
+					localDeltaTime);
+			}
+
 			ComputeBuffer attractorsComputeBuffer;
 			int activeAttractorCount;
 			BuildAttractorsBuffer(
@@ -66,20 +87,12 @@ public class SwarmSimulator : MonoBehaviour
 					1, // threadGroupsY
 					1); // threadGroupsZ
 			}
-			
-			if (SwarmMaterial != null)
-			{
-				SwarmMaterial.SetPass(0);
-				SwarmMaterial.SetBuffer("u_swarmers", swarmersComputeBuffer);
-				SwarmMaterial.SetMatrix("u_model_to_world_matrix", transform.localToWorldMatrix);
-				
-				int totalVertexCount = (
-					swarmersComputeBuffer.count *
-					SwarmMaterial.GetInt("k_vertices_per_swarmer"));
 
-				Graphics.DrawProcedural(MeshTopology.Points, totalVertexCount);
-			}
+			lastRenderedFrameIndex = frameIndex;
+			lastRenderedDateTime = currentTime;
 		}
+
+		return swarmersComputeBuffer;
 	}
 
 	private const int AttractorComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
@@ -92,6 +105,9 @@ public class SwarmSimulator : MonoBehaviour
 	private SwarmAttractorBase[] swarmAttractorSources = null;
 
 	private List<SwarmShaderAttractorState> scratchAttractorStateList = new List<SwarmShaderAttractorState>();
+
+	private int lastRenderedFrameIndex = -1;
+	private DateTime lastRenderedDateTime = DateTime.UtcNow;
 
 	private void BuildAttractorsBuffer(
 		out ComputeBuffer outPooledAttractorComputeBuffer,

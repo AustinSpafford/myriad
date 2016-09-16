@@ -13,7 +13,7 @@ uniform float u_delta_time;
 
 static const float k_ideal_velocity_blending_rate = 10.0f;
 
-static const float k_idle_swarmer_speed = 0.1f;
+static const float k_idle_swarmer_speed = 0.3f;
 
 static const float k_ground_avoidance_max_distance = 0.25f;
 
