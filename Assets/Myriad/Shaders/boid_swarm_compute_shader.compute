@@ -13,13 +13,14 @@ uniform float u_delta_time;
 
 static const float k_ideal_velocity_blending_rate = 10.0f;
 
-static const float k_idle_swarmer_speed = 0.3f;
+static const float k_swarmer_speed_min = 0.1f;
+static const float k_swarmer_speed_idle = 0.5f;
+static const float k_swarmer_speed_max = 1.0f;
 
-static const float k_ground_avoidance_max_distance = 0.25f;
+static const float k_neighborhood_radius = 0.3f;
 
-static const float k_is_neighbor_fraction_max_distance = 0.5f;
 static const float k_neighbor_attraction_scalar = 0.1f;
-static const float k_neighbor_collision_avoidance_scalar = 1.0f;
+static const float k_neighbor_collision_avoidance_scalar = 10.0f;
 static const float k_neighbor_alignment_scalar = 0.1f;
 
 float3 build_attractors_impulse(
@@ -75,26 +76,26 @@ float3 build_flocking_impulse(
 
 		float3 swarmer_to_neighbor_direction = (swarmer_to_neighbor / distance);
 
-		float is_neighbor_fraction = (
+		float case_is_neighbor = (
 			(neighbor_index != (int)swarmer_index) * // Ignore comparisons against ourselves (without disrupting branching).
-			(distance < k_is_neighbor_fraction_max_distance));
+			(distance < k_neighborhood_radius));
 
-		float distance_fraction = saturate(distance / k_is_neighbor_fraction_max_distance);
+		float distance_fraction = saturate(distance / k_neighborhood_radius);
 		float proximity_fraction = (1.0f - distance_fraction);
 
-		neighbor_count += is_neighbor_fraction;
+		neighbor_count += case_is_neighbor;
 
 		attraction_summation += (
-			is_neighbor_fraction *
+			case_is_neighbor *
 			swarmer_to_neighbor_direction);
 
 		collision_avoidance_summation += (
-			is_neighbor_fraction *
+			case_is_neighbor *
 			(proximity_fraction * proximity_fraction) *
 			(-1 * swarmer_to_neighbor_direction));
 
 		alignment_summation += (
-			is_neighbor_fraction *
+			case_is_neighbor *
 			u_inout_swarmers[neighbor_index].velocity);
 	}
 
@@ -112,7 +113,7 @@ void compute_shader_main(
 {
 	// Default to idling forwards.
 	float3 idealVelocity = 
-		(k_idle_swarmer_speed * normalize(u_inout_swarmers[thread_id.x].velocity));
+		(k_swarmer_speed_idle * normalize(u_inout_swarmers[thread_id.x].velocity));
 
 	idealVelocity += build_attractors_impulse(thread_id.x);
 

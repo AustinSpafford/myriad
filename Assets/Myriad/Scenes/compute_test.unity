@@ -90,7 +90,7 @@ NavMeshSettings:
     cellSize: 0.16666667
     manualCellSize: 0
   m_NavMeshData: {fileID: 0}
---- !u!21 &526516056
+--- !u!21 &529665098
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
@@ -163,11 +163,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5724f1ee539a9ec47ac5b01957a0daf4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SwarmerCount: 1000
+  SwarmerCount: 5000
   MaxAttractorCount: 16
   SwarmComputeShader: {fileID: 7200000, guid: eaefd313604aac04e95f7cb3c6f40eb1, type: 3}
   DebugAttractorLocalPosition: {x: 0, y: 1, z: 0}
-  DebugAttractorAttractionScalar: 0.1
+  DebugAttractorAttractionScalar: 0.05
   DebugEnabled: 0
 --- !u!114 &643449903
 MonoBehaviour:
@@ -199,9 +199,9 @@ MonoBehaviour:
   FalloffInnerRadius: 0.5
   FalloffOuterRadius: 1
   IdleAttractionScalar: -0.2
-  GrippedAttractionScalar: 1
+  GrippedAttractionScalar: 0.3
   IdleThrustScalar: 0
-  TriggerPulledThrustScalar: 3
+  TriggerPulledThrustScalar: 1.5
 --- !u!114 &643449905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -215,7 +215,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   FalloffInnerRadius: 0.2
   FalloffOuterRadius: 0.4
-  IdleAttractionScalar: -0.2
+  IdleAttractionScalar: -0.8
   IdleThrustScalar: 0
 --- !u!114 &643449906
 MonoBehaviour:
@@ -230,103 +230,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SwarmMaterial: {fileID: 2100000, guid: a1782f40afb523547a6dfc2d534650af, type: 2}
   DebugEnabled: 0
---- !u!1 &674026297
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 4
-  m_Component:
-  - 4: {fileID: 674026302}
-  - 114: {fileID: 674026301}
-  - 114: {fileID: 674026300}
-  - 114: {fileID: 674026299}
-  - 114: {fileID: 674026298}
-  m_Layer: 0
-  m_Name: orbiter_swarm
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &674026298
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 674026297}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc0e04faff2ed8e42946e96fc253725a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Shape: 1
-  GizmoColor: {r: 1, g: 1, b: 1, a: 0.5}
-  LocalPosition: {x: 0, y: 0, z: 0}
-  LocalRotation: {x: 0, y: 0, z: 0}
-  LocalScale: {x: 1, y: 1, z: 1}
---- !u!114 &674026299
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 674026297}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6a94b16ca673154badc3750b3a6fddd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  FalloffInnerRadius: 0.2
-  FalloffOuterRadius: 0.4
-  IdleAttractionScalar: -0.2
-  IdleThrustScalar: 0
---- !u!114 &674026300
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 674026297}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f5d2acd1980ef64bafc7e26afbfd5c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  FalloffInnerRadius: 0.5
-  FalloffOuterRadius: 1
-  IdleAttractionScalar: -0.2
-  GrippedAttractionScalar: 1
-  IdleThrustScalar: 0
-  TriggerPulledThrustScalar: 5
---- !u!114 &674026301
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 674026297}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5724f1ee539a9ec47ac5b01957a0daf4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SwarmerCount: 100
-  MaxAttractorCount: 16
-  SwarmComputeShader: {fileID: 7200000, guid: d2895d56c4cddf24c93685b2011c6f0f, type: 3}
-  DebugAttractorLocalPosition: {x: 0, y: 1, z: 0}
-  DebugAttractorAttractionScalar: 0.1
-  DebugEnabled: 0
---- !u!4 &674026302
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 674026297}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
 --- !u!1 &907697134
 GameObject:
   m_ObjectHideFlags: 0
@@ -443,16 +346,16 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 420908, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
       propertyPath: m_RootOrder
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2348914, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 526516056}
+      objectReference: {fileID: 529665098}
     - target: {fileID: 3380982, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
       propertyPath: m_Mesh
       value: 
-      objectReference: {fileID: 1625252475}
+      objectReference: {fileID: 1842124234}
     m_RemovedComponents:
     - {fileID: 11420968, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: 4d293c8e162f3874b982baadd71153d2, type: 2}
@@ -520,7 +423,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
---- !u!43 &1625252475
+--- !u!43 &1842124234
 Mesh:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
