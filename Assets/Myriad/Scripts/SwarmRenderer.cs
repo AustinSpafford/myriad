@@ -61,7 +61,7 @@ public class SwarmRenderer : MonoBehaviour
 		Color glowColor,
 		Vector2 textureCoord,
 		float leftWingFraction,
-		float rightWingFaction,
+		float rightWingFraction,
 		Matrix4x4 placementMatrix,
 		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
 	{
@@ -73,20 +73,22 @@ public class SwarmRenderer : MonoBehaviour
 			GlowColor = glowColor,
 			TextureCoord = textureCoord,
 			LeftWingFraction = leftWingFraction,
-			RightWingFraction = rightWingFaction,
+			RightWingFraction = rightWingFraction,
 		});
 	}
 
-	private static void AppendTriangleVerticesToModel(
+	private static void AppendRawTriangleVerticesToModel(
 		Vector3[] positions,
+		Vector2[] textureCoords,
 		Color albedoColor,
 		Color glowColor,
 		float leftWingFraction,
-		float rightWingFaction,
+		float rightWingFraction,
 		Matrix4x4 placementMatrix,
 		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
 	{
-		if (positions.Length != 3)
+		if ((positions.Length != 3) ||
+			(textureCoords.Length != 3))
 		{
 			throw new System.ArgumentException();
 		}
@@ -94,37 +96,88 @@ public class SwarmRenderer : MonoBehaviour
 		Vector3 triangleNormal = Vector3.Cross(
 			positions[2] - positions[0],
 			positions[1] - positions[0]).normalized;
+		
+		for (int index = 0; index < 3; ++index)
+		{
+			AppendVertexToModel(
+				positions[index],
+				triangleNormal,
+				albedoColor,
+				glowColor,
+				textureCoords[index],
+				leftWingFraction,
+				rightWingFraction,
+				placementMatrix,
+				ref inoutSwarmerModelVertices);
+		}
+	}
 
-		AppendVertexToModel(
-			positions[0],
-			triangleNormal,
+	private static void AppendSimpleTriangleVerticesToModel(
+		Vector3[] positions,
+		Color albedoColor,
+		Color glowColor,
+		float leftWingFraction,
+		float rightWingFraction,
+		Matrix4x4 placementMatrix,
+		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
+	{
+		var textureCoords = new Vector2[]
+		{
+			new Vector2(0.5f, 1.0f),
+			new Vector2(0.0f, 0.0f),
+			new Vector2(1.0f, 0.0f),
+		};
+
+		AppendRawTriangleVerticesToModel(
+			positions,
+			textureCoords,
 			albedoColor,
 			glowColor,
-			new Vector2(0.5f, 1.0f), // TODO: Either clean this up, or remove the texture coords altogether.
 			leftWingFraction,
-			rightWingFaction,
+			rightWingFraction,
+			placementMatrix,
+			ref inoutSwarmerModelVertices);
+	}
+	
+	private static void AppendSimpleQuadVerticesToModel(
+		Vector3[] positions,
+		Color albedoColor,
+		Color glowColor,
+		float leftWingFraction,
+		float rightWingFraction,
+		Matrix4x4 placementMatrix,
+		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
+	{
+		if (positions.Length != 4)
+		{
+			throw new System.ArgumentException();
+		}
+
+		var textureCoords = new Vector2[]
+		{
+			new Vector2(0.0f, 0.0f),
+			new Vector2(1.0f, 0.0f),
+			new Vector2(1.0f, 1.0f),
+			new Vector2(0.0f, 1.0f),
+		};
+
+		AppendRawTriangleVerticesToModel(
+			new Vector3[] { positions[0], positions[1], positions[3] },
+			new Vector2[] { textureCoords[0], textureCoords[1], textureCoords[3] },
+			albedoColor,
+			glowColor,
+			leftWingFraction,
+			rightWingFraction,
 			placementMatrix,
 			ref inoutSwarmerModelVertices);
 
-		AppendVertexToModel(
-			positions[1],
-			triangleNormal,
+		AppendRawTriangleVerticesToModel(
+			new Vector3[] { positions[3], positions[1], positions[2] },
+			new Vector2[] { textureCoords[3], textureCoords[1], textureCoords[2] },
 			albedoColor,
 			glowColor,
-			new Vector2(1.0f, 0.0f), // TODO: Either clean this up, or remove the texture coords altogether.
 			leftWingFraction,
-			rightWingFaction,
-			placementMatrix,
-			ref inoutSwarmerModelVertices);
-
-		AppendVertexToModel(
-			positions[2],
-			triangleNormal,
-			albedoColor,
-			glowColor,
-			new Vector2(0.0f, 0.0f), // TODO: Either clean this up, or remove the texture coords altogether.
-			leftWingFraction,
-			rightWingFaction,
+			rightWingFraction,
 			placementMatrix,
 			ref inoutSwarmerModelVertices);
 	}
@@ -143,7 +196,7 @@ public class SwarmRenderer : MonoBehaviour
 		Vector4 centerFacetGlowColor = Color.black;
 
 		// Top-facet.
-		AppendTriangleVerticesToModel(
+		AppendSimpleTriangleVerticesToModel(
 			new Vector3[] { forwardPosition, leftPosition, rightPosition }, // BUG! Doesn't unity/D3D use a clockwise winding?
 			(useDebugColoring ? Color.cyan : Color.yellow),
 			centerFacetGlowColor,
@@ -153,7 +206,7 @@ public class SwarmRenderer : MonoBehaviour
 			ref inoutSwarmerModelVertices);
 
 		// Bottom-facet.
-		AppendTriangleVerticesToModel(
+		AppendSimpleTriangleVerticesToModel(
 			new Vector3[] { forwardPosition, rightPosition, leftPosition, }, // BUG! Doesn't unity/D3D use a clockwise winding?
 			(useDebugColoring ? Color.white : Color.yellow),
 			centerFacetGlowColor,
@@ -167,12 +220,12 @@ public class SwarmRenderer : MonoBehaviour
 		float leftWingFraction,
 		float rightWingFraction,
 		bool useDebugColoring,
-		bool useBottomHalfColoring,
+		bool useTopHalfColoring,
 		Matrix4x4 placementMatrix,
 		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
 	{
-		float bevelSizeY = 0.25f;
-		float bevelSizeZ = 0.5f;
+		float bevelSizeY = 0.2f;
+		float bevelSizeZ = 0.6f;
 
 		Vector3 baseForwardPosition = Vector3.forward;
 		Vector3 baseRightPosition = (Quaternion.AngleAxis(120.0f, Vector3.up) * baseForwardPosition);
@@ -182,17 +235,51 @@ public class SwarmRenderer : MonoBehaviour
 		Vector3 topRightPosition = (Quaternion.AngleAxis(120.0f, Vector3.up) * topForwardPosition);
 		Vector3 topLeftPosition = (Quaternion.AngleAxis(-120.0f, Vector3.up) * topForwardPosition);
 		
+		Vector4 sideColor = new Color(0.6f, 0.6f, 0.8f);
+
+		Vector4 rearColor = (useDebugColoring ? (Vector4)Color.green : sideColor);
+
+		Vector4 frontLeftColor = (useDebugColoring ? (Vector4)Color.blue : sideColor);
+		Vector4 frontRightColor = (useDebugColoring ? (Vector4)Color.red : sideColor);
+
+		if (useTopHalfColoring == false)
+		{
+			Vector4 swapStorage = frontLeftColor;
+			frontLeftColor = frontRightColor;
+			frontRightColor = swapStorage;
+		}
+		
 		Vector4 topFacetColor = (
 			useDebugColoring ? 
-				(useBottomHalfColoring ? Color.yellow : Color.cyan): 
+				(useTopHalfColoring ? Color.yellow : Color.cyan): 
 				new Color(1.0f, 0.8f, 0.3f));
 		
 		Vector4 disabledGlowColor = Color.black;
 
-		// Base-facet.
-		AppendTriangleVerticesToModel(
-			new Vector3[] { baseForwardPosition, baseLeftPosition, baseRightPosition }, // BUG? Doesn't unity/D3D use a clockwise winding?
-			Color.white,
+		// Rear-facet.
+		AppendSimpleQuadVerticesToModel(
+			new Vector3[] { baseLeftPosition, baseRightPosition, topRightPosition, topLeftPosition },
+			rearColor,
+			disabledGlowColor,
+			leftWingFraction,
+			rightWingFraction,
+			placementMatrix,
+			ref inoutSwarmerModelVertices);
+
+		// Front-left-facet.
+		AppendSimpleQuadVerticesToModel(
+			new Vector3[] { baseForwardPosition, baseLeftPosition, topLeftPosition, topForwardPosition },
+			frontLeftColor,
+			disabledGlowColor,
+			leftWingFraction,
+			rightWingFraction,
+			placementMatrix,
+			ref inoutSwarmerModelVertices);
+
+		// Front-right-facet.
+		AppendSimpleQuadVerticesToModel(
+			new Vector3[] { baseRightPosition, baseForwardPosition, topForwardPosition, topRightPosition },
+			frontRightColor,
 			disabledGlowColor,
 			leftWingFraction,
 			rightWingFraction,
@@ -200,8 +287,8 @@ public class SwarmRenderer : MonoBehaviour
 			ref inoutSwarmerModelVertices);
 
 		// Top-facet.
-		AppendTriangleVerticesToModel(
-			new Vector3[] { topForwardPosition, topLeftPosition, topRightPosition }, // BUG? Doesn't unity/D3D use a clockwise winding?
+		AppendSimpleTriangleVerticesToModel(
+			new Vector3[] { topForwardPosition, topLeftPosition, topRightPosition },
 			topFacetColor,
 			disabledGlowColor,
 			leftWingFraction,
@@ -222,7 +309,7 @@ public class SwarmRenderer : MonoBehaviour
 			leftWingFraction,
 			rightWingFraction,
 			useDebugColoring,
-			false, // useBottomHalfColoring
+			true, // useTopHalfColoring
 			placementMatrix,
 			ref inoutSwarmerModelVertices);
 
@@ -237,7 +324,7 @@ public class SwarmRenderer : MonoBehaviour
 				leftWingFraction,
 				rightWingFraction,
 				useDebugColoring,
-				true, // useBottomHalfColoring
+				false, // useTopHalfColoring
 				(placementMatrix * flippingMatrix),
 				ref inoutSwarmerModelVertices);
 		}

@@ -84,7 +84,7 @@
 				UNITY_APPLY_FOG(raster_state.fogCoord, result);
 
 				// TODO: Better-than-debug lighting.
-				// result *= saturate(dot(normalize(raster_state.normal), normalize(mul(UNITY_MATRIX_VP, float4(0, 1, 0, 0)))));
+				result *= saturate(dot(normalize(raster_state.normal), normalize(mul(UNITY_MATRIX_VP, float4(0, 1, 0, 0)))));
 
 				return result;
 			}
