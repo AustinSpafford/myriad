@@ -374,7 +374,7 @@ public class SwarmRenderer : MonoBehaviour
 
 					AppendTriangularBifrustumVerticesToModel(
 						0.0f, // leftWingFraction
-						0.0f, // rightWingFraction
+						1.0f, // rightWingFraction
 						useDebugColoring,
 						Matrix4x4.TRS(
 							new Vector3(
@@ -386,7 +386,7 @@ public class SwarmRenderer : MonoBehaviour
 						ref swarmerModelVertices);
 
 					AppendTriangularBifrustumVerticesToModel(
-						0.0f, // leftWingFraction
+						1.0f, // leftWingFraction
 						0.0f, // rightWingFraction
 						useDebugColoring,
 						Matrix4x4.TRS(
