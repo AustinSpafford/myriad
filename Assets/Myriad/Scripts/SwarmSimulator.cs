@@ -4,6 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif // UNITY_EDITOR
+
 public class SwarmSimulator : MonoBehaviour
 {
 	public int SwarmerCount = 1000;
@@ -40,11 +44,19 @@ public class SwarmSimulator : MonoBehaviour
 		{
 			DateTime currentTime = DateTime.UtcNow;
 
+			// The editor doesn't alter the timescale for us when the sim is paused, so we need to do it ourselves.
+			float timeScale = 
+#if UNITY_EDITOR
+				(EditorApplication.isPaused ? 0.0f : Time.timeScale);
+#else
+				Time.timeScale;
+#endif
+
 			// Step ourselves based on the *graphics* framerate (since we're part of the rendering pipeline),
 			// but make sure to avoid giant steps whenever rendering is paused.
 			float localDeltaTime = 
 				Mathf.Min(
-					(float)(Time.timeScale * (currentTime - lastRenderedDateTime).TotalSeconds),
+					(float)(timeScale * (currentTime - lastRenderedDateTime).TotalSeconds),
 					Time.maximumDeltaTime);
 
 			ComputeBuffer attractorsComputeBuffer;
