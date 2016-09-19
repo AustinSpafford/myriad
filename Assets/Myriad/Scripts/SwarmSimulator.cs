@@ -4,6 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif // UNITY_EDITOR
+
 public class SwarmSimulator : MonoBehaviour
 {
 	public int SwarmerCount = 1000;
@@ -39,22 +43,23 @@ public class SwarmSimulator : MonoBehaviour
 			(lastRenderedFrameIndex != frameIndex))
 		{
 			DateTime currentTime = DateTime.UtcNow;
+			
+			bool applicationIsPaused = 
+#if UNITY_EDITOR
+				EditorApplication.isPaused;
+#else
+				false;
+#endif
+
+			// The editor doesn't alter the timescale for us when the sim is paused, so we need to do it ourselves.
+			float timeScale = (applicationIsPaused ? 0.0f : Time.timeScale);
 
 			// Step ourselves based on the *graphics* framerate (since we're part of the rendering pipeline),
 			// but make sure to avoid giant steps whenever rendering is paused.
 			float localDeltaTime = 
 				Mathf.Min(
-					(float)(Time.timeScale * (currentTime - lastRenderedDateTime).TotalSeconds),
+					(float)(timeScale * (currentTime - lastRenderedDateTime).TotalSeconds),
 					Time.maximumDeltaTime);
-
-			if (DebugEnabled)
-			{
-				Debug.LogFormat(
-					"Updating swarmers from frame [{0}] to frame [{1}], over [{2}] seconds.", 
-					lastRenderedFrameIndex,
-					frameIndex,
-					localDeltaTime);
-			}
 
 			ComputeBuffer attractorsComputeBuffer;
 			int activeAttractorCount;
@@ -65,7 +70,7 @@ public class SwarmSimulator : MonoBehaviour
 			SwarmComputeShader.SetBuffer(computeKernalIndex, "u_attractors", attractorsComputeBuffer);
 			SwarmComputeShader.SetInt("u_attractor_count", activeAttractorCount);
 			
-			SwarmComputeShader.SetFloat("u_delta_time", Time.deltaTime);
+			SwarmComputeShader.SetFloat("u_delta_time", localDeltaTime);
 
 			// Queue the request to permute the entire swarmers-buffer.
 			{
@@ -206,10 +211,24 @@ public class SwarmSimulator : MonoBehaviour
 
 			if (swarmersComputeBuffer == null)
 			{
+				var initialSwarmers = new List<SwarmShaderSwarmerState>(SwarmerCount);
+				
+				for (int index = 0; index < SwarmerCount; ++index)
+				{
+					initialSwarmers.Add(new SwarmShaderSwarmerState()
+					{
+						Position = (0.5f * Vector3.Scale(UnityEngine.Random.onUnitSphere, transform.localScale)),
+						Velocity = (0.05f * UnityEngine.Random.onUnitSphere), // Just a gentle nudge to indicate a direction.
+						LocalUp = UnityEngine.Random.onUnitSphere,
+					});
+				}
+
 				swarmersComputeBuffer =
 					new ComputeBuffer(
-						SwarmerCount, 
-						Marshal.SizeOf(typeof(SwarmShaderSwarmerState)));
+						initialSwarmers.Count, 
+						Marshal.SizeOf(initialSwarmers.GetType().GetGenericArguments()[0]));
+				
+				swarmersComputeBuffer.SetData(initialSwarmers.ToArray());
 
 				SwarmComputeShader.SetBuffer(
 					computeKernalIndex,
@@ -221,23 +240,6 @@ public class SwarmSimulator : MonoBehaviour
 				SwarmComputeShader.SetInt(
 					"u_swarmer_count", 
 					swarmersComputeBuffer.count);
-
-				// Initialize the swarm.
-				{
-					SwarmShaderSwarmerState[] initialSwarmers = new SwarmShaderSwarmerState[swarmersComputeBuffer.count];
-				
-					for (int index = 0; index < initialSwarmers.Length; ++index)
-					{
-						initialSwarmers[index] = new SwarmShaderSwarmerState()
-						{
-							Position = (0.5f * Vector3.Scale(UnityEngine.Random.onUnitSphere, transform.localScale)),
-							Velocity = (0.05f * UnityEngine.Random.onUnitSphere), // Just a gentle nudge to indicate a direction.
-							LocalUp = UnityEngine.Random.onUnitSphere,
-						};
-					}
-
-					swarmersComputeBuffer.SetData(initialSwarmers);
-				}
 			}
 			
 			if ((computeKernalIndex != -1) &&

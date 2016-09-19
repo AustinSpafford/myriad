@@ -4,11 +4,6 @@
 	{
 		u_main_texture("Texture", 2D) = "white" {}
 		u_color("Color", Color) = (1, 1, 1, 1)
-		u_radius("Radius", Float) = 0.1
-
-		// Constants that our parent can query.
-		// NOTE: When this value changes, unfortunately materials referencing this shader will have to be updated, as there's currently no support for [NonSerialized].
-		[HideInInspector] k_vertices_per_swarmer("<hidden>", Int) = 6
 	}
 
 	SubShader
@@ -21,13 +16,12 @@
 		{
 			CGPROGRAM
 
-			// TODO: Try targetting just "4.5", since that seems to be the actual minimum needed.
+			// TODO: Try targetting just "4.5", since that seems that it might be the actual minimum needed.
 			// https://docs.unity3d.com/Manual/SL-ShaderCompileTargets.html
 			#pragma target 5.0
 
-			// Identify our entry-point functions.
+			// Identify the entry-point functions.
 			#pragma vertex vertex_shader
-			#pragma geometry geometry_shader
 			#pragma fragment fragment_shader
 
 			// Enable support for fog-calculations.
@@ -37,165 +31,60 @@
 
 			#include "swarm_shader_types.cginc"
 			
-			struct s_vertex
+			struct s_rasterization_vertex
 			{
 				float4 position : SV_POSITION;
-				float3 normal : NORMAL;
-				float3 tangent : TANGENT;
-				float3 binormal : BINORMAL;
-				float2 uv : TEXCOORD0;
+				float4 normal : NORMAL;
+				float4 albedo_color : COLOR0;
+				float2 texture_coord : TEXCOORD0;
 				UNITY_FOG_COORDS(1)
 			};
 
 			uniform sampler2D u_main_texture;
 			uniform float4 u_main_texture_ST; // Contains texture's (scale.x, scale.y, offset.x, offset.y)
 			uniform float4 u_color;
-			uniform float u_radius;
 
 			uniform StructuredBuffer<s_swarmer_state> u_swarmers;
+			uniform StructuredBuffer<s_swarmer_model_vertex> u_swarmer_model_vertices;
 
-			uniform float4x4 u_model_to_world_matrix; // We have to supply this manually because DrawProcedural is outside the normal mesh-rendering pipeline, so "unity_ObjectToWorld" is unfortunately always the identity matrix.
+			uniform float4x4 u_swarm_to_world_matrix; // We have to supply this manually because DrawProcedural is outside the normal mesh-rendering pipeline, so "unity_ObjectToWorld" is unfortunately always the identity matrix.
 			
-			s_vertex vertex_shader(
-				uint swarmer_index : SV_VertexID)
+			s_rasterization_vertex vertex_shader(
+				uint vertex_index : SV_VertexID,
+				uint swarmer_index : SV_InstanceID)
 			{
-				s_vertex result;
+				s_rasterization_vertex result;
 				
-				result.position = float4(u_swarmers[swarmer_index].position, 1.0f);
+				s_swarmer_model_vertex model_vertex = u_swarmer_model_vertices[vertex_index];
+				s_swarmer_state swarmer_state = u_swarmers[swarmer_index];
 
-				// Keep the nose of the swarmer pointed in its direction of motion.
-				result.binormal = normalize(u_swarmers[swarmer_index].velocity);
+				float4x4 model_to_perspective_matrix = 
+					mul(UNITY_MATRIX_VP, 
+					mul(u_swarm_to_world_matrix, swarmer_state.cached_model_to_swarm_matrix));
 
-				// Set the swarmer's roll to respect its desired "down".
-				result.tangent =
-					normalize(cross(
-						result.binormal,
-						u_swarmers[swarmer_index].local_up));
-
-				// The normal is now strictly implied.
-				result.normal = cross(result.tangent, result.binormal);
-
-				// Initializing all remaining members to silence compilation failures.
-				result.uv = float2(0.0f, 0.0f);
+				result.position = mul(model_to_perspective_matrix, float4(model_vertex.position, 1.0f));
+				result.normal = mul(model_to_perspective_matrix, float4(model_vertex.normal, 0.0f));
+				result.albedo_color = model_vertex.albedo_color;
+				result.texture_coord = model_vertex.texture_coord;
+				
+				UNITY_TRANSFER_FOG(result, result.position);
 
 				return result;
 			}
-
-			float4 build_geometry_vertex_position(
-				float3 vertex_in_instance_space,
-				float4 instance_position_in_model_space,
-				float3 instance_x_axis,
-				float3 instance_y_axis,
-				float3 instance_z_axis)
-			{
-				float3 result = instance_position_in_model_space.xyz;
-
-				result += (vertex_in_instance_space.x * instance_x_axis);
-				result += (vertex_in_instance_space.y * instance_y_axis);
-				result += (vertex_in_instance_space.z * instance_z_axis);
-
-				return float4(result, instance_position_in_model_space.w);
-			}
-
-			[maxvertexcount(6)]
-			void geometry_shader(
-				point s_vertex source_vertex[1],
-				inout TriangleStream<s_vertex> triangle_stream)
-			{
-				float4x4 model_to_projection_matrix = 
-					mul(UNITY_MATRIX_VP, u_model_to_world_matrix);
-
-				s_vertex scratch_vertex;
-				scratch_vertex.normal = source_vertex[0].normal;
-				scratch_vertex.tangent = source_vertex[0].tangent;
-				scratch_vertex.binormal = source_vertex[0].binormal;
-
-				float4 forward_position = 
-					mul(
-						model_to_projection_matrix,
-						build_geometry_vertex_position(
-							float3(0.0f, 0.0f, u_radius),
-							source_vertex[0].position,
-							scratch_vertex.tangent,
-							scratch_vertex.normal,
-							scratch_vertex.binormal));
-
-				float4 right_position = 
-					mul(
-						model_to_projection_matrix,
-						build_geometry_vertex_position(
-							float3(u_radius, 0.0f, (-1.0f * u_radius)),
-							source_vertex[0].position,
-							scratch_vertex.tangent,
-							scratch_vertex.normal,
-							scratch_vertex.binormal));
-				
-				float4 left_position = 
-					mul(
-						model_to_projection_matrix,
-						build_geometry_vertex_position(
-							float3((-1.0f * u_radius), 0.0f, (-1.0f * u_radius)),
-							source_vertex[0].position,
-							scratch_vertex.tangent,
-							scratch_vertex.normal,
-							scratch_vertex.binormal));
-
-				// Emit the top-face.
-				{
-					scratch_vertex.position = forward_position;
-					scratch_vertex.uv = TRANSFORM_TEX(float2(0.5f, 1.0f), u_main_texture);
-					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
-					triangle_stream.Append(scratch_vertex);
-					
-					scratch_vertex.position = right_position;
-					scratch_vertex.uv = TRANSFORM_TEX(float2(1.0f, 0.0f), u_main_texture);
-					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
-					triangle_stream.Append(scratch_vertex);
-					
-					scratch_vertex.position = left_position;
-					scratch_vertex.uv = TRANSFORM_TEX(float2(0.0f, 0.0f), u_main_texture);
-					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
-					triangle_stream.Append(scratch_vertex);
-					
-					triangle_stream.RestartStrip();
-				}
-
-				// Emit the bottom-face.
-				{
-					scratch_vertex.normal *= -1.0f;
-					scratch_vertex.tangent *= -1.0f;
-
-					scratch_vertex.position = forward_position;
-					scratch_vertex.uv = TRANSFORM_TEX(float2(0.5f, 1.0f), u_main_texture);
-					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
-					triangle_stream.Append(scratch_vertex);
-					
-					scratch_vertex.position = left_position;
-					scratch_vertex.uv = TRANSFORM_TEX(float2(0.0f, 0.0f), u_main_texture);
-					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
-					triangle_stream.Append(scratch_vertex);
-					
-					scratch_vertex.position = right_position;
-					scratch_vertex.uv = TRANSFORM_TEX(float2(1.0f, 0.0f), u_main_texture);
-					UNITY_TRANSFER_FOG(scratch_vertex, scratch_vertex.position);
-					triangle_stream.Append(scratch_vertex);
-					
-					triangle_stream.RestartStrip();
-
-					scratch_vertex.normal *= -1.0f;
-					scratch_vertex.tangent *= -1.0f;
-				}
-			}
 			
 			fixed4 fragment_shader(
-				s_vertex interpolated_vertex) : 
+				s_rasterization_vertex raster_state) : 
 					SV_Target
 			{
 				fixed4 result = (
-					tex2D(u_main_texture, interpolated_vertex.uv) *
+					tex2D(u_main_texture, raster_state.texture_coord) *
+					raster_state.albedo_color *
 					u_color);
 				
-				UNITY_APPLY_FOG(interpolated_vertex.fogCoord, result);
+				UNITY_APPLY_FOG(raster_state.fogCoord, result);
+
+				// TODO: Better-than-debug lighting.
+				result *= saturate(dot(normalize(raster_state.normal), normalize(mul(UNITY_MATRIX_VP, float4(0, 1, 0, 0)))));
 
 				return result;
 			}

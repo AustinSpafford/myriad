@@ -19,12 +19,18 @@ public class TrackedControllersSwarmAttractor : SwarmAttractorBase
 		controllerManager = GameObject.FindObjectOfType<SteamVR_ControllerManager>();
 	}
 
+	public void Start()
+	{
+		// An empty Start() forces the inspector to add an Enabled-checkbox.
+	}
+
 	public override void AppendActiveAttractors(
 		ref List<SwarmShaderAttractorState> attractors)
 	{
 		var openVrSystem = OpenVR.System;
 
-		if ((openVrSystem != null) &&
+		if (isActiveAndEnabled &&
+			(openVrSystem != null) &&
 			(controllerManager != null))
 		{
 			foreach (GameObject controllerObject in controllerManager.objects)

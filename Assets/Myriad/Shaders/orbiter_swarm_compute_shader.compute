@@ -2,6 +2,7 @@
 #pragma kernel compute_shader_main
 
 #include "swarm_shader_types.cginc"
+#include "swarm_shader_utilities.cginc"
 
 uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
 uniform int u_swarmer_count;
@@ -10,6 +11,8 @@ uniform StructuredBuffer<s_attractor_state> u_attractors;
 uniform int u_attractor_count;
 
 uniform float u_delta_time;
+
+static const float k_swarmer_model_scale= 0.1f;
 
 [numthreads(64, 1, 1)]
 void compute_shader_main(
@@ -29,7 +32,9 @@ void compute_shader_main(
 			dot(swarmer_to_attractor, swarmer_to_attractor));
 
 		// HAX!
-		force = lerp(0.0f, 0.1f, (5.0f * length(swarmer_to_attractor))) * u_attractors[attractor_index].attraction_scalar;
+		force = 
+			lerp(0.0f, 0.1f, (5.0f * length(swarmer_to_attractor))) * 
+			u_attractors[attractor_index].attraction_scalar;
 		
 		summedAcceleration += (force * normalize(swarmer_to_attractor));
 	}
@@ -46,4 +51,11 @@ void compute_shader_main(
 		any(summedAcceleration) ? 
 			normalize(summedAcceleration) :
 			float3(0.0f, 1.0f, 0.0f);
+	
+	u_inout_swarmers[thread_id.x].cached_model_to_swarm_matrix =
+		build_swarmer_model_to_swarm_matrix(
+			u_inout_swarmers[thread_id.x].position,
+			u_inout_swarmers[thread_id.x].velocity,
+			u_inout_swarmers[thread_id.x].local_up,
+			k_swarmer_model_scale);
 }
