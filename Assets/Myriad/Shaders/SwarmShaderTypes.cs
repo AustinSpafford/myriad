@@ -2,6 +2,9 @@
 
 // NOTE: This file reflects swarm_shader_types.cginc
 
+// Silence warnings about the padding-fields never being accessed.
+#pragma warning disable 0169
+
 public struct SwarmShaderAttractorState // Represents: s_attractor_state.
 {
 	public Vector3 Position;
@@ -55,3 +58,5 @@ struct SwarmShaderSwarmerModelVertex // Represents: s_swarmer_model_vertex.
 	public float LeftWingFraction;
 	public float RightWingFraction;
 };
+
+#pragma warning restore 0169
