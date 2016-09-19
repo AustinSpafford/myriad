@@ -2,6 +2,7 @@
 #pragma kernel compute_shader_main
 
 #include "swarm_shader_types.cginc"
+#include "swarm_shader_utilities.cginc"
 
 uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
 uniform int u_swarmer_count;
@@ -22,6 +23,8 @@ static const float k_neighborhood_radius = 0.3f;
 static const float k_neighbor_attraction_scalar = 0.1f;
 static const float k_neighbor_collision_avoidance_scalar = 10.0f;
 static const float k_neighbor_alignment_scalar = 0.1f;
+
+static const float k_swarmer_model_scale= 0.1f;
 
 float3 build_attractors_impulse(
 	uint swarmer_index)
@@ -128,5 +131,12 @@ void compute_shader_main(
 	u_inout_swarmers[thread_id.x].position += 
 		(u_delta_time * u_inout_swarmers[thread_id.x].velocity);
 	
-	u_inout_swarmers[thread_id.x].local_up += float3(0.0f, 1.0f, 0.0f);
+	u_inout_swarmers[thread_id.x].local_up = float3(0.0f, 1.0f, 0.0f); // TODO: Animate this as the boid turns left/right.
+
+	u_inout_swarmers[thread_id.x].cached_model_to_swarm_matrix =
+		build_swarmer_model_to_swarm_matrix(
+			u_inout_swarmers[thread_id.x].position,
+			u_inout_swarmers[thread_id.x].velocity,
+			u_inout_swarmers[thread_id.x].local_up,
+			k_swarmer_model_scale);
 }

@@ -17,10 +17,16 @@ public class TrackedCamerasSwarmAttractor : SwarmAttractorBase
 		trackedCamera = GameObject.FindObjectOfType<SteamVR_Camera>();
 	}
 
+	public void Start()
+	{
+		// An empty Start() forces the inspector to add an Enabled-checkbox.
+	}
+
 	public override void AppendActiveAttractors(
 		ref List<SwarmShaderAttractorState> attractors)
 	{
-		if ((trackedCamera != null) &&
+		if (isActiveAndEnabled &&
+			(trackedCamera != null) &&
 			trackedCamera.isActiveAndEnabled)
 		{
 			var attractor = new SwarmShaderAttractorState()
