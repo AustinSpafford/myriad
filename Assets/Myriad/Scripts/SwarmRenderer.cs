@@ -92,8 +92,8 @@ public class SwarmRenderer : MonoBehaviour
 		}
 
 		Vector3 triangleNormal = Vector3.Cross(
-			positions[1] - positions[0],
-			positions[2] - positions[0]).normalized;
+			positions[2] - positions[0],
+			positions[1] - positions[0]).normalized;
 
 		AppendVertexToModel(
 			positions[0],
@@ -129,7 +129,7 @@ public class SwarmRenderer : MonoBehaviour
 			ref inoutSwarmerModelVertices);
 	}
 
-	private static void AppendPuffedTriangleVerticesToModel(
+	private static void AppendFlatDoubleSidedTriangleVerticesToModel(
 		float leftWingFraction,
 		float rightWingFraction,
 		bool useDebugColoring,
@@ -162,6 +162,86 @@ public class SwarmRenderer : MonoBehaviour
 			placementMatrix,
 			ref inoutSwarmerModelVertices);
 	}
+
+	private static void AppendTriangularFrustumVerticesToModel(
+		float leftWingFraction,
+		float rightWingFraction,
+		bool useDebugColoring,
+		bool useBottomHalfColoring,
+		Matrix4x4 placementMatrix,
+		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
+	{
+		float bevelSizeY = 0.25f;
+		float bevelSizeZ = 0.5f;
+
+		Vector3 baseForwardPosition = Vector3.forward;
+		Vector3 baseRightPosition = (Quaternion.AngleAxis(120.0f, Vector3.up) * baseForwardPosition);
+		Vector3 baseLeftPosition = (Quaternion.AngleAxis(-120.0f, Vector3.up) * baseForwardPosition);
+
+		Vector3 topForwardPosition = (baseForwardPosition + new Vector3(0.0f, bevelSizeY, (-1.0f * bevelSizeZ)));
+		Vector3 topRightPosition = (Quaternion.AngleAxis(120.0f, Vector3.up) * topForwardPosition);
+		Vector3 topLeftPosition = (Quaternion.AngleAxis(-120.0f, Vector3.up) * topForwardPosition);
+		
+		Vector4 topFacetColor = (
+			useDebugColoring ? 
+				(useBottomHalfColoring ? Color.yellow : Color.cyan): 
+				new Color(1.0f, 0.8f, 0.3f));
+		
+		Vector4 disabledGlowColor = Color.black;
+
+		// Base-facet.
+		AppendTriangleVerticesToModel(
+			new Vector3[] { baseForwardPosition, baseLeftPosition, baseRightPosition }, // BUG? Doesn't unity/D3D use a clockwise winding?
+			Color.white,
+			disabledGlowColor,
+			leftWingFraction,
+			rightWingFraction,
+			placementMatrix,
+			ref inoutSwarmerModelVertices);
+
+		// Top-facet.
+		AppendTriangleVerticesToModel(
+			new Vector3[] { topForwardPosition, topLeftPosition, topRightPosition }, // BUG? Doesn't unity/D3D use a clockwise winding?
+			topFacetColor,
+			disabledGlowColor,
+			leftWingFraction,
+			rightWingFraction,
+			placementMatrix,
+			ref inoutSwarmerModelVertices);
+	}
+
+	private static void AppendTriangularBifrustumVerticesToModel(
+		float leftWingFraction,
+		float rightWingFraction,
+		bool useDebugColoring,
+		Matrix4x4 placementMatrix,
+		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
+	{
+		// Top-half.
+		AppendTriangularFrustumVerticesToModel(
+			leftWingFraction,
+			rightWingFraction,
+			useDebugColoring,
+			false, // useBottomHalfColoring
+			placementMatrix,
+			ref inoutSwarmerModelVertices);
+
+		// Bottom-half.
+		{
+			Matrix4x4 flippingMatrix = Matrix4x4.TRS(
+				Vector3.zero,
+				Quaternion.AngleAxis(180.0f, Vector3.forward),
+				Vector3.one);
+
+			AppendTriangularFrustumVerticesToModel(
+				leftWingFraction,
+				rightWingFraction,
+				useDebugColoring,
+				true, // useBottomHalfColoring
+				(placementMatrix * flippingMatrix),
+				ref inoutSwarmerModelVertices);
+		}
+	}
 	
 	private bool TryAllocateBuffers()
 	{
@@ -179,12 +259,26 @@ public class SwarmRenderer : MonoBehaviour
 
 				bool useDebugColoring = true; // TODO: Expose this and handle it changing on the fly.
 
-				AppendPuffedTriangleVerticesToModel(
-					0.0f, // leftWingFraction
-					0.0f, // rightWingFraction
-					useDebugColoring,
-					Matrix4x4.identity,
-					ref swarmerModelVertices);
+				bool useSimpleFlatTriangleModel = false; // TODO: Remove this entirely once performance comparisons have been made against the old geometry-shader approach.
+
+				if (useSimpleFlatTriangleModel)
+				{
+					AppendFlatDoubleSidedTriangleVerticesToModel(
+						0.0f, // leftWingFraction
+						0.0f, // rightWingFraction
+						useDebugColoring,
+						Matrix4x4.identity,
+						ref swarmerModelVertices);
+				}
+				else
+				{
+					AppendTriangularBifrustumVerticesToModel(
+						0.0f, // leftWingFraction
+						0.0f, // rightWingFraction
+						useDebugColoring,
+						Matrix4x4.identity,
+						ref swarmerModelVertices);
+				}
 
 				swarmerModelVerticesComputeBuffer =
 					new ComputeBuffer(

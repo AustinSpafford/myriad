@@ -73,15 +73,18 @@
 			}
 			
 			fixed4 fragment_shader(
-				s_rasterization_vertex interpolated_vertex) : 
+				s_rasterization_vertex raster_state) : 
 					SV_Target
 			{
 				fixed4 result = (
-					tex2D(u_main_texture, interpolated_vertex.texture_coord) *
-					interpolated_vertex.albedo_color *
+					tex2D(u_main_texture, raster_state.texture_coord) *
+					raster_state.albedo_color *
 					u_color);
 				
-				UNITY_APPLY_FOG(interpolated_vertex.fogCoord, result);
+				UNITY_APPLY_FOG(raster_state.fogCoord, result);
+
+				// TODO: Better-than-debug lighting.
+				// result *= saturate(dot(normalize(raster_state.normal), normalize(mul(UNITY_MATRIX_VP, float4(0, 1, 0, 0)))));
 
 				return result;
 			}
