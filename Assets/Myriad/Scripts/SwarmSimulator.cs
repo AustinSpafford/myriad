@@ -43,14 +43,16 @@ public class SwarmSimulator : MonoBehaviour
 			(lastRenderedFrameIndex != frameIndex))
 		{
 			DateTime currentTime = DateTime.UtcNow;
+			
+			bool applicationIsPaused = 
+#if UNITY_EDITOR
+				EditorApplication.isPaused;
+#else
+				false;
+#endif
 
 			// The editor doesn't alter the timescale for us when the sim is paused, so we need to do it ourselves.
-			float timeScale = 
-#if UNITY_EDITOR
-				(EditorApplication.isPaused ? 0.0f : Time.timeScale);
-#else
-				Time.timeScale;
-#endif
+			float timeScale = (applicationIsPaused ? 0.0f : Time.timeScale);
 
 			// Step ourselves based on the *graphics* framerate (since we're part of the rendering pipeline),
 			// but make sure to avoid giant steps whenever rendering is paused.
