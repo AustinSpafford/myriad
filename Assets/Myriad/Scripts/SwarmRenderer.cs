@@ -235,7 +235,7 @@ public class SwarmRenderer : MonoBehaviour
 		Vector3 topRightPosition = (Quaternion.AngleAxis(120.0f, Vector3.up) * topForwardPosition);
 		Vector3 topLeftPosition = (Quaternion.AngleAxis(-120.0f, Vector3.up) * topForwardPosition);
 		
-		Vector4 sideColor = new Color(0.6f, 0.6f, 0.8f);
+		Vector4 sideColor = new Color(0.4f, 0.4f, 0.7f);
 
 		Vector4 rearColor = (useDebugColoring ? (Vector4)Color.green : sideColor);
 
@@ -363,7 +363,39 @@ public class SwarmRenderer : MonoBehaviour
 						0.0f, // leftWingFraction
 						0.0f, // rightWingFraction
 						useDebugColoring,
-						Matrix4x4.identity,
+						Matrix4x4.TRS(
+							new Vector3(
+								0.0f, 
+								0.0f, 
+								(1.0f - Mathf.Sin(30.0f * Mathf.Deg2Rad))),
+							Quaternion.AngleAxis(180, Vector3.up),
+							Vector3.one),
+						ref swarmerModelVertices);
+
+					AppendTriangularBifrustumVerticesToModel(
+						0.0f, // leftWingFraction
+						0.0f, // rightWingFraction
+						useDebugColoring,
+						Matrix4x4.TRS(
+							new Vector3(
+								Mathf.Cos(30.0f * Mathf.Deg2Rad), 
+								0.0f, 
+								0.0f),
+							Quaternion.identity,
+							Vector3.one),
+						ref swarmerModelVertices);
+
+					AppendTriangularBifrustumVerticesToModel(
+						0.0f, // leftWingFraction
+						0.0f, // rightWingFraction
+						useDebugColoring,
+						Matrix4x4.TRS(
+							new Vector3(
+								(-1.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)), 
+								0.0f, 
+								0.0f),
+							Quaternion.identity,
+							Vector3.one),
 						ref swarmerModelVertices);
 				}
 

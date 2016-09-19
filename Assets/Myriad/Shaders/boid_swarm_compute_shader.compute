@@ -24,7 +24,7 @@ static const float k_neighbor_attraction_scalar = 0.1f;
 static const float k_neighbor_collision_avoidance_scalar = 10.0f;
 static const float k_neighbor_alignment_scalar = 0.1f;
 
-static const float k_swarmer_model_scale= 0.1f;
+static const float k_swarmer_model_scale= 0.05f;
 
 float3 build_attractors_impulse(
 	uint swarmer_index)
