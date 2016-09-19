@@ -80,11 +80,11 @@
 					tex2D(u_main_texture, raster_state.texture_coord) *
 					raster_state.albedo_color *
 					u_color);
-				
-				UNITY_APPLY_FOG(raster_state.fogCoord, result);
 
 				// TODO: Better-than-debug lighting.
 				result *= saturate(dot(normalize(raster_state.normal), normalize(mul(UNITY_MATRIX_VP, float4(0, 1, 0, 0)))));
+				
+				UNITY_APPLY_FOG(raster_state.fogCoord, result);
 
 				return result;
 			}
