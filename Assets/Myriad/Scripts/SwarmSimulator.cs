@@ -133,13 +133,15 @@ public class SwarmSimulator : MonoBehaviour
 
 			if (Mathf.Approximately(DebugForcefieldAttractionScalar, 0.0f) == false)
 			{
+				Matrix4x4 localToWorldMatrix = transform.localToWorldMatrix;
+				
 				scratchForcefieldStateList.Add(new SwarmShaderForcefieldState()
 				{
-					Position = DebugForcefieldLocalPosition,
-					FalloffInnerRadius = 100.0f,
-					FalloffOuterRadius = 100.0f,
+					Position = (localToWorldMatrix * DebugForcefieldLocalPosition),
+					FalloffInnerRadius = (100.0f * localToWorldMatrix.GetScale().x),
+					FalloffOuterRadius = (100.0f * localToWorldMatrix.GetScale().x),
 					AttractionScalar = DebugForcefieldAttractionScalar,
-					ThrustDirection = transform.forward,
+					ThrustDirection = (localToWorldMatrix * Vector3.forward),
 					ThrustScalar = 0.0f,
 				});
 			}
@@ -160,6 +162,7 @@ public class SwarmSimulator : MonoBehaviour
 		// Transform the forcefields into local-space.
 		{
 			Matrix4x4 worldToLocalMatrix = transform.worldToLocalMatrix;
+			float worldToLocalScaling = worldToLocalMatrix.GetScale().x;
 
 			for (int index = 0; index < scratchForcefieldStateList.Count; ++index)
 			{
@@ -167,6 +170,9 @@ public class SwarmSimulator : MonoBehaviour
 
 				transformedForcefieldState.Position = 
 					worldToLocalMatrix.MultiplyPoint(transformedForcefieldState.Position);
+
+				transformedForcefieldState.FalloffInnerRadius *= worldToLocalScaling;
+				transformedForcefieldState.FalloffOuterRadius *= worldToLocalScaling;
 
 				transformedForcefieldState.ThrustDirection = 
 					worldToLocalMatrix.MultiplyVector(transformedForcefieldState.ThrustDirection);
