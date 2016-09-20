@@ -1,7 +1,7 @@
 // Contents: Any structures related to swarm-processing that would otherwise appear in multiple files.
 // NOTE: This file reflects SwarmShaderTypes.gc
 
-struct s_attractor_state // Represents: SwarmShaderAttractorState, which contains the documentation.
+struct s_forcefield_state // Represents: SwarmShaderForcefieldState, which contains the documentation.
 {
 	float3 position;
 

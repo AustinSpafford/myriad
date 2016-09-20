@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Valve.VR;
 
-public class TrackedControllersSwarmAttractor : SwarmAttractorBase
+public class TrackedControllersSwarmForcefields : SwarmForcefieldsBase
 {
 	public float FalloffInnerRadius = 0.5f;
 	public float FalloffOuterRadius = 1.0f;
@@ -24,8 +24,8 @@ public class TrackedControllersSwarmAttractor : SwarmAttractorBase
 		// An empty Start() forces the inspector to add an Enabled-checkbox.
 	}
 
-	public override void AppendActiveAttractors(
-		ref List<SwarmShaderAttractorState> attractors)
+	public override void AppendActiveForcefields(
+		ref List<SwarmShaderForcefieldState> forcefields)
 	{
 		var openVrSystem = OpenVR.System;
 
@@ -49,7 +49,7 @@ public class TrackedControllersSwarmAttractor : SwarmAttractorBase
 					
 						float triggerFraction = controllerDevice.GetAxis(EVRButtonId.k_EButton_SteamVR_Trigger).x;
 						
-						var attractor = new SwarmShaderAttractorState()
+						var forcefield = new SwarmShaderForcefieldState()
 						{
 							Position = trackedObject.transform.position,
 							FalloffInnerRadius = this.FalloffInnerRadius,
@@ -59,7 +59,7 @@ public class TrackedControllersSwarmAttractor : SwarmAttractorBase
 							ThrustScalar = Mathf.Lerp(IdleThrustScalar, TriggerPulledThrustScalar, triggerFraction),
 						};
 
-						attractors.Add(attractor);
+						forcefields.Add(forcefield);
 					}
 				}
 			}

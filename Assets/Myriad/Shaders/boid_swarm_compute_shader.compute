@@ -7,8 +7,8 @@
 uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
 uniform int u_swarmer_count;
 
-uniform StructuredBuffer<s_attractor_state> u_attractors;
-uniform int u_attractor_count;
+uniform StructuredBuffer<s_forcefield_state> u_forcefields;
+uniform int u_forcefield_count;
 
 uniform float u_delta_time;
 
@@ -26,36 +26,36 @@ static const float k_neighbor_alignment_scalar = 0.1f;
 
 static const float k_swarmer_model_scale= 0.04f;
 
-float3 build_attractors_impulse(
+float3 build_forcefields_impulse(
 	uint swarmer_index)
 {
 	float3 result = (float3)0.0f;
 
-	for (int attractor_index = 0; 
-		attractor_index < u_attractor_count; 
-		++attractor_index)
+	for (int forcefield_index = 0; 
+		forcefield_index < u_forcefield_count; 
+		++forcefield_index)
 	{
-		float3 swarmer_to_attractor =
-			(u_attractors[attractor_index].position - u_inout_swarmers[swarmer_index].position);
+		float3 swarmer_to_forcefield =
+			(u_forcefields[forcefield_index].position - u_inout_swarmers[swarmer_index].position);
 
-		float distance = length(swarmer_to_attractor);
+		float distance = length(swarmer_to_forcefield);
 
 		float effect_fraction = (
 			1.0f -
 			smoothstep(
-				u_attractors[attractor_index].falloff_inner_radius,
-				u_attractors[attractor_index].falloff_outer_radius,
+				u_forcefields[forcefield_index].falloff_inner_radius,
+				u_forcefields[forcefield_index].falloff_outer_radius,
 				distance));
 
 		result += (
 			effect_fraction * 
-			u_attractors[attractor_index].attraction_scalar *
-			(swarmer_to_attractor / distance));
+			u_forcefields[forcefield_index].attraction_scalar *
+			(swarmer_to_forcefield / distance));
 
 		result += (
 			effect_fraction * 
-			u_attractors[attractor_index].thrust_scalar *
-			u_attractors[attractor_index].thrust_direction);
+			u_forcefields[forcefield_index].thrust_scalar *
+			u_forcefields[forcefield_index].thrust_direction);
 	}
 
 	return result;
@@ -118,7 +118,7 @@ void compute_shader_main(
 	float3 idealVelocity = 
 		(k_swarmer_speed_idle * normalize(u_inout_swarmers[thread_id.x].velocity));
 
-	idealVelocity += build_attractors_impulse(thread_id.x);
+	idealVelocity += build_forcefields_impulse(thread_id.x);
 
 	idealVelocity += build_flocking_impulse(thread_id.x);
 

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Valve.VR;
 
-public class TrackedCamerasSwarmAttractor : SwarmAttractorBase
+public class TrackedCamerasSwarmForcefields : SwarmForcefieldsBase
 {
 	public float FalloffInnerRadius = 0.2f;
 	public float FalloffOuterRadius = 0.4f;
@@ -22,14 +22,14 @@ public class TrackedCamerasSwarmAttractor : SwarmAttractorBase
 		// An empty Start() forces the inspector to add an Enabled-checkbox.
 	}
 
-	public override void AppendActiveAttractors(
-		ref List<SwarmShaderAttractorState> attractors)
+	public override void AppendActiveForcefields(
+		ref List<SwarmShaderForcefieldState> forcefields)
 	{
 		if (isActiveAndEnabled &&
 			(trackedCamera != null) &&
 			trackedCamera.isActiveAndEnabled)
 		{
-			var attractor = new SwarmShaderAttractorState()
+			var forcefield = new SwarmShaderForcefieldState()
 			{
 				Position = trackedCamera.transform.position,
 				FalloffInnerRadius = this.FalloffInnerRadius,
@@ -39,7 +39,7 @@ public class TrackedCamerasSwarmAttractor : SwarmAttractorBase
 				ThrustScalar = IdleThrustScalar,
 			};
 
-			attractors.Add(attractor);
+			forcefields.Add(forcefield);
 		}
 	}
 

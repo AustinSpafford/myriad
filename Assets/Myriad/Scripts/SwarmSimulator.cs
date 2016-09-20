@@ -11,18 +11,18 @@ using UnityEditor;
 public class SwarmSimulator : MonoBehaviour
 {
 	public int SwarmerCount = 1000;
-	public int MaxAttractorCount = 16;
+	public int MaxForcefieldCount = 16;
 
 	public ComputeShader SwarmComputeShader;
 
-	public Vector3 DebugAttractorLocalPosition = Vector3.zero;
-	public float DebugAttractorAttractionScalar = 0.5f;
+	public Vector3 DebugForcefieldLocalPosition = Vector3.zero;
+	public float DebugForcefieldAttractionScalar = 0.5f;
 
 	public bool DebugEnabled = false;
 
 	public void Awake()
 	{
-		swarmAttractorSources = GetComponents<SwarmAttractorBase>();
+		swarmForcefieldSources = GetComponents<SwarmForcefieldsBase>();
 	}
 
 	public void OnEnable()
@@ -61,14 +61,14 @@ public class SwarmSimulator : MonoBehaviour
 					(float)(timeScale * (currentTime - lastRenderedDateTime).TotalSeconds),
 					Time.maximumDeltaTime);
 
-			ComputeBuffer attractorsComputeBuffer;
-			int activeAttractorCount;
-			BuildAttractorsBuffer(
-				out attractorsComputeBuffer,
-				out activeAttractorCount);
+			ComputeBuffer forcefieldsComputeBuffer;
+			int activeForcefieldCount;
+			BuildForcefieldsBuffer(
+				out forcefieldsComputeBuffer,
+				out activeForcefieldCount);
 
-			SwarmComputeShader.SetBuffer(computeKernalIndex, "u_attractors", attractorsComputeBuffer);
-			SwarmComputeShader.SetInt("u_attractor_count", activeAttractorCount);
+			SwarmComputeShader.SetBuffer(computeKernalIndex, "u_forcefields", forcefieldsComputeBuffer);
+			SwarmComputeShader.SetInt("u_forcefield_count", activeForcefieldCount);
 			
 			SwarmComputeShader.SetFloat("u_delta_time", localDeltaTime);
 
@@ -100,85 +100,85 @@ public class SwarmSimulator : MonoBehaviour
 		return swarmersComputeBuffer;
 	}
 
-	private const int AttractorComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
+	private const int ForcefieldsComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
 	
-	private Queue<ComputeBuffer> attractorsComputeBufferQueue = null;
+	private Queue<ComputeBuffer> forcefieldsComputeBufferQueue = null;
 	private ComputeBuffer swarmersComputeBuffer = null;
 
 	private int computeKernalIndex = -1;
 
-	private SwarmAttractorBase[] swarmAttractorSources = null;
+	private SwarmForcefieldsBase[] swarmForcefieldSources = null;
 
-	private List<SwarmShaderAttractorState> scratchAttractorStateList = new List<SwarmShaderAttractorState>();
+	private List<SwarmShaderForcefieldState> scratchForcefieldStateList = new List<SwarmShaderForcefieldState>();
 
 	private int lastRenderedFrameIndex = -1;
 	private DateTime lastRenderedDateTime = DateTime.UtcNow;
 
-	private void BuildAttractorsBuffer(
-		out ComputeBuffer outPooledAttractorComputeBuffer,
-		out int outActiveAttractorCount)
+	private void BuildForcefieldsBuffer(
+		out ComputeBuffer outPooledForcefieldsComputeBuffer,
+		out int outActiveForcefieldCount)
 	{
 		// Grab the oldest buffer off the queue, and move it back to mark it as the most recently touched buffer.
-		ComputeBuffer targetComputeBuffer = attractorsComputeBufferQueue.Dequeue();
-		attractorsComputeBufferQueue.Enqueue(targetComputeBuffer);
+		ComputeBuffer targetComputeBuffer = forcefieldsComputeBufferQueue.Dequeue();
+		forcefieldsComputeBufferQueue.Enqueue(targetComputeBuffer);
 
-		// Build the list of attractors.
+		// Build the list of forcefields.
 		{
-			scratchAttractorStateList.Clear();
+			scratchForcefieldStateList.Clear();
 
-			foreach (var swarmAttractorSource in swarmAttractorSources)
+			foreach (var swarmForcefieldsSource in swarmForcefieldSources)
 			{
-				swarmAttractorSource.AppendActiveAttractors(ref scratchAttractorStateList);
+				swarmForcefieldsSource.AppendActiveForcefields(ref scratchForcefieldStateList);
 			}
 
-			if (Mathf.Approximately(DebugAttractorAttractionScalar, 0.0f) == false)
+			if (Mathf.Approximately(DebugForcefieldAttractionScalar, 0.0f) == false)
 			{
-				scratchAttractorStateList.Add(new SwarmShaderAttractorState()
+				scratchForcefieldStateList.Add(new SwarmShaderForcefieldState()
 				{
-					Position = DebugAttractorLocalPosition,
+					Position = DebugForcefieldLocalPosition,
 					FalloffInnerRadius = 100.0f,
 					FalloffOuterRadius = 100.0f,
-					AttractionScalar = DebugAttractorAttractionScalar,
+					AttractionScalar = DebugForcefieldAttractionScalar,
 					ThrustDirection = transform.forward,
 					ThrustScalar = 0.0f,
 				});
 			}
 
-			if (scratchAttractorStateList.Count > targetComputeBuffer.count)
+			if (scratchForcefieldStateList.Count > targetComputeBuffer.count)
 			{
 				Debug.LogWarningFormat(
-					"Discarding some attractors since [{0}] were wanted, but only [{1}] can be passed on.",
-					scratchAttractorStateList.Count,
+					"Discarding some forcefields since [{0}] were wanted, but only [{1}] can be passed on.",
+					scratchForcefieldStateList.Count,
 					targetComputeBuffer.count);
 
-				scratchAttractorStateList.RemoveRange(
+				scratchForcefieldStateList.RemoveRange(
 					targetComputeBuffer.count, 
-					(scratchAttractorStateList.Count - targetComputeBuffer.count));
+					(scratchForcefieldStateList.Count - targetComputeBuffer.count));
 			}
 		}
 		
-		// Transform the attractors into local-space.
+		// Transform the forcefields into local-space.
 		{
 			Matrix4x4 worldToLocalMatrix = transform.worldToLocalMatrix;
 
-			for (int index = 0; index < scratchAttractorStateList.Count; ++index)
+			for (int index = 0; index < scratchForcefieldStateList.Count; ++index)
 			{
-				var transformedAttractorState = scratchAttractorStateList[index];
+				var transformedForcefieldState = scratchForcefieldStateList[index];
 
-				transformedAttractorState.Position = 
-					worldToLocalMatrix.MultiplyPoint(transformedAttractorState.Position);
+				transformedForcefieldState.Position = 
+					worldToLocalMatrix.MultiplyPoint(transformedForcefieldState.Position);
 
-				transformedAttractorState.ThrustDirection = 
-					worldToLocalMatrix.MultiplyVector(transformedAttractorState.ThrustDirection);
+				transformedForcefieldState.ThrustDirection = 
+					worldToLocalMatrix.MultiplyVector(transformedForcefieldState.ThrustDirection);
 
-				scratchAttractorStateList[index] = transformedAttractorState;
+				scratchForcefieldStateList[index] = transformedForcefieldState;
 			}
 		}
 
-		targetComputeBuffer.SetData(scratchAttractorStateList.ToArray());
+		targetComputeBuffer.SetData(scratchForcefieldStateList.ToArray());
 
-		outPooledAttractorComputeBuffer = targetComputeBuffer;
-		outActiveAttractorCount = scratchAttractorStateList.Count;
+		outPooledForcefieldsComputeBuffer = targetComputeBuffer;
+		outActiveForcefieldCount = scratchForcefieldStateList.Count;
 	}
 
 	private bool TryAllocateBuffers()
@@ -194,16 +194,16 @@ public class SwarmSimulator : MonoBehaviour
 			computeKernalIndex = 
 				SwarmComputeShader.FindKernel("compute_shader_main");
 
-			if (attractorsComputeBufferQueue == null)
+			if (forcefieldsComputeBufferQueue == null)
 			{
-				attractorsComputeBufferQueue = new Queue<ComputeBuffer>(AttractorComputeBufferCount);
+				forcefieldsComputeBufferQueue = new Queue<ComputeBuffer>(ForcefieldsComputeBufferCount);
 
-				for (int index = 0; index < AttractorComputeBufferCount; ++index)
+				for (int index = 0; index < ForcefieldsComputeBufferCount; ++index)
 				{
-					attractorsComputeBufferQueue.Enqueue(
+					forcefieldsComputeBufferQueue.Enqueue(
 						new ComputeBuffer(
-							MaxAttractorCount, 
-							Marshal.SizeOf(typeof(SwarmShaderAttractorState))));
+							MaxForcefieldCount, 
+							Marshal.SizeOf(typeof(SwarmShaderForcefieldState))));
 				}
 
 				// NOTE: There's no need to immediately initialize the buffers, since they will be populated per-frame.
@@ -243,7 +243,7 @@ public class SwarmSimulator : MonoBehaviour
 			}
 			
 			if ((computeKernalIndex != -1) &&
-				(attractorsComputeBufferQueue != null) &&
+				(forcefieldsComputeBufferQueue != null) &&
 				(swarmersComputeBuffer != null))
 			{
 				result = true;
@@ -264,14 +264,14 @@ public class SwarmSimulator : MonoBehaviour
 
 		if (swarmersComputeBuffer != null)
 		{
-			// Release all of the attractor compute buffers.
+			// Release all of the forcefield compute buffers.
 			{
-				foreach (ComputeBuffer attractorComputeBuffer in attractorsComputeBufferQueue)
+				foreach (ComputeBuffer forcefieldsComputeBuffer in forcefieldsComputeBufferQueue)
 				{
-					attractorComputeBuffer.Release();
+					forcefieldsComputeBuffer.Release();
 				}
 
-				attractorsComputeBufferQueue = null;
+				forcefieldsComputeBufferQueue = null;
 			}
 
 			swarmersComputeBuffer.Release();
