@@ -344,7 +344,7 @@ public class SwarmRenderer : MonoBehaviour
 			{
 				var swarmerModelVertices = new List<SwarmShaderSwarmerModelVertex>();
 
-				bool useDebugColoring = true; // TODO: Expose this and handle it changing on the fly.
+				bool useDebugColoring = false; // TODO: Expose this and handle it changing on the fly.
 
 				bool useSimpleFlatTriangleModel = false; // TODO: Remove this entirely once performance comparisons have been made against the old geometry-shader approach.
 
