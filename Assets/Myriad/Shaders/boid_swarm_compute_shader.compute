@@ -35,27 +35,61 @@ float3 build_forcefields_impulse(
 		forcefield_index < u_forcefield_count; 
 		++forcefield_index)
 	{
-		float3 swarmer_to_forcefield =
-			(u_forcefields[forcefield_index].position - u_inout_swarmers[swarmer_index].position);
+		s_forcefield_state forcefield = u_forcefields[forcefield_index];
 
-		float distance = length(swarmer_to_forcefield);
+		float3 swarmer_in_forcefield_space = mul(
+			forcefield.simulation_to_forcefield_matrix, 
+			float4(u_inout_swarmers[swarmer_index].position, 1.0f)).xyz;
+
+		float distance_to_field_core;
+		float3 field_force_direction;
+
+		switch (forcefield.forcefield_type)
+		{
+			case k_forcefield_type_global:
+				distance_to_field_core = 0.0f;
+				field_force_direction = float3(0.0f, 1.0f, 0.0f);
+				break;
+
+			case k_forcefield_type_plane:
+				distance_to_field_core = max(0.0f, swarmer_in_forcefield_space.y);
+				field_force_direction = float3(0.0f, 1.0f, 0.0f);
+				break;
+
+			case k_forcefield_type_sphere:
+				distance_to_field_core = length(swarmer_in_forcefield_space);
+				field_force_direction = (swarmer_in_forcefield_space / distance_to_field_core);
+				break;
+
+			case k_forcefield_type_thrust_capsule:
+				distance_to_field_core =
+					distance(
+						float3(0.0f, clamp(swarmer_in_forcefield_space.y, 0.0f, forcefield.forcefield_length), 0.0f),
+						swarmer_in_forcefield_space);
+				field_force_direction = float3(0.0f, 1.0f, 0.0f);
+				break;
+
+			default:
+				distance_to_field_core = 0.0f;
+				field_force_direction = float3(0.0f, 0.0f, 0.0f);
+				break;
+		}
+
+		field_force_direction = 
+			mul(
+				forcefield.forcefield_to_simulation_matrix, 
+				float4(field_force_direction, 0.0f)).xyz;
 
 		float effect_fraction = (
 			1.0f -
 			smoothstep(
-				u_forcefields[forcefield_index].falloff_inner_radius,
-				u_forcefields[forcefield_index].falloff_outer_radius,
-				distance));
+				forcefield.falloff_inner_radius,
+				forcefield.falloff_outer_radius,
+				distance_to_field_core));
 
 		result += (
-			effect_fraction * 
-			u_forcefields[forcefield_index].attraction_scalar *
-			(swarmer_to_forcefield / distance));
-
-		result += (
-			effect_fraction * 
-			u_forcefields[forcefield_index].thrust_scalar *
-			u_forcefields[forcefield_index].thrust_direction);
+			(effect_fraction * forcefield.force_scalar) * 
+			field_force_direction);
 	}
 
 	return result;

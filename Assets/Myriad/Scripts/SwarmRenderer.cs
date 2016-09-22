@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+[RequireComponent(typeof(SwarmSimulator))]
 public class SwarmRenderer : MonoBehaviour
 {
 	public Material SwarmMaterial;

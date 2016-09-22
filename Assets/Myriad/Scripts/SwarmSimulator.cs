@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using UnityEditor;
 #endif // UNITY_EDITOR
 
+[RequireComponent(typeof(SwarmForcefieldCollector))]
 public class SwarmSimulator : MonoBehaviour
 {
 	public int SwarmerCount = 1000;
@@ -15,14 +16,11 @@ public class SwarmSimulator : MonoBehaviour
 
 	public ComputeShader SwarmComputeShader;
 
-	public Vector3 DebugForcefieldLocalPosition = Vector3.zero;
-	public float DebugForcefieldAttractionScalar = 0.5f;
-
 	public bool DebugEnabled = false;
 
 	public void Awake()
 	{
-		swarmForcefieldSources = GetComponents<SwarmForcefieldsBase>();
+		forcefieldCollector = GetComponent<SwarmForcefieldCollector>();
 	}
 
 	public void OnEnable()
@@ -102,12 +100,12 @@ public class SwarmSimulator : MonoBehaviour
 
 	private const int ForcefieldsComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
 	
+	private SwarmForcefieldCollector forcefieldCollector = null;
+
 	private Queue<ComputeBuffer> forcefieldsComputeBufferQueue = null;
 	private ComputeBuffer swarmersComputeBuffer = null;
 
 	private int computeKernalIndex = -1;
-
-	private SwarmForcefieldsBase[] swarmForcefieldSources = null;
 
 	private List<SwarmShaderForcefieldState> scratchForcefieldStateList = new List<SwarmShaderForcefieldState>();
 
@@ -120,66 +118,23 @@ public class SwarmSimulator : MonoBehaviour
 	{
 		// Grab the oldest buffer off the queue, and move it back to mark it as the most recently touched buffer.
 		ComputeBuffer targetComputeBuffer = forcefieldsComputeBufferQueue.Dequeue();
-		forcefieldsComputeBufferQueue.Enqueue(targetComputeBuffer);
+		forcefieldsComputeBufferQueue.Enqueue(targetComputeBuffer);	
 
-		// Build the list of forcefields.
+		forcefieldCollector.CollectForcefields(
+			transform.localToWorldMatrix,
+			ref scratchForcefieldStateList);
+
+		if (scratchForcefieldStateList.Count > targetComputeBuffer.count)
 		{
-			scratchForcefieldStateList.Clear();
+			Debug.LogWarningFormat(
+				"Discarding some forcefields since [{0}] were wanted, but only [{1}] can be passed to the shader.",
+				scratchForcefieldStateList.Count,
+				targetComputeBuffer.count);
 
-			foreach (var swarmForcefieldsSource in swarmForcefieldSources)
-			{
-				swarmForcefieldsSource.AppendActiveForcefields(ref scratchForcefieldStateList);
-			}
-
-			if (Mathf.Approximately(DebugForcefieldAttractionScalar, 0.0f) == false)
-			{
-				Matrix4x4 localToWorldMatrix = transform.localToWorldMatrix;
-				
-				scratchForcefieldStateList.Add(new SwarmShaderForcefieldState()
-				{
-					Position = (localToWorldMatrix * DebugForcefieldLocalPosition),
-					FalloffInnerRadius = (100.0f * localToWorldMatrix.GetScale().x),
-					FalloffOuterRadius = (100.0f * localToWorldMatrix.GetScale().x),
-					AttractionScalar = DebugForcefieldAttractionScalar,
-					ThrustDirection = (localToWorldMatrix * Vector3.forward),
-					ThrustScalar = 0.0f,
-				});
-			}
-
-			if (scratchForcefieldStateList.Count > targetComputeBuffer.count)
-			{
-				Debug.LogWarningFormat(
-					"Discarding some forcefields since [{0}] were wanted, but only [{1}] can be passed on.",
-					scratchForcefieldStateList.Count,
-					targetComputeBuffer.count);
-
-				scratchForcefieldStateList.RemoveRange(
-					targetComputeBuffer.count, 
-					(scratchForcefieldStateList.Count - targetComputeBuffer.count));
-			}
-		}
-		
-		// Transform the forcefields into local-space.
-		{
-			Matrix4x4 worldToLocalMatrix = transform.worldToLocalMatrix;
-			float worldToLocalScaling = worldToLocalMatrix.GetScale().x;
-
-			for (int index = 0; index < scratchForcefieldStateList.Count; ++index)
-			{
-				var transformedForcefieldState = scratchForcefieldStateList[index];
-
-				transformedForcefieldState.Position = 
-					worldToLocalMatrix.MultiplyPoint(transformedForcefieldState.Position);
-
-				transformedForcefieldState.FalloffInnerRadius *= worldToLocalScaling;
-				transformedForcefieldState.FalloffOuterRadius *= worldToLocalScaling;
-
-				transformedForcefieldState.ThrustDirection = 
-					worldToLocalMatrix.MultiplyVector(transformedForcefieldState.ThrustDirection);
-
-				scratchForcefieldStateList[index] = transformedForcefieldState;
-			}
-		}
+			scratchForcefieldStateList.RemoveRange(
+				targetComputeBuffer.count, 
+				(scratchForcefieldStateList.Count - targetComputeBuffer.count));
+		}	
 
 		targetComputeBuffer.SetData(scratchForcefieldStateList.ToArray());
 

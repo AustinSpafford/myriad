@@ -1,22 +1,24 @@
 // Contents: Any structures related to swarm-processing that would otherwise appear in multiple files.
 // NOTE: This file reflects SwarmShaderTypes.gc
 
+// Represents: ForcefieldTypeValues, which contains the documentation.
+#define k_forcefield_type_global 0
+#define k_forcefield_type_plane 1
+#define k_forcefield_type_sphere 2
+#define k_forcefield_type_thrust_capsule 3
+
 struct s_forcefield_state // Represents: SwarmShaderForcefieldState, which contains the documentation.
 {
-	float3 position;
+	float4x4 simulation_to_forcefield_matrix;
+	float4x4 forcefield_to_simulation_matrix;
+
+	int forcefield_type; // Values: k_forcefield_type_*
+	float forcefield_length; // See interpretation-notes in ForcefieldTypeValues.
 
 	float falloff_inner_radius;
 	float falloff_outer_radius;
 
-	float attraction_scalar;
-	
-	float thrust_scalar;
-	
-	float pad_0; // For aligning vectors to 4-byte boundaries.
-
-	float3 thrust_direction;
-	
-	float pad_1; // For aligning the structure-stride to a multiple of 4-bytes.
+	float force_scalar;
 };
 
 struct s_swarmer_state // Represents: SwarmShaderSwarmerState, which contains the documentation.

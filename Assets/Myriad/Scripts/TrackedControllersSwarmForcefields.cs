@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Valve.VR;
 
-public class TrackedControllersSwarmForcefields : SwarmForcefieldsBase
+public class TrackedControllersSwarmForcefields : MonoBehaviour
 {
 	public float FalloffInnerRadius = 0.5f;
 	public float FalloffOuterRadius = 1.0f;
@@ -19,18 +19,23 @@ public class TrackedControllersSwarmForcefields : SwarmForcefieldsBase
 		controllerManager = GameObject.FindObjectOfType<SteamVR_ControllerManager>();
 	}
 
-	public void Start()
+	public void OnEnable()
 	{
-		// An empty Start() forces the inspector to add an Enabled-checkbox.
+		SwarmForcefieldCollector.CollectingForcefields += OnCollectingForcefields;
 	}
 
-	public override void AppendActiveForcefields(
-		ref List<SwarmShaderForcefieldState> forcefields)
+	public void OnDisable()
+	{
+		SwarmForcefieldCollector.CollectingForcefields -= OnCollectingForcefields;
+	}
+
+	private void OnCollectingForcefields(
+		object sender,
+		CollectingForcefieldsEventArgs eventArgs)
 	{
 		var openVrSystem = OpenVR.System;
 
-		if (isActiveAndEnabled &&
-			(openVrSystem != null) &&
+		if ((openVrSystem != null) &&
 			(controllerManager != null))
 		{
 			foreach (GameObject controllerObject in controllerManager.objects)
@@ -45,21 +50,21 @@ public class TrackedControllersSwarmForcefields : SwarmForcefieldsBase
 						trackedObject.isActiveAndEnabled &&
 						controllerDevice.valid)
 					{
-						bool gripPressed = controllerDevice.GetPress(EVRButtonId.k_EButton_Grip);
-					
+						bool gripPressed = controllerDevice.GetPress(EVRButtonId.k_EButton_Grip);					
 						float triggerFraction = controllerDevice.GetAxis(EVRButtonId.k_EButton_SteamVR_Trigger).x;
 						
-						var forcefield = new SwarmShaderForcefieldState()
-						{
-							Position = trackedObject.transform.position,
-							FalloffInnerRadius = this.FalloffInnerRadius,
-							FalloffOuterRadius = this.FalloffOuterRadius,
-							AttractionScalar = (gripPressed ? GrippedAttractionScalar : IdleAttractionScalar),
-							ThrustDirection = trackedObject.transform.forward,
-							ThrustScalar = Mathf.Lerp(IdleThrustScalar, TriggerPulledThrustScalar, triggerFraction),
-						};
-
-						forcefields.Add(forcefield);
+						eventArgs.ForcefieldAppender.AppendSphericalForcefield(
+							trackedObject.transform.position,
+							FalloffInnerRadius,
+							FalloffOuterRadius,
+							(-1.0f * (gripPressed ? GrippedAttractionScalar : IdleAttractionScalar)));
+						
+						eventArgs.ForcefieldAppender.AppendThrustCapsuleForcefield(
+							trackedObject.transform.position,
+							(trackedObject.transform.position + trackedObject.transform.forward), // TODO: Make the capsule-length customizable.
+							FalloffInnerRadius, // TODO: Give the thrust-capsule its own falloffs.
+							FalloffOuterRadius,
+							Mathf.Lerp(IdleThrustScalar, TriggerPulledThrustScalar, triggerFraction));
 					}
 				}
 			}
