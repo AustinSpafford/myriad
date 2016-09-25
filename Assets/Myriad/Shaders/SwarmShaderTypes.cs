@@ -3,24 +3,28 @@
 // NOTE: This file reflects swarm_shader_types.cginc
 
 // Silence warnings about the padding-fields never being accessed.
-#pragma warning disable 0169
+#pragma warning disable 0169, 1635
 
-public struct SwarmShaderAttractorState // Represents: s_attractor_state.
+public struct SwarmShaderForcefieldState // Represents: s_forcefield_state.
 {
-	public Vector3 Position;
+	public enum ForcefieldTypeValues
+	{
+		Global = 0, // ForcefieldLength->Ignored
+		Plane = 1, // ForcefieldLength->Ignored
+		Sphere = 2, // ForcefieldLength->Ignored
+		ThrustCapsule = 3, // ForcefieldLength->"Length of core line-segment."
+	}
+
+	public Matrix4x4 SimulationToForcefieldMatrix;
+	public Matrix4x4 ForcefieldToSimulationMatrix;
+
+	public int ForcefieldType; // See ForcefieldTypeValues.
+	public float ForcefieldLength; // See interpretation-notes in ForcefieldTypeValues.
 
 	public float FalloffInnerRadius; // Full-effect within this radius.
 	public float FalloffOuterRadius; // Any effects lerp from 1.0 to 0.0 between the inner/outer radii.
 
-	public float AttractionScalar; // Negative values will create a repulser-effect.
-
-	public float ThrustScalar;
-	
-	private float Pad0; // See native-representation for padding description.
-
-	public Vector3 ThrustDirection;
-	
-	private float Pad1; // See native-representation for padding description.
+	public float ForceScalar;
 }
 
 public struct SwarmShaderSwarmerState // Represents: s_swarmer_state.
@@ -59,4 +63,4 @@ struct SwarmShaderSwarmerModelVertex // Represents: s_swarmer_model_vertex.
 	public float RightWingFraction;
 };
 
-#pragma warning restore 0169
+#pragma warning restore 0169, 1635

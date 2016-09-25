@@ -7,8 +7,8 @@
 uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
 uniform int u_swarmer_count;
 
-uniform StructuredBuffer<s_attractor_state> u_attractors;
-uniform int u_attractor_count;
+uniform StructuredBuffer<s_forcefield_state> u_forcefields;
+uniform int u_forcefield_count;
 
 uniform float u_delta_time;
 
@@ -20,23 +20,29 @@ void compute_shader_main(
 {
 	float3 summedAcceleration = float3(0.0f, 0.0f, 0.0f);
 
-	for (int attractor_index = 0; attractor_index < u_attractor_count; ++attractor_index)
+	for (int forcefield_index = 0; forcefield_index < u_forcefield_count; ++forcefield_index)
 	{
-		float3 swarmer_to_attractor = 
-			(u_attractors[attractor_index].position - u_inout_swarmers[thread_id.x].position);
+		// NOTE: This compute-shader treats *all* forcefields as being spherical. It's really just old test code at this point.
+		float3 forcefield_position = 
+			mul(u_forcefields[forcefield_index].forcefield_to_simulation_matrix, float4(0, 0, 0, 1)).xyz;
+
+		float3 swarmer_to_forcefield = 
+			(forcefield_position - u_inout_swarmers[thread_id.x].position);
+
+		float attraction_scalar = (-1.0f * u_forcefields[forcefield_index].force_scalar);
 
 		// From "f = (gravity_const * mass1 * mass2) / distance^2", but
 		// where "attraction_scalar" is equal to "gravity_const * mass1" and "mass2 = 1kg".
 		float force = (
-			u_attractors[attractor_index].attraction_scalar / 
-			dot(swarmer_to_attractor, swarmer_to_attractor));
+			attraction_scalar / 
+			dot(swarmer_to_forcefield, swarmer_to_forcefield));
 
 		// HAX!
 		force = 
-			lerp(0.0f, 0.1f, (5.0f * length(swarmer_to_attractor))) * 
-			u_attractors[attractor_index].attraction_scalar;
+			lerp(0.0f, 0.1f, (5.0f * length(swarmer_to_forcefield))) * 
+			attraction_scalar;
 		
-		summedAcceleration += (force * normalize(swarmer_to_attractor));
+		summedAcceleration += (force * normalize(swarmer_to_forcefield));
 	}
 
 	u_inout_swarmers[thread_id.x].velocity += (u_delta_time * summedAcceleration);

@@ -7,8 +7,8 @@
 uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
 uniform int u_swarmer_count;
 
-uniform StructuredBuffer<s_attractor_state> u_attractors;
-uniform int u_attractor_count;
+uniform StructuredBuffer<s_forcefield_state> u_forcefields;
+uniform int u_forcefield_count;
 
 uniform float u_delta_time;
 
@@ -26,36 +26,70 @@ static const float k_neighbor_alignment_scalar = 0.1f;
 
 static const float k_swarmer_model_scale= 0.04f;
 
-float3 build_attractors_impulse(
+float3 build_forcefields_impulse(
 	uint swarmer_index)
 {
 	float3 result = (float3)0.0f;
 
-	for (int attractor_index = 0; 
-		attractor_index < u_attractor_count; 
-		++attractor_index)
+	for (int forcefield_index = 0; 
+		forcefield_index < u_forcefield_count; 
+		++forcefield_index)
 	{
-		float3 swarmer_to_attractor =
-			(u_attractors[attractor_index].position - u_inout_swarmers[swarmer_index].position);
+		s_forcefield_state forcefield = u_forcefields[forcefield_index];
 
-		float distance = length(swarmer_to_attractor);
+		float3 swarmer_in_forcefield_space = mul(
+			forcefield.simulation_to_forcefield_matrix, 
+			float4(u_inout_swarmers[swarmer_index].position, 1.0f)).xyz;
+
+		float distance_to_field_core;
+		float3 field_force_direction;
+
+		switch (forcefield.forcefield_type)
+		{
+			case k_forcefield_type_global:
+				distance_to_field_core = 0.0f;
+				field_force_direction = float3(0.0f, 1.0f, 0.0f);
+				break;
+
+			case k_forcefield_type_plane:
+				distance_to_field_core = max(0.0f, swarmer_in_forcefield_space.y);
+				field_force_direction = float3(0.0f, 1.0f, 0.0f);
+				break;
+
+			case k_forcefield_type_sphere:
+				distance_to_field_core = length(swarmer_in_forcefield_space);
+				field_force_direction = (swarmer_in_forcefield_space / distance_to_field_core);
+				break;
+
+			case k_forcefield_type_thrust_capsule:
+				distance_to_field_core =
+					distance(
+						float3(0.0f, clamp(swarmer_in_forcefield_space.y, 0.0f, forcefield.forcefield_length), 0.0f),
+						swarmer_in_forcefield_space);
+				field_force_direction = float3(0.0f, 1.0f, 0.0f);
+				break;
+
+			default:
+				distance_to_field_core = 0.0f;
+				field_force_direction = float3(0.0f, 0.0f, 0.0f);
+				break;
+		}
+
+		field_force_direction = 
+			mul(
+				forcefield.forcefield_to_simulation_matrix, 
+				float4(field_force_direction, 0.0f)).xyz;
 
 		float effect_fraction = (
 			1.0f -
 			smoothstep(
-				u_attractors[attractor_index].falloff_inner_radius,
-				u_attractors[attractor_index].falloff_outer_radius,
-				distance));
+				forcefield.falloff_inner_radius,
+				forcefield.falloff_outer_radius,
+				distance_to_field_core));
 
 		result += (
-			effect_fraction * 
-			u_attractors[attractor_index].attraction_scalar *
-			(swarmer_to_attractor / distance));
-
-		result += (
-			effect_fraction * 
-			u_attractors[attractor_index].thrust_scalar *
-			u_attractors[attractor_index].thrust_direction);
+			(effect_fraction * forcefield.force_scalar) * 
+			field_force_direction);
 	}
 
 	return result;
@@ -118,7 +152,7 @@ void compute_shader_main(
 	float3 idealVelocity = 
 		(k_swarmer_speed_idle * normalize(u_inout_swarmers[thread_id.x].velocity));
 
-	idealVelocity += build_attractors_impulse(thread_id.x);
+	idealVelocity += build_forcefields_impulse(thread_id.x);
 
 	idealVelocity += build_flocking_impulse(thread_id.x);
 
