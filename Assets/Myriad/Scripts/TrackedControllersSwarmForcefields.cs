@@ -5,11 +5,15 @@ using Valve.VR;
 
 public class TrackedControllersSwarmForcefields : MonoBehaviour
 {
-	public float FalloffInnerRadius = 0.5f;
-	public float FalloffOuterRadius = 1.0f;
+	public float AttractionFalloffInnerRadius = 0.5f;
+	public float AttractionFalloffOuterRadius = 1.0f;
 
 	public float IdleAttractionScalar = -0.2f;
 	public float GrippedAttractionScalar = 1.0f;
+	
+	public float ThrustFalloffInnerRadius = 0.2f;
+	public float ThrustFalloffOuterRadius = 0.4f;
+	public float ThrustCoreLength = 10.0f;
 
 	public float IdleThrustScalar = 0.0f;
 	public float TriggerPulledThrustScalar = 5.0f;
@@ -55,15 +59,15 @@ public class TrackedControllersSwarmForcefields : MonoBehaviour
 						
 						eventArgs.ForcefieldAppender.AppendSphericalForcefield(
 							trackedObject.transform.position,
-							FalloffInnerRadius,
-							FalloffOuterRadius,
+							AttractionFalloffInnerRadius,
+							AttractionFalloffOuterRadius,
 							(-1.0f * (gripPressed ? GrippedAttractionScalar : IdleAttractionScalar)));
 						
 						eventArgs.ForcefieldAppender.AppendThrustCapsuleForcefield(
 							trackedObject.transform.position,
-							(trackedObject.transform.position + trackedObject.transform.forward), // TODO: Make the capsule-length customizable.
-							FalloffInnerRadius, // TODO: Give the thrust-capsule its own falloffs.
-							FalloffOuterRadius,
+							(trackedObject.transform.position + (ThrustCoreLength * trackedObject.transform.forward)),
+							ThrustFalloffInnerRadius,
+							ThrustFalloffOuterRadius,
 							Mathf.Lerp(IdleThrustScalar, TriggerPulledThrustScalar, triggerFraction));
 					}
 				}
