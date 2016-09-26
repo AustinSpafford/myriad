@@ -4,7 +4,8 @@
 #include "swarm_shader_types.cginc"
 #include "swarm_shader_utilities.cginc"
 
-uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
+uniform StructuredBuffer<s_swarmer_state> u_readable_swarmers;
+uniform RWStructuredBuffer<s_swarmer_state> u_out_next_swarmers;
 uniform int u_swarmer_count;
 
 uniform StructuredBuffer<s_forcefield_state> u_forcefields;
@@ -27,7 +28,7 @@ static const float k_neighbor_alignment_scalar = 0.1f;
 static const float k_swarmer_model_scale= 0.04f;
 
 float3 build_forcefields_impulse(
-	uint swarmer_index)
+	float3 swarmer_position)
 {
 	float3 result = (float3)0.0f;
 
@@ -39,7 +40,7 @@ float3 build_forcefields_impulse(
 
 		float3 swarmer_in_forcefield_space = mul(
 			forcefield.simulation_to_forcefield_matrix, 
-			float4(u_inout_swarmers[swarmer_index].position, 1.0f)).xyz;
+			float4(swarmer_position, 1.0f)).xyz;
 
 		float distance_to_field_core;
 		float3 field_force_direction;
@@ -96,7 +97,8 @@ float3 build_forcefields_impulse(
 }
 
 float3 build_flocking_impulse(
-	uint swarmer_index)
+	int swarmer_index,
+	float3 swarmer_position)
 {
 	float neighbor_count = 0.0001f;
 	float3 attraction_summation = (float3)0.0f;
@@ -107,7 +109,7 @@ float3 build_flocking_impulse(
 	for (int neighbor_index = 0; neighbor_index < u_swarmer_count; ++neighbor_index)
 	{
 		float3 swarmer_to_neighbor =
-			(u_inout_swarmers[neighbor_index].position - u_inout_swarmers[swarmer_index].position);
+			(u_readable_swarmers[neighbor_index].position - swarmer_position);
 
 		float distance = max(0.001, length(swarmer_to_neighbor)); // Minimum-distance avoids a potential divide-by-zero.
 
@@ -133,7 +135,7 @@ float3 build_flocking_impulse(
 
 		alignment_summation += (
 			case_is_neighbor *
-			u_inout_swarmers[neighbor_index].velocity);
+			u_readable_swarmers[neighbor_index].velocity);
 	}
 
 	float3 flocking_summation = (
@@ -148,29 +150,33 @@ float3 build_flocking_impulse(
 void compute_shader_main(
 	uint3 thread_id : SV_DispatchThreadID)
 {
+	s_swarmer_state new_swarmer_state = u_readable_swarmers[thread_id.x];
+
 	// Default to idling forwards.
 	float3 idealVelocity = 
-		(k_swarmer_speed_idle * normalize(u_inout_swarmers[thread_id.x].velocity));
+		(k_swarmer_speed_idle * normalize(new_swarmer_state.velocity));
 
-	idealVelocity += build_forcefields_impulse(thread_id.x);
+	idealVelocity += build_forcefields_impulse(new_swarmer_state.position);
 
-	idealVelocity += build_flocking_impulse(thread_id.x);
+	idealVelocity += build_flocking_impulse(thread_id.x, new_swarmer_state.position);
 
-	u_inout_swarmers[thread_id.x].velocity = 
+	new_swarmer_state.velocity = 
 		lerp(
-			u_inout_swarmers[thread_id.x].velocity,
+			new_swarmer_state.velocity,
 			idealVelocity,
 			saturate(u_delta_time * k_ideal_velocity_blending_rate));
 	
-	u_inout_swarmers[thread_id.x].position += 
-		(u_delta_time * u_inout_swarmers[thread_id.x].velocity);
+	new_swarmer_state.position += 
+		(u_delta_time * new_swarmer_state.velocity);
 	
-	u_inout_swarmers[thread_id.x].local_up = float3(0.0f, 1.0f, 0.0f); // TODO: Animate this as the boid turns left/right.
+	new_swarmer_state.local_up = float3(0.0f, 1.0f, 0.0f); // TODO: Animate this as the boid turns left/right.
 
-	u_inout_swarmers[thread_id.x].cached_model_to_swarm_matrix =
+	new_swarmer_state.cached_model_to_swarm_matrix =
 		build_swarmer_model_to_swarm_matrix(
-			u_inout_swarmers[thread_id.x].position,
-			u_inout_swarmers[thread_id.x].velocity,
-			u_inout_swarmers[thread_id.x].local_up,
+			new_swarmer_state.position,
+			new_swarmer_state.velocity,
+			new_swarmer_state.local_up,
 			k_swarmer_model_scale);
+	
+	u_out_next_swarmers[thread_id.x] = new_swarmer_state;
 }

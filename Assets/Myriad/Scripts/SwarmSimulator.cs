@@ -70,6 +70,13 @@ public class SwarmSimulator : MonoBehaviour
 			
 			SwarmComputeShader.SetFloat("u_delta_time", localDeltaTime);
 
+			swarmerStateComputeBuffers.SwapBuffersAndBindToShaderKernal(
+				SwarmComputeShader,
+				computeKernalIndex,
+				"u_readable_swarmers",
+				"u_out_next_swarmers",
+				"u_swarmer_count");
+
 			// Queue the request to permute the entire swarmers-buffer.
 			{
 				uint threadGroupSizeX, threadGroupSizeY, threadGroupSizeZ;
@@ -82,7 +89,7 @@ public class SwarmSimulator : MonoBehaviour
 				int threadsPerGroup = (int)(threadGroupSizeX * threadGroupSizeY * threadGroupSizeZ);
 
 				int totalThreadGroupCount = 
-					((swarmersComputeBuffer.count + (threadsPerGroup - 1)) / threadsPerGroup);
+					((swarmerStateComputeBuffers.ElementCount + (threadsPerGroup - 1)) / threadsPerGroup);
 
 				SwarmComputeShader.Dispatch(
 					computeKernalIndex, 
@@ -95,7 +102,7 @@ public class SwarmSimulator : MonoBehaviour
 			lastRenderedDateTime = currentTime;
 		}
 
-		return swarmersComputeBuffer;
+		return swarmerStateComputeBuffers.CurrentComputeBuffer;
 	}
 
 	private const int ForcefieldsComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
@@ -103,7 +110,7 @@ public class SwarmSimulator : MonoBehaviour
 	private SwarmForcefieldCollector forcefieldCollector = null;
 
 	private Queue<ComputeBuffer> forcefieldsComputeBufferQueue = null;
-	private ComputeBuffer swarmersComputeBuffer = null;
+	private DoubleBufferedSimulationStorage<SwarmShaderSwarmerState> swarmerStateComputeBuffers = null;
 
 	private int computeKernalIndex = -1;
 
@@ -170,7 +177,7 @@ public class SwarmSimulator : MonoBehaviour
 				// NOTE: There's no need to immediately initialize the buffers, since they will be populated per-frame.
 			}
 
-			if (swarmersComputeBuffer == null)
+			if (swarmerStateComputeBuffers == null)
 			{
 				var initialSwarmers = new List<SwarmShaderSwarmerState>(SwarmerCount);
 				
@@ -184,28 +191,15 @@ public class SwarmSimulator : MonoBehaviour
 					});
 				}
 
-				swarmersComputeBuffer =
-					new ComputeBuffer(
-						initialSwarmers.Count, 
-						Marshal.SizeOf(initialSwarmers.GetType().GetGenericArguments()[0]));
+				swarmerStateComputeBuffers = new DoubleBufferedSimulationStorage<SwarmShaderSwarmerState>();
 				
-				swarmersComputeBuffer.SetData(initialSwarmers.ToArray());
-
-				SwarmComputeShader.SetBuffer(
-					computeKernalIndex,
-					"u_inout_swarmers",
-					swarmersComputeBuffer);
-
-				// NOTE: The shader is able to query this value, but by using this method we can
-				// opt to dynamically vary the number of simulated swarmers.
-				SwarmComputeShader.SetInt(
-					"u_swarmer_count", 
-					swarmersComputeBuffer.count);
+				swarmerStateComputeBuffers.TryAllocateComputeBuffers(initialSwarmers.ToArray());
 			}
 			
 			if ((computeKernalIndex != -1) &&
 				(forcefieldsComputeBufferQueue != null) &&
-				(swarmersComputeBuffer != null))
+				(swarmerStateComputeBuffers != null) &&
+				swarmerStateComputeBuffers.IsInitialized)
 			{
 				result = true;
 			}
@@ -223,7 +217,7 @@ public class SwarmSimulator : MonoBehaviour
 	{
 		bool result = false;
 
-		if (swarmersComputeBuffer != null)
+		if (swarmerStateComputeBuffers != null)
 		{
 			// Release all of the forcefield compute buffers.
 			{
@@ -235,10 +229,10 @@ public class SwarmSimulator : MonoBehaviour
 				forcefieldsComputeBufferQueue = null;
 			}
 
-			swarmersComputeBuffer.Release();
-			swarmersComputeBuffer = null;
-
-			result = true;
+			if (swarmerStateComputeBuffers.TryReleaseBuffers())
+			{
+				result = true;
+			}
 		}
 
 		if (DebugEnabled)
