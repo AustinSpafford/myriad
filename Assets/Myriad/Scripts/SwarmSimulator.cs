@@ -110,7 +110,7 @@ public class SwarmSimulator : MonoBehaviour
 	private SwarmForcefieldCollector forcefieldCollector = null;
 
 	private Queue<ComputeBuffer> forcefieldsComputeBufferQueue = null;
-	private DoubleBufferedSimulationStorage<SwarmShaderSwarmerState> swarmerStateComputeBuffers = null;
+	private PingPongComputeBuffers<SwarmShaderSwarmerState> swarmerStateComputeBuffers = null;
 
 	private int computeKernalIndex = -1;
 
@@ -191,7 +191,7 @@ public class SwarmSimulator : MonoBehaviour
 					});
 				}
 
-				swarmerStateComputeBuffers = new DoubleBufferedSimulationStorage<SwarmShaderSwarmerState>();
+				swarmerStateComputeBuffers = new PingPongComputeBuffers<SwarmShaderSwarmerState>();
 				
 				swarmerStateComputeBuffers.TryAllocateComputeBuffers(initialSwarmers.ToArray());
 			}

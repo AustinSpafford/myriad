@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-public class DoubleBufferedSimulationStorage<ElementType>
+public class PingPongComputeBuffers<ElementType>
 {	
 	public ComputeBuffer CurrentComputeBuffer { get; private set; }
 	public ComputeBuffer PreviousComputeBuffer { get; private set; }
