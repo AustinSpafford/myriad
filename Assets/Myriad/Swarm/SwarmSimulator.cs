@@ -16,6 +16,8 @@ public class SwarmSimulator : MonoBehaviour
 
 	public float SwarmerNeighborhoodRadius = 0.25f;
 
+	public float LocalTimeScale = 1.0f;
+
 	public ComputeShader SwarmComputeShader;
 
 	public bool DebugEnabled = false;
@@ -52,7 +54,9 @@ public class SwarmSimulator : MonoBehaviour
 #endif
 
 			// The editor doesn't alter the timescale for us when the sim is paused, so we need to do it ourselves.
-			float timeScale = (applicationIsPaused ? 0.0f : Time.timeScale);
+			float timeScale = (
+				LocalTimeScale * 
+				(applicationIsPaused ? 0.0f : Time.timeScale));
 
 			// Step ourselves based on the *graphics* framerate (since we're part of the rendering pipeline),
 			// but make sure to avoid giant steps whenever rendering is paused.
