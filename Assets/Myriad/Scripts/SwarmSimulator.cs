@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -62,7 +61,7 @@ public class SwarmSimulator : MonoBehaviour
 					(float)(timeScale * (currentTime - lastRenderedDateTime).TotalSeconds),
 					Time.maximumDeltaTime);
 
-			ComputeBuffer forcefieldsComputeBuffer;
+			TypedComputeBuffer<SwarmShaderForcefieldState> forcefieldsComputeBuffer;
 			int activeForcefieldCount;
 			BuildForcefieldsBuffer(
 				out forcefieldsComputeBuffer,
@@ -125,7 +124,7 @@ public class SwarmSimulator : MonoBehaviour
 	private DateTime lastRenderedDateTime = DateTime.UtcNow;
 
 	private void BuildForcefieldsBuffer(
-		out ComputeBuffer outPooledForcefieldsComputeBuffer,
+		out TypedComputeBuffer<SwarmShaderForcefieldState> outPooledForcefieldsComputeBuffer,
 		out int outActiveForcefieldCount)
 	{
 		// Grab the oldest buffer off the queue, and move it back to mark it as the most recently touched buffer.
@@ -225,7 +224,7 @@ public class SwarmSimulator : MonoBehaviour
 		{
 			// Release all of the forcefield compute buffers.
 			{
-				foreach (ComputeBuffer forcefieldsComputeBuffer in forcefieldsComputeBufferQueue)
+				foreach (var forcefieldsComputeBuffer in forcefieldsComputeBufferQueue)
 				{
 					forcefieldsComputeBuffer.Release();
 				}

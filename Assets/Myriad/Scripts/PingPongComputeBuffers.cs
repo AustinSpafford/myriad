@@ -2,12 +2,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 public class PingPongComputeBuffers<ElementType>
 {	
-	public ComputeBuffer CurrentComputeBuffer { get; private set; }
-	public ComputeBuffer PreviousComputeBuffer { get; private set; }
+	public TypedComputeBuffer<ElementType> CurrentComputeBuffer { get; private set; }
+	public TypedComputeBuffer<ElementType> PreviousComputeBuffer { get; private set; }
 	
 	public int ElementCount
 	{
@@ -21,7 +20,7 @@ public class PingPongComputeBuffers<ElementType>
 	}
 
 	public bool TryAllocateComputeBuffers(
-		SwarmShaderSwarmerState[] initialElementValues)
+		ElementType[] initialElementValues)
 	{
 		bool result = false;
 
@@ -33,20 +32,14 @@ public class PingPongComputeBuffers<ElementType>
 		{
 			if (CurrentComputeBuffer == null)
 			{
-				CurrentComputeBuffer =
-					new ComputeBuffer(
-						initialElementValues.Length, 
-						Marshal.SizeOf(typeof(ElementType)));
+				CurrentComputeBuffer = new TypedComputeBuffer<ElementType>(initialElementValues.Length);
 				
 				CurrentComputeBuffer.SetData(initialElementValues);
 			}
 
 			if (PreviousComputeBuffer == null)
 			{
-				PreviousComputeBuffer =
-					new ComputeBuffer(
-						initialElementValues.Length, 
-						Marshal.SizeOf(typeof(ElementType)));
+				PreviousComputeBuffer = new TypedComputeBuffer<ElementType>(initialElementValues.Length);
 				
 				PreviousComputeBuffer.SetData(initialElementValues);
 			}
