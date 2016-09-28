@@ -1,10 +1,11 @@
 fileFormatVersion: 2
 guid: a024dbffd1481db45ab23fca5c099907
-timeCreated: 1473913369
+timeCreated: 1475099537
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - SwarmMaterial: {fileID: 2100000, guid: a1782f40afb523547a6dfc2d534650af, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

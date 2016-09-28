@@ -1,4 +1,4 @@
-// Contents: Any structures related to swarm-processing that would otherwise appear in multiple files.
+// Contents: Native versions of all marshalled structures for related shader.
 // NOTE: This file reflects SwarmShaderTypes.gc
 
 // Represents: ForcefieldTypeValues, which contains the documentation.

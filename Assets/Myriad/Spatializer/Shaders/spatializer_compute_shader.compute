@@ -1,0 +1,10 @@
+﻿// We must identify the kernal (entry-point) functions.
+#pragma kernel compute_shader_main
+
+#include "spatializer_shader_types.cginc"
+
+[numthreads(64, 1, 1)]
+void compute_shader_main(
+	uint3 thread_id : SV_DispatchThreadID)
+{
+}
