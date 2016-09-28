@@ -9,10 +9,13 @@ using UnityEditor;
 #endif // UNITY_EDITOR
 
 [RequireComponent(typeof(SwarmForcefieldCollector))]
+[RequireComponent(typeof(ParticleSpatializer))]
 public class SwarmSimulator : MonoBehaviour
 {
 	public int SwarmerCount = 1000;
 	public int MaxForcefieldCount = 16;
+
+	public float SwarmerNeighborhoodRadius = 0.25f;
 
 	public ComputeShader SwarmComputeShader;
 
@@ -33,7 +36,7 @@ public class SwarmSimulator : MonoBehaviour
 		TryReleaseBuffers();
 	}
 
-	public ComputeBuffer TryBuildSwarmersForRenderFrameIndex(
+	public TypedComputeBuffer<SwarmShaderSwarmerState> TryBuildSwarmersForRenderFrameIndex(
 		int frameIndex)
 	{
 		// If the swarm needs to be advanced to the requested frame.
@@ -67,6 +70,8 @@ public class SwarmSimulator : MonoBehaviour
 
 			SwarmComputeShader.SetBuffer(computeKernalIndex, "u_forcefields", forcefieldsComputeBuffer);
 			SwarmComputeShader.SetInt("u_forcefield_count", activeForcefieldCount);
+
+			SwarmComputeShader.SetFloat("u_neighborhood_radius", SwarmerNeighborhoodRadius);
 			
 			SwarmComputeShader.SetFloat("u_delta_time", localDeltaTime);
 
@@ -109,7 +114,7 @@ public class SwarmSimulator : MonoBehaviour
 	
 	private SwarmForcefieldCollector forcefieldCollector = null;
 
-	private Queue<ComputeBuffer> forcefieldsComputeBufferQueue = null;
+	private Queue<TypedComputeBuffer<SwarmShaderForcefieldState> > forcefieldsComputeBufferQueue = null;
 	private PingPongComputeBuffers<SwarmShaderSwarmerState> swarmerStateComputeBuffers = null;
 
 	private int computeKernalIndex = -1;
@@ -124,7 +129,7 @@ public class SwarmSimulator : MonoBehaviour
 		out int outActiveForcefieldCount)
 	{
 		// Grab the oldest buffer off the queue, and move it back to mark it as the most recently touched buffer.
-		ComputeBuffer targetComputeBuffer = forcefieldsComputeBufferQueue.Dequeue();
+		TypedComputeBuffer<SwarmShaderForcefieldState> targetComputeBuffer = forcefieldsComputeBufferQueue.Dequeue();
 		forcefieldsComputeBufferQueue.Enqueue(targetComputeBuffer);	
 
 		forcefieldCollector.CollectForcefields(
@@ -164,14 +169,13 @@ public class SwarmSimulator : MonoBehaviour
 
 			if (forcefieldsComputeBufferQueue == null)
 			{
-				forcefieldsComputeBufferQueue = new Queue<ComputeBuffer>(ForcefieldsComputeBufferCount);
+				forcefieldsComputeBufferQueue = 
+					new Queue<TypedComputeBuffer<SwarmShaderForcefieldState> >(ForcefieldsComputeBufferCount);
 
 				for (int index = 0; index < ForcefieldsComputeBufferCount; ++index)
 				{
 					forcefieldsComputeBufferQueue.Enqueue(
-						new ComputeBuffer(
-							MaxForcefieldCount, 
-							Marshal.SizeOf(typeof(SwarmShaderForcefieldState))));
+						new TypedComputeBuffer<SwarmShaderForcefieldState>(MaxForcefieldCount));
 				}
 
 				// NOTE: There's no need to immediately initialize the buffers, since they will be populated per-frame.

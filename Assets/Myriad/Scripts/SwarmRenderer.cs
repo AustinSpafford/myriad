@@ -31,7 +31,7 @@ public class SwarmRenderer : MonoBehaviour
 			swarmSimulator.isActiveAndEnabled &&
 			(SwarmMaterial != null))
 		{
-			ComputeBuffer swarmersComputeBuffer = 
+			TypedComputeBuffer<SwarmShaderSwarmerState> swarmersComputeBuffer = 
 				swarmSimulator.TryBuildSwarmersForRenderFrameIndex(
 					Time.renderedFrameCount);
 			
@@ -53,7 +53,7 @@ public class SwarmRenderer : MonoBehaviour
 
 	private SwarmSimulator swarmSimulator = null;
 	
-	private ComputeBuffer swarmerModelVerticesComputeBuffer = null;
+	private TypedComputeBuffer<SwarmShaderSwarmerModelVertex> swarmerModelVerticesComputeBuffer = null;
 
 	private static void AppendVertexToModel(
 		Vector3 position,
@@ -401,9 +401,7 @@ public class SwarmRenderer : MonoBehaviour
 				}
 
 				swarmerModelVerticesComputeBuffer =
-					new ComputeBuffer(
-						swarmerModelVertices.Count,
-						Marshal.SizeOf(swarmerModelVertices.GetType().GetGenericArguments()[0]));
+					new TypedComputeBuffer<SwarmShaderSwarmerModelVertex>(swarmerModelVertices.Count);
 				
 				swarmerModelVerticesComputeBuffer.SetData(swarmerModelVertices.ToArray());
 			}

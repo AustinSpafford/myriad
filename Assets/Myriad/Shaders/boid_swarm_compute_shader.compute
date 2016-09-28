@@ -11,6 +11,8 @@ uniform int u_swarmer_count;
 uniform StructuredBuffer<s_forcefield_state> u_forcefields;
 uniform int u_forcefield_count;
 
+uniform float u_neighborhood_radius;
+
 uniform float u_delta_time;
 
 static const float k_ideal_velocity_blending_rate = 10.0f;
@@ -18,8 +20,6 @@ static const float k_ideal_velocity_blending_rate = 10.0f;
 static const float k_swarmer_speed_min = 0.1f;
 static const float k_swarmer_speed_idle = 0.5f;
 static const float k_swarmer_speed_max = 1.0f;
-
-static const float k_neighborhood_radius = 0.3f;
 
 static const float k_neighbor_attraction_scalar = 0.1f;
 static const float k_neighbor_collision_avoidance_scalar = 10.0f;
@@ -117,9 +117,9 @@ float3 build_flocking_impulse(
 
 		float case_is_neighbor = (
 			(neighbor_index != (int)swarmer_index) * // Ignore comparisons against ourselves (without disrupting branching).
-			(distance < k_neighborhood_radius));
+			(distance < u_neighborhood_radius));
 
-		float distance_fraction = saturate(distance / k_neighborhood_radius);
+		float distance_fraction = saturate(distance / u_neighborhood_radius);
 		float proximity_fraction = (1.0f - distance_fraction);
 
 		neighbor_count += case_is_neighbor;
