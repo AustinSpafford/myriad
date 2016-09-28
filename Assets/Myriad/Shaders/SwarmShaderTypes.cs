@@ -61,6 +61,6 @@ struct SwarmShaderSwarmerModelVertex // Represents: s_swarmer_model_vertex.
 
 	public float LeftWingFraction;
 	public float RightWingFraction;
-};
+}
 
 #pragma warning restore 0169, 1635
