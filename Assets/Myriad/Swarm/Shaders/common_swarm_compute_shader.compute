@@ -1,0 +1,17 @@
+﻿// We must identify the kernel (entry-point) functions.
+#pragma kernel kernel_extract_swarmer_positions
+
+#include "swarm_shader_types.cginc"
+
+uniform StructuredBuffer<s_swarmer_state> u_readable_swarmers;
+uniform RWStructuredBuffer<float4> u_out_swarmer_positions;
+uniform int u_swarmer_count;
+
+[numthreads(128, 1, 1)]
+void kernel_extract_swarmer_positions(
+	uint3 thread_id : SV_DispatchThreadID)
+{
+	int swarmer_index = thread_id.x;
+
+	u_out_swarmer_positions[swarmer_index] = float4(u_readable_swarmers[thread_id.x].position, 1.0f);
+}

@@ -1,4 +1,4 @@
-﻿// We must identify the kernal (entry-point) functions.
+﻿// We must identify the kernel (entry-point) functions.
 #pragma kernel compute_shader_main
 
 #include "spatializer_shader_types.cginc"

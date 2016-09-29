@@ -1,5 +1,5 @@
-﻿// We must identify the kernal (entry-point) functions.
-#pragma kernel compute_shader_main
+﻿// We must identify the kernel (entry-point) functions.
+#pragma kernel kernel_advance_swarmer_states
 
 #include "swarm_shader_types.cginc"
 #include "swarm_shader_utilities.cginc"
@@ -147,36 +147,42 @@ float3 build_flocking_impulse(
 }
 
 [numthreads(64, 1, 1)]
-void compute_shader_main(
+void kernel_advance_swarmer_states(
 	uint3 thread_id : SV_DispatchThreadID)
 {
-	s_swarmer_state new_swarmer_state = u_readable_swarmers[thread_id.x];
+	int swarmer_index = thread_id.x;
 
-	// Default to idling forwards.
-	float3 idealVelocity = 
-		(k_swarmer_speed_idle * normalize(new_swarmer_state.velocity));
+	// NOTE: Odds are, the swarmer count is slightly above a multiple of the thread-group size.
+	if (swarmer_index < u_swarmer_count)
+	{
+		s_swarmer_state new_swarmer_state = u_readable_swarmers[swarmer_index];
 
-	idealVelocity += build_forcefields_impulse(new_swarmer_state.position);
+		// Default to idling forwards.
+		float3 idealVelocity =
+			(k_swarmer_speed_idle * normalize(new_swarmer_state.velocity));
 
-	idealVelocity += build_flocking_impulse(thread_id.x, new_swarmer_state.position);
+		idealVelocity += build_forcefields_impulse(new_swarmer_state.position);
 
-	new_swarmer_state.velocity = 
-		lerp(
-			new_swarmer_state.velocity,
-			idealVelocity,
-			saturate(u_delta_time * k_ideal_velocity_blending_rate));
-	
-	new_swarmer_state.position += 
-		(u_delta_time * new_swarmer_state.velocity);
-	
-	new_swarmer_state.local_up = float3(0.0f, 1.0f, 0.0f); // TODO: Animate this as the boid turns left/right.
+		idealVelocity += build_flocking_impulse(swarmer_index, new_swarmer_state.position);
 
-	new_swarmer_state.cached_model_to_swarm_matrix =
-		build_swarmer_model_to_swarm_matrix(
-			new_swarmer_state.position,
-			new_swarmer_state.velocity,
-			new_swarmer_state.local_up,
-			k_swarmer_model_scale);
-	
-	u_out_next_swarmers[thread_id.x] = new_swarmer_state;
+		new_swarmer_state.velocity =
+			lerp(
+				new_swarmer_state.velocity,
+				idealVelocity,
+				saturate(u_delta_time * k_ideal_velocity_blending_rate));
+
+		new_swarmer_state.position +=
+			(u_delta_time * new_swarmer_state.velocity);
+
+		new_swarmer_state.local_up = float3(0.0f, 1.0f, 0.0f); // TODO: Animate this as the boid turns left/right.
+
+		new_swarmer_state.cached_model_to_swarm_matrix =
+			build_swarmer_model_to_swarm_matrix(
+				new_swarmer_state.position,
+				new_swarmer_state.velocity,
+				new_swarmer_state.local_up,
+				k_swarmer_model_scale);
+
+		u_out_next_swarmers[swarmer_index] = new_swarmer_state;
+	}
 }

@@ -5,32 +5,31 @@ public class ParticleSpatializer : MonoBehaviour
 {
 	public int CellsPerAxis = 128;
 
-	public bool SingleFrameDebugCapture = false;
-
 	public ComputeShader SpatializerComputeShader;
 
+	public bool DebugCaptureSingleFrame = false;
+
 	public void BuildNeighborhoodLookupBuffers(
-		TypedComputeBuffer<Vector3> particlePositionsBuffer,
+		TypedComputeBuffer<Vector4> particlePositionsBuffer,
 		float neighborhoodRadius,
 		int maximumNeighborsPerParticle,
 		ref TypedComputeBuffer<int> outParticleIndicesBuffer,
 		ref TypedComputeBuffer<SpatializerShaderNeighborhood> outPerParticleNeighborhoodsBuffer)
 	{
-		Vector3[] debugParticlePositions = null;
+		Vector4[] debugParticlePositions = null;
 
-		if (SingleFrameDebugCapture)
+		if (DebugCaptureSingleFrame)
 		{
 			debugParticlePositions = particlePositionsBuffer.DebugGetDataBlocking();
 		}
 
-		if (SingleFrameDebugCapture)
+		if (DebugCaptureSingleFrame)
 		{
-			SingleFrameDebugCapture = false;
+			DebugCaptureSingleFrame = false;
 			
 			Debug.LogFormat("particlePositions.Length = [{0}]", debugParticlePositions.Length);
-
-			Debug.Break();
-			Debug.Log("Finished debug-dumping the compute buffers. Surprised? Attach the unity debugger.");
+			
+			Debug.LogWarning("Finished debug-dumping the compute buffers. Surprised? Attach the unity debugger and breakpoint this line.");
 		}
 	}
 }
