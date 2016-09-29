@@ -7,7 +7,7 @@
 #define k_forcefield_type_sphere 2
 #define k_forcefield_type_thrust_capsule 3
 
-struct s_forcefield_state // Represents: SwarmShaderForcefieldState, which contains the documentation.
+struct s_forcefield_state // Represents: SwarmShaderForcefieldState, which contains any usage documentation.
 {
 	float4x4 simulation_to_forcefield_matrix;
 	float4x4 forcefield_to_simulation_matrix;
@@ -21,32 +21,32 @@ struct s_forcefield_state // Represents: SwarmShaderForcefieldState, which conta
 	float force_scalar;
 };
 
-struct s_swarmer_state // Represents: SwarmShaderSwarmerState, which contains the documentation.
+struct s_swarmer_state // Represents: SwarmShaderSwarmerState, which contains any usage documentation.
 {
 	float3 position;
 
-	float pad_0; // For aligning vectors to 16-byte boundaries.
+	float pad_0; // For aligning vectors to 16-byte cache-boundaries.
 
 	float3 velocity;
 
-	float pad_1; // For aligning vectors to 16-byte boundaries.
+	float pad_1; // For aligning vectors to 16-byte cache-boundaries.
 
 	float3 local_up;
 
-	float pad_2; // For aligning vectors to 16-byte boundaries.
+	float pad_2; // For aligning vectors to 16-byte cache-boundaries.
 
 	float4x4 cached_model_to_swarm_matrix;
 };
 
-struct s_swarmer_model_vertex // Represents: SwarmShaderSwarmerModelVertex, which contains the documentation.
+struct s_swarmer_model_vertex // Represents: SwarmShaderSwarmerModelVertex, which contains any usage documentation.
 {
 	float3 position;
 
-	float pad_0; // For aligning vectors to 16-byte boundaries.
+	float pad_0; // For aligning vectors to 16-byte cache-boundaries.
 
 	float3 normal;
 
-	float pad_1; // For aligning vectors to 16-byte boundaries.
+	float pad_1; // For aligning vectors to 16-byte cache-boundaries.
 
 	float4 albedo_color;
 	float4 glow_color;

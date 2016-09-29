@@ -22,7 +22,7 @@ public class SwarmRenderer : MonoBehaviour
 
 	public void OnDisable()
 	{
-		TryReleaseBuffers();
+		ReleaseBuffers();
 	}
 
 	public void OnRenderObject()
@@ -410,6 +410,11 @@ public class SwarmRenderer : MonoBehaviour
 			{
 				result = true;
 			}
+			else
+			{
+				// Abort any partial-allocations.
+				ReleaseBuffers();
+			}
 		}
 
 		if (DebugEnabled)
@@ -420,23 +425,17 @@ public class SwarmRenderer : MonoBehaviour
 		return result;
 	}
 
-	private bool TryReleaseBuffers()
+	private void ReleaseBuffers()
 	{
-		bool result = false;
-
 		if (swarmerModelVerticesComputeBuffer != null)
 		{
 			swarmerModelVerticesComputeBuffer.Release();
 			swarmerModelVerticesComputeBuffer = null;
-
-			result = true;
 		}
 
 		if (DebugEnabled)
 		{
-			Debug.LogFormat("Compute buffer release attempted. [Success={0}]", result);
+			Debug.LogFormat("Compute buffers released.");
 		}
-
-		return result;
 	}
 }

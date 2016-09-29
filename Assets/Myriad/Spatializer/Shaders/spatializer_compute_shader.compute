@@ -1,10 +1,46 @@
 ﻿// We must identify the kernel (entry-point) functions.
-#pragma kernel compute_shader_main
+#pragma kernel kernel_build_unsorted_voxel_particle_pairs
 
 #include "spatializer_shader_types.cginc"
 
+uniform int u_particle_count;
+
+uniform int u_voxel_count;
+uniform int u_voxel_count_per_axis;
+uniform float u_voxel_size;
+
+uniform StructuredBuffer<s_particle_position> u_particle_positions;
+
+uniform StructuredBuffer<s_voxel_particle_pair> u_readable_sorted_voxel_particle_pairs;
+uniform RWStructuredBuffer<s_voxel_particle_pair> u_out_next_sorted_voxel_particle_pairs;
+
 [numthreads(64, 1, 1)]
-void compute_shader_main(
+void kernel_build_unsorted_voxel_particle_pairs(
 	uint3 thread_id : SV_DispatchThreadID)
 {
+	int particle_index = thread_id.x;
+	
+	// In the last thread group, if it's safe to access the buffers.
+	if (particle_index < u_particle_count)
+	{
+		u_out_next_sorted_voxel_particle_pairs[particle_index].voxel_index = 0; // TODO!
+		u_out_next_sorted_voxel_particle_pairs[particle_index].particle_index = particle_index;
+	}
 }
+
+/* SCRATCH
+Their buffers:
+[particle_count] { particle_position } 
+[particle_count] { particle_index } 
+[particle_count] { neighborhood } 
+
+Our buffers:
+[particle_count] { particle_index, voxel_index } 
+[voxel_count] { sorted_particle_index }
+
+Kernels:
+Import: positions -> { particle_index, voxel_index }
+Sort by voxel_index.
+Find each voxel's position in the particle indices.
+Export: particle indices, neighborhoods
+*/

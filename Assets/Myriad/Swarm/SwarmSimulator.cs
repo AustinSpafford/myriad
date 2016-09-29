@@ -30,6 +30,11 @@ public class SwarmSimulator : MonoBehaviour
 		forcefieldCollector = GetComponent<SwarmForcefieldCollector>();
 	}
 
+	public void Start()
+	{
+		particleSpatializer.SetMaxParticleCount(SwarmerCount);
+	}
+
 	public void OnEnable()
 	{
 		TryAllocateBuffers();
@@ -37,7 +42,7 @@ public class SwarmSimulator : MonoBehaviour
 
 	public void OnDisable()
 	{
-		TryReleaseBuffers();
+		ReleaseBuffers();
 	}
 
 	public TypedComputeBuffer<SwarmShaderSwarmerState> TryBuildSwarmersForRenderFrameIndex(
@@ -85,14 +90,14 @@ public class SwarmSimulator : MonoBehaviour
 	private SwarmForcefieldCollector forcefieldCollector = null;
 
 	private Queue<TypedComputeBuffer<SwarmShaderForcefieldState> > forcefieldsComputeBufferQueue = null;
-	private PingPongComputeBuffers<SwarmShaderSwarmerState> swarmerStateComputeBuffers = null;
+	private PingPongComputeBuffers<SwarmShaderSwarmerState> swarmerStateComputeBuffers = new PingPongComputeBuffers<SwarmShaderSwarmerState>();
 	
 	private TypedComputeBuffer<SpatializerShaderNeighborhood> spatializationNeighborhoodsComputeBuffer = null;
-	private TypedComputeBuffer<int> spatializationSwarmerIndexComputeBuffer = null;
-	private TypedComputeBuffer<Vector4> spatializationSwarmerPositionComputeBuffer = null;
+	private TypedComputeBuffer<SpatializerShaderParticleIndex> spatializationSwarmerIndexComputeBuffer = null;
+	private TypedComputeBuffer<SpatializerShaderParticlePosition> spatializationSwarmerPositionComputeBuffer = null;
 
 	private int advanceSwarmersKernel = -1;
-	private int extractSwarmerPositionsKernel = -1;
+	private int kernelForExtractSwarmerPositions = -1;
 
 	private List<SwarmShaderForcefieldState> scratchForcefieldStateList = new List<SwarmShaderForcefieldState>();
 
@@ -101,35 +106,33 @@ public class SwarmSimulator : MonoBehaviour
 
 	private void SpatializeSwarmers()
 	{
-		// Extract the swarmer positions.
+		// Extract the swarmer positions so the spatializer can stay generic.
 		{
+			CommonSwarmComputeShader.SetInt("u_swarmer_count", SwarmerCount);
+
 			CommonSwarmComputeShader.SetBuffer(
-				extractSwarmerPositionsKernel, 
+				kernelForExtractSwarmerPositions, 
 				"u_readable_swarmers", 
 				swarmerStateComputeBuffers.CurrentComputeBuffer);
 
 			CommonSwarmComputeShader.SetBuffer(
-				extractSwarmerPositionsKernel, 
+				kernelForExtractSwarmerPositions, 
 				"u_out_swarmer_positions", 
 				spatializationSwarmerPositionComputeBuffer);
-
-			int extractionCount = 
-				Math.Min(swarmerStateComputeBuffers.CurrentComputeBuffer.count, spatializationSwarmerPositionComputeBuffer.count);
-
-			CommonSwarmComputeShader.SetInt("u_swarmer_count", extractionCount);
 		
-			DispatchLinearComputeShader(
+			ComputeShaderHelpers.DispatchLinearComputeShader(
 				CommonSwarmComputeShader, 
-				extractSwarmerPositionsKernel, 
-				extractionCount);
+				kernelForExtractSwarmerPositions, 
+				SwarmerCount);
 		}
 
 		particleSpatializer.BuildNeighborhoodLookupBuffers(
+			SwarmerCount,
 			spatializationSwarmerPositionComputeBuffer,
 			SwarmerNeighborhoodRadius,
 			MaximumNeighborsPerSwarmer,
-			ref spatializationSwarmerIndexComputeBuffer,
-			ref spatializationNeighborhoodsComputeBuffer);
+			spatializationSwarmerIndexComputeBuffer,
+			spatializationNeighborhoodsComputeBuffer);
 	}
 
 	private void AdvanceSwarmers(
@@ -140,22 +143,24 @@ public class SwarmSimulator : MonoBehaviour
 		BuildForcefieldsBuffer(
 			out forcefieldsComputeBuffer,
 			out activeForcefieldCount);
-
-		BehaviorComputeShader.SetBuffer(advanceSwarmersKernel, "u_forcefields", forcefieldsComputeBuffer);
+		
 		BehaviorComputeShader.SetInt("u_forcefield_count", activeForcefieldCount);
 
-		BehaviorComputeShader.SetFloat("u_neighborhood_radius", SwarmerNeighborhoodRadius);
-			
-		BehaviorComputeShader.SetFloat("u_delta_time", localDeltaTime);
+		BehaviorComputeShader.SetBuffer(advanceSwarmersKernel, "u_forcefields", forcefieldsComputeBuffer);
+		
+		BehaviorComputeShader.SetInt("u_swarmer_count", SwarmerCount);
 
 		swarmerStateComputeBuffers.SwapBuffersAndBindToShaderKernel(
 			BehaviorComputeShader,
 			advanceSwarmersKernel,
 			"u_readable_swarmers",
-			"u_out_next_swarmers",
-			"u_swarmer_count");
+			"u_out_next_swarmers");
 
-		DispatchLinearComputeShader(
+		BehaviorComputeShader.SetFloat("u_neighborhood_radius", SwarmerNeighborhoodRadius);
+				
+		BehaviorComputeShader.SetFloat("u_delta_time", localDeltaTime);
+
+		ComputeShaderHelpers.DispatchLinearComputeShader(
 			BehaviorComputeShader, 
 			advanceSwarmersKernel, 
 			swarmerStateComputeBuffers.ElementCount);
@@ -205,7 +210,7 @@ public class SwarmSimulator : MonoBehaviour
 			advanceSwarmersKernel = 
 				BehaviorComputeShader.FindKernel("kernel_advance_swarmer_states");
 
-			extractSwarmerPositionsKernel = 
+			kernelForExtractSwarmerPositions = 
 				CommonSwarmComputeShader.FindKernel("kernel_extract_swarmer_positions");
 
 			if (forcefieldsComputeBufferQueue == null)
@@ -222,7 +227,7 @@ public class SwarmSimulator : MonoBehaviour
 				// NOTE: There's no need to immediately initialize the buffers, since they will be populated per-frame.
 			}
 
-			if (swarmerStateComputeBuffers == null)
+			if (swarmerStateComputeBuffers.IsInitialized == false)
 			{
 				var initialSwarmers = new List<SwarmShaderSwarmerState>(SwarmerCount);
 				
@@ -235,37 +240,42 @@ public class SwarmSimulator : MonoBehaviour
 						LocalUp = UnityEngine.Random.onUnitSphere,
 					});
 				}
-
-				swarmerStateComputeBuffers = new PingPongComputeBuffers<SwarmShaderSwarmerState>();
 				
-				swarmerStateComputeBuffers.TryAllocateComputeBuffers(initialSwarmers.ToArray());
+				swarmerStateComputeBuffers.TryAllocateComputeBuffersWithValues(initialSwarmers.ToArray());
 			}
 
 			if (spatializationNeighborhoodsComputeBuffer == null)
 			{
-				spatializationNeighborhoodsComputeBuffer = new TypedComputeBuffer<SpatializerShaderNeighborhood>(SwarmerCount);
+				spatializationNeighborhoodsComputeBuffer = 
+					new TypedComputeBuffer<SpatializerShaderNeighborhood>(SwarmerCount);
 			}
 			
 			if (spatializationSwarmerIndexComputeBuffer == null)
 			{
-				spatializationSwarmerIndexComputeBuffer = new TypedComputeBuffer<int>(SwarmerCount);
+				spatializationSwarmerIndexComputeBuffer = 
+					new TypedComputeBuffer<SpatializerShaderParticleIndex>(SwarmerCount);
 			}
 
 			if (spatializationSwarmerPositionComputeBuffer == null)
 			{
-				spatializationSwarmerPositionComputeBuffer = new TypedComputeBuffer<Vector4>(SwarmerCount);
+				spatializationSwarmerPositionComputeBuffer = 
+					new TypedComputeBuffer<SpatializerShaderParticlePosition>(SwarmerCount);
 			}
 			
 			if ((advanceSwarmersKernel != -1) &&
-				(extractSwarmerPositionsKernel != -1) &&
+				(kernelForExtractSwarmerPositions != -1) &&
 				(forcefieldsComputeBufferQueue != null) &&
-				(swarmerStateComputeBuffers != null) &&
 				swarmerStateComputeBuffers.IsInitialized &&
 				(spatializationNeighborhoodsComputeBuffer != null) &&
 				(spatializationSwarmerIndexComputeBuffer != null) &&
 				(spatializationSwarmerPositionComputeBuffer != null))
 			{
 				result = true;
+			}
+			else
+			{
+				// Abort any partial-allocations.
+				ReleaseBuffers();
 			}
 		}
 
@@ -277,66 +287,42 @@ public class SwarmSimulator : MonoBehaviour
 		return result;
 	}
 
-	private bool TryReleaseBuffers()
+	private void ReleaseBuffers()
 	{
-		bool result = false;
-
-		if (swarmerStateComputeBuffers != null)
+		// Release all of the forcefield compute buffers.
+		if (forcefieldsComputeBufferQueue != null)
 		{
-			// Release all of the forcefield compute buffers.
+			foreach (var forcefieldsComputeBuffer in forcefieldsComputeBufferQueue)
 			{
-				foreach (var forcefieldsComputeBuffer in forcefieldsComputeBufferQueue)
-				{
-					forcefieldsComputeBuffer.Release();
-				}
-
-				forcefieldsComputeBufferQueue = null;
+				forcefieldsComputeBuffer.Release();
 			}
 
-			if (swarmerStateComputeBuffers.TryReleaseBuffers())
-			{
-				result = true;
-			}
+			forcefieldsComputeBufferQueue = null;
+		}
 
+		swarmerStateComputeBuffers.ReleaseBuffers();
+
+		if (spatializationNeighborhoodsComputeBuffer != null)
+		{
 			spatializationNeighborhoodsComputeBuffer.Release();
 			spatializationNeighborhoodsComputeBuffer = null;
+		}
 
+		if (spatializationSwarmerIndexComputeBuffer != null)
+		{
 			spatializationSwarmerIndexComputeBuffer.Release();
 			spatializationSwarmerIndexComputeBuffer = null;
+		}
 
+		if (spatializationSwarmerPositionComputeBuffer != null)
+		{
 			spatializationSwarmerPositionComputeBuffer.Release();
 			spatializationSwarmerPositionComputeBuffer = null;
 		}
 
 		if (DebugEnabled)
 		{
-			Debug.LogFormat("Compute buffer release attempted. [Success={0}]", result);
+			Debug.LogFormat("Compute buffers released.");
 		}
-
-		return result;
-	}
-
-	private static void DispatchLinearComputeShader(
-		ComputeShader computeShader,
-		int kernelIndex,
-		int threadCountX)
-	{
-		uint threadGroupSizeX, threadGroupSizeY, threadGroupSizeZ;
-		computeShader.GetKernelThreadGroupSizes(
-			kernelIndex, 
-			out threadGroupSizeX, 
-			out threadGroupSizeY, 
-			out threadGroupSizeZ);
-
-		int threadsPerGroup = (int)(threadGroupSizeX * threadGroupSizeY * threadGroupSizeZ);
-
-		int totalThreadGroupCount = 
-			((threadCountX + (threadsPerGroup - 1)) / threadsPerGroup);
-
-		computeShader.Dispatch(
-			kernelIndex, 
-			totalThreadGroupCount, // threadGroupsX
-			1, // threadGroupsY
-			1); // threadGroupsZ
 	}
 }

@@ -19,8 +19,8 @@ public class PingPongComputeBuffers<ElementType>
 		get { return ((CurrentComputeBuffer != null) && (PreviousComputeBuffer != null)); }
 	}
 
-	public bool TryAllocateComputeBuffers(
-		ElementType[] initialElementValues)
+	public bool TryAllocateComputeBuffersWithGarbage(
+		int elementCount)
 	{
 		bool result = false;
 
@@ -32,16 +32,12 @@ public class PingPongComputeBuffers<ElementType>
 		{
 			if (CurrentComputeBuffer == null)
 			{
-				CurrentComputeBuffer = new TypedComputeBuffer<ElementType>(initialElementValues.Length);
-				
-				CurrentComputeBuffer.SetData(initialElementValues);
+				CurrentComputeBuffer = new TypedComputeBuffer<ElementType>(elementCount);
 			}
 
 			if (PreviousComputeBuffer == null)
 			{
-				PreviousComputeBuffer = new TypedComputeBuffer<ElementType>(initialElementValues.Length);
-				
-				PreviousComputeBuffer.SetData(initialElementValues);
+				PreviousComputeBuffer = new TypedComputeBuffer<ElementType>(elementCount);
 			}
 			
 			if ((CurrentComputeBuffer != null) &&
@@ -54,17 +50,15 @@ public class PingPongComputeBuffers<ElementType>
 		return result;
 	}
 
-	public bool TryReleaseBuffers()
+	public bool TryAllocateComputeBuffersWithValues(
+		ElementType[] initialElementValues)
 	{
 		bool result = false;
 
-		if (CurrentComputeBuffer != null)
+		if (TryAllocateComputeBuffersWithGarbage(initialElementValues.Length))
 		{
-			CurrentComputeBuffer.Release();
-			CurrentComputeBuffer = null;
-			
-			PreviousComputeBuffer.Release();
-			PreviousComputeBuffer = null;
+			CurrentComputeBuffer.SetData(initialElementValues);
+			PreviousComputeBuffer.SetData(initialElementValues);
 
 			result = true;
 		}
@@ -72,12 +66,26 @@ public class PingPongComputeBuffers<ElementType>
 		return result;
 	}
 
+	public void ReleaseBuffers()
+	{
+		if (CurrentComputeBuffer != null)
+		{
+			CurrentComputeBuffer.Release();
+			CurrentComputeBuffer = null;
+		}
+			
+		if (PreviousComputeBuffer != null)
+		{
+			PreviousComputeBuffer.Release();
+			PreviousComputeBuffer = null;
+		}
+	}
+
 	public void SwapBuffersAndBindToShaderKernel(
 		ComputeShader targetShader,
 		int targetKernelIndex,
 		string inputBufferUniformName,
-		string outputBufferUniformName,
-		string elementCountUniformName)
+		string outputBufferUniformName)
 	{
 		// Swap the buffers, since when we're about to dispatch the last frame's "current" is this frame's "previous".
 		{
@@ -95,9 +103,5 @@ public class PingPongComputeBuffers<ElementType>
 			targetKernelIndex,
 			outputBufferUniformName,
 			CurrentComputeBuffer);
-		
-		targetShader.SetInt(
-			elementCountUniformName, 
-			ElementCount);
 	}
 }

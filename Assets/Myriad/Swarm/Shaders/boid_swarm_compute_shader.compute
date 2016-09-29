@@ -4,12 +4,12 @@
 #include "swarm_shader_types.cginc"
 #include "swarm_shader_utilities.cginc"
 
+uniform int u_swarmer_count;
 uniform StructuredBuffer<s_swarmer_state> u_readable_swarmers;
 uniform RWStructuredBuffer<s_swarmer_state> u_out_next_swarmers;
-uniform int u_swarmer_count;
 
-uniform StructuredBuffer<s_forcefield_state> u_forcefields;
 uniform int u_forcefield_count;
+uniform StructuredBuffer<s_forcefield_state> u_forcefields;
 
 uniform float u_neighborhood_radius;
 
@@ -152,7 +152,7 @@ void kernel_advance_swarmer_states(
 {
 	int swarmer_index = thread_id.x;
 
-	// NOTE: Odds are, the swarmer count is slightly above a multiple of the thread-group size.
+	// In the last thread group, if it's safe to access the buffers.
 	if (swarmer_index < u_swarmer_count)
 	{
 		s_swarmer_state new_swarmer_state = u_readable_swarmers[swarmer_index];
