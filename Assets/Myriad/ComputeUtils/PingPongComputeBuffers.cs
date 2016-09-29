@@ -72,9 +72,9 @@ public class PingPongComputeBuffers<ElementType>
 		return result;
 	}
 
-	public void SwapBuffersAndBindToShaderKernal(
+	public void SwapBuffersAndBindToShaderKernel(
 		ComputeShader targetShader,
-		int targetKernalIndex,
+		int targetKernelIndex,
 		string inputBufferUniformName,
 		string outputBufferUniformName,
 		string elementCountUniformName)
@@ -87,12 +87,12 @@ public class PingPongComputeBuffers<ElementType>
 		}
 
 		targetShader.SetBuffer(
-			targetKernalIndex,
+			targetKernelIndex,
 			inputBufferUniformName,
 			PreviousComputeBuffer);
 		
 		targetShader.SetBuffer(
-			targetKernalIndex,
+			targetKernelIndex,
 			outputBufferUniformName,
 			CurrentComputeBuffer);
 		
