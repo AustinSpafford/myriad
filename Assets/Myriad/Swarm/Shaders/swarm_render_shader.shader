@@ -34,7 +34,7 @@
 			struct s_rasterization_vertex
 			{
 				float4 position : SV_POSITION;
-				float4 normal : NORMAL;
+				float4 world_normal : NORMAL;
 				float4 albedo_color : COLOR0;
 				float2 texture_coord : TEXCOORD0;
 				UNITY_FOG_COORDS(1)
@@ -58,12 +58,14 @@
 				s_swarmer_model_vertex model_vertex = u_swarmer_model_vertices[vertex_index];
 				s_swarmer_state swarmer_state = u_swarmers[swarmer_index];
 
-				float4x4 model_to_perspective_matrix = 
-					mul(UNITY_MATRIX_VP, 
-					mul(u_swarm_to_world_matrix, swarmer_state.cached_model_to_swarm_matrix));
+				float4x4 model_to_world_matrix = 
+					mul(u_swarm_to_world_matrix, swarmer_state.cached_model_to_swarm_matrix);
+
+				float4x4 model_to_perspective_matrix =
+					mul(UNITY_MATRIX_VP, model_to_world_matrix);
 
 				result.position = mul(model_to_perspective_matrix, float4(model_vertex.position, 1.0f));
-				result.normal = mul(model_to_perspective_matrix, float4(model_vertex.normal, 0.0f));
+				result.world_normal = normalize(mul(model_to_world_matrix, float4(model_vertex.normal, 0.0f)));
 				result.albedo_color = model_vertex.albedo_color;
 				result.texture_coord = model_vertex.texture_coord;
 				
@@ -82,7 +84,7 @@
 					u_color);
 
 				// TODO: Better-than-debug lighting.
-				result *= saturate(dot(normalize(raster_state.normal), normalize(mul(UNITY_MATRIX_VP, float4(0, 1, 0, 0)))));
+				result *= saturate(dot(raster_state.world_normal, float4(0, 1, 0, 0)));
 				
 				UNITY_APPLY_FOG(raster_state.fogCoord, result);
 
