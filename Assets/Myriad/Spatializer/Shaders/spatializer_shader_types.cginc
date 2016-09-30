@@ -10,17 +10,18 @@ struct s_particle_position // Represents: SpatializerShaderParticlePosition, whi
 
 struct s_voxel_particle_pair // Represents: SpatializerShaderVoxelParticlePair, which contains any usage documentation.
 {
-	int voxel_index;
-	int particle_index;
+	uint voxel_index;
+	uint particle_index;
 };
 
-struct s_particle_index // Represents: SpatializerShaderParticleIndex, which contains any usage documentation.
+struct s_spatialization_voxel // Represents: SpatializerShaderSpatializationVoxel, which contains any usage documentation.
 {
-	int particle_index;
+	uint first_voxel_particle_pair_index;
 };
 
 struct s_neighborhood // Represents: SpatializerShaderNeighborhood, which contains any usage documentation.
 {
-	int4 particle_index_lookup_start_indices;
-	int4 particle_index_lookup_term_indices;
+	uint3 neighborhood_min_voxel_coord;
+	
+	uint pad_0; // For aligning vectors to 16-byte cache-boundaries.
 };

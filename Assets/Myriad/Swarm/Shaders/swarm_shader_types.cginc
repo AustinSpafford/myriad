@@ -12,7 +12,7 @@ struct s_forcefield_state // Represents: SwarmShaderForcefieldState, which conta
 	float4x4 simulation_to_forcefield_matrix;
 	float4x4 forcefield_to_simulation_matrix;
 
-	int forcefield_type; // Values: k_forcefield_type_*
+	uint forcefield_type; // Values: k_forcefield_type_*
 	float forcefield_length; // See interpretation-notes in ForcefieldTypeValues.
 
 	float falloff_inner_radius;

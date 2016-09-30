@@ -20,8 +20,8 @@ public struct SpatializerShaderParticlePosition // Represents: s_particle_positi
 
 public struct SpatializerShaderVoxelParticlePair // Represents: s_voxel_particle_pair
 {
-	public int VoxelIndex;
-	public int ParticleIndex;
+	public uint VoxelIndex;
+	public uint ParticleIndex;
 
 	public override string ToString()
 	{
@@ -29,42 +29,32 @@ public struct SpatializerShaderVoxelParticlePair // Represents: s_voxel_particle
 	}
 };
 
-public struct SpatializerShaderParticleIndex // Represents: s_particle_index
+public struct SpatializerShaderSpatializationVoxel // Represents: s_spatialization_voxel
 {
-	public int ParticleIndex;
+	public uint FirstVoxelParticlePairIndex;
 
 	public override string ToString()
 	{
-		return String.Format("p=[{1}]", ParticleIndex);
+		return String.Format("vpi=[{1}]", FirstVoxelParticlePairIndex);
 	}
 };
 
 public struct SpatializerShaderNeighborhood // Represents: s_neighborhood
 {
-	// NOTE: These become an int4 in native code (to permit subscript-indexing).
-	public int ParticleIndexLookupStartIndices_0;
-	public int ParticleIndexLookupStartIndices_1;
-	public int ParticleIndexLookupStartIndices_2;
-	public int ParticleIndexLookupStartIndices_3;
-
-	// NOTE: These become an int4 in native code (to permit subscript-indexing).
-	public int ParticleIndexLookupTermIndices_0;
-	public int ParticleIndexLookupTermIndices_1;
-	public int ParticleIndexLookupTermIndices_2;
-	public int ParticleIndexLookupTermIndices_3;
+	// NOTE: These become an int3 in native code (unity lacks integral-vector types).
+	public uint NeighborhoodMinVoxelCoord_0;
+	public uint NeighborhoodMinVoxelCoord_1;
+	public uint NeighborhoodMinVoxelCoord_2;
+	
+	private uint Pad0; // See native-representation for padding description.
 
 	public override string ToString()
 	{
 		return String.Format(
-			"[{0}..{1}), [{2}..{3}), [{4}..{5}), [{6}..{7})",
-			ParticleIndexLookupStartIndices_0,
-			ParticleIndexLookupTermIndices_0,
-			ParticleIndexLookupStartIndices_1,
-			ParticleIndexLookupTermIndices_1,
-			ParticleIndexLookupStartIndices_2,
-			ParticleIndexLookupTermIndices_2,
-			ParticleIndexLookupStartIndices_3,
-			ParticleIndexLookupTermIndices_3);
+			"({0}, {1}, {2})",
+			NeighborhoodMinVoxelCoord_0,
+			NeighborhoodMinVoxelCoord_1,
+			NeighborhoodMinVoxelCoord_2);
 	}
 }
 

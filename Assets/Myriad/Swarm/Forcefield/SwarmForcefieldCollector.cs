@@ -184,7 +184,7 @@ public class SwarmForcefieldCollector : MonoBehaviour, ISwarmForcefieldAppender
 			
 			forcefield.ForcefieldToSimulationMatrix = forcefield.SimulationToForcefieldMatrix.inverse;
 
-			forcefield.ForcefieldType = (int)forcefieldType;
+			forcefield.ForcefieldType = (uint)forcefieldType;
 			forcefield.ForcefieldLength = (worldForcefieldLength * worldToSimulationScale);
 
 			// NOTE: Radius-corrections due to the simulation's size has already been 

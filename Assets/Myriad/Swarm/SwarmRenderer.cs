@@ -31,29 +31,29 @@ public class SwarmRenderer : MonoBehaviour
 			swarmSimulator.isActiveAndEnabled &&
 			(SwarmMaterial != null))
 		{
-			TypedComputeBuffer<SwarmShaderSwarmerState> swarmersComputeBuffer = 
+			TypedComputeBuffer<SwarmShaderSwarmerState> swarmersBuffer = 
 				swarmSimulator.TryBuildSwarmersForRenderFrameIndex(
 					Time.renderedFrameCount);
 			
-			if ((swarmersComputeBuffer != null) &&
-				(swarmerModelVerticesComputeBuffer != null))
+			if ((swarmersBuffer != null) &&
+				(swarmerModelVerticesBuffer != null))
 			{
 				SwarmMaterial.SetPass(0);
-				SwarmMaterial.SetBuffer("u_swarmers", swarmersComputeBuffer);
-				SwarmMaterial.SetBuffer("u_swarmer_model_vertices", swarmerModelVerticesComputeBuffer);
+				SwarmMaterial.SetBuffer("u_swarmers", swarmersBuffer);
+				SwarmMaterial.SetBuffer("u_swarmer_model_vertices", swarmerModelVerticesBuffer);
 				SwarmMaterial.SetMatrix("u_swarm_to_world_matrix", transform.localToWorldMatrix);
 
 				Graphics.DrawProcedural(
 					MeshTopology.Triangles, 
-					swarmerModelVerticesComputeBuffer.count,
-					swarmersComputeBuffer.count);
+					swarmerModelVerticesBuffer.count,
+					swarmersBuffer.count);
 			}
 		}
 	}
 
 	private SwarmSimulator swarmSimulator = null;
 	
-	private TypedComputeBuffer<SwarmShaderSwarmerModelVertex> swarmerModelVerticesComputeBuffer = null;
+	private TypedComputeBuffer<SwarmShaderSwarmerModelVertex> swarmerModelVerticesBuffer = null;
 
 	private static void AppendVertexToModel(
 		Vector3 position,
@@ -341,7 +341,7 @@ public class SwarmRenderer : MonoBehaviour
 		}
 		else
 		{
-			if (swarmerModelVerticesComputeBuffer == null)
+			if (swarmerModelVerticesBuffer == null)
 			{
 				var swarmerModelVertices = new List<SwarmShaderSwarmerModelVertex>();
 
@@ -400,13 +400,13 @@ public class SwarmRenderer : MonoBehaviour
 						ref swarmerModelVertices);
 				}
 
-				swarmerModelVerticesComputeBuffer =
+				swarmerModelVerticesBuffer =
 					new TypedComputeBuffer<SwarmShaderSwarmerModelVertex>(swarmerModelVertices.Count);
 				
-				swarmerModelVerticesComputeBuffer.SetData(swarmerModelVertices.ToArray());
+				swarmerModelVerticesBuffer.SetData(swarmerModelVertices.ToArray());
 			}
 			
-			if (swarmerModelVerticesComputeBuffer != null)
+			if (swarmerModelVerticesBuffer != null)
 			{
 				result = true;
 			}
@@ -427,10 +427,10 @@ public class SwarmRenderer : MonoBehaviour
 
 	private void ReleaseBuffers()
 	{
-		if (swarmerModelVerticesComputeBuffer != null)
+		if (swarmerModelVerticesBuffer != null)
 		{
-			swarmerModelVerticesComputeBuffer.Release();
-			swarmerModelVerticesComputeBuffer = null;
+			swarmerModelVerticesBuffer.Release();
+			swarmerModelVerticesBuffer = null;
 		}
 
 		if (DebugEnabled)

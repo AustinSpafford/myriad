@@ -4,11 +4,11 @@
 #include "swarm_shader_types.cginc"
 #include "swarm_shader_utilities.cginc"
 
-uniform int u_swarmer_count;
+uniform uint u_swarmer_count;
 uniform StructuredBuffer<s_swarmer_state> u_readable_swarmers;
 uniform RWStructuredBuffer<s_swarmer_state> u_out_next_swarmers;
 
-uniform int u_forcefield_count;
+uniform uint u_forcefield_count;
 uniform StructuredBuffer<s_forcefield_state> u_forcefields;
 
 uniform float u_neighborhood_radius;
@@ -32,7 +32,7 @@ float3 build_forcefields_impulse(
 {
 	float3 result = (float3)0.0f;
 
-	for (int forcefield_index = 0; 
+	for (uint forcefield_index = 0; 
 		forcefield_index < u_forcefield_count; 
 		++forcefield_index)
 	{
@@ -97,7 +97,7 @@ float3 build_forcefields_impulse(
 }
 
 float3 build_flocking_impulse(
-	int swarmer_index,
+	uint swarmer_index,
 	float3 swarmer_position)
 {
 	float neighbor_count = 0.0001f;
@@ -106,7 +106,7 @@ float3 build_flocking_impulse(
 	float3 alignment_summation = (float3)0.0f;
 
 	// Factor in the other boids.
-	for (int neighbor_index = 0; neighbor_index < u_swarmer_count; ++neighbor_index)
+	for (uint neighbor_index = 0; neighbor_index < u_swarmer_count; ++neighbor_index)
 	{
 		float3 swarmer_to_neighbor =
 			(u_readable_swarmers[neighbor_index].position - swarmer_position);
@@ -116,7 +116,7 @@ float3 build_flocking_impulse(
 		float3 swarmer_to_neighbor_direction = (swarmer_to_neighbor / distance);
 
 		float case_is_neighbor = (
-			(neighbor_index != (int)swarmer_index) * // Ignore comparisons against ourselves (without disrupting branching).
+			(neighbor_index != swarmer_index) * // Ignore comparisons against ourselves (without disrupting branching).
 			(distance < u_neighborhood_radius));
 
 		float distance_fraction = saturate(distance / u_neighborhood_radius);
@@ -150,7 +150,7 @@ float3 build_flocking_impulse(
 void kernel_advance_swarmer_states(
 	uint3 thread_id : SV_DispatchThreadID)
 {
-	int swarmer_index = thread_id.x;
+	uint swarmer_index = thread_id.x;
 
 	// In the last thread group, if it's safe to access the buffers.
 	if (swarmer_index < u_swarmer_count)

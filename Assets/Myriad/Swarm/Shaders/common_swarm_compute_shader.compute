@@ -4,7 +4,7 @@
 #include "swarm_shader_types.cginc"
 #include "..\..\Spatializer\Shaders\spatializer_shader_types.cginc"
 
-uniform int u_swarmer_count;
+uniform uint u_swarmer_count;
 
 uniform StructuredBuffer<s_swarmer_state> u_readable_swarmers;
 uniform RWStructuredBuffer<s_particle_position> u_out_swarmer_positions;
@@ -13,7 +13,7 @@ uniform RWStructuredBuffer<s_particle_position> u_out_swarmer_positions;
 void kernel_extract_swarmer_positions(
 	uint3 thread_id : SV_DispatchThreadID)
 {
-	int swarmer_index = thread_id.x;
+	uint swarmer_index = thread_id.x;
 	
 	// In the last thread group, if it's safe to access the buffers.
 	if (swarmer_index < u_swarmer_count)

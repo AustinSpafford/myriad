@@ -3,10 +3,9 @@
 
 #include "spatializer_shader_types.cginc"
 
-uniform int u_particle_count;
+uniform uint u_particle_count;
 
-uniform int u_voxel_count;
-uniform int u_voxel_count_per_axis;
+uniform uint u_voxel_count_per_axis;
 uniform float u_voxel_size;
 
 uniform StructuredBuffer<s_particle_position> u_particle_positions;
@@ -14,33 +13,52 @@ uniform StructuredBuffer<s_particle_position> u_particle_positions;
 uniform StructuredBuffer<s_voxel_particle_pair> u_readable_sorted_voxel_particle_pairs;
 uniform RWStructuredBuffer<s_voxel_particle_pair> u_out_next_sorted_voxel_particle_pairs;
 
-[numthreads(64, 1, 1)]
+uniform RWStructuredBuffer<s_spatialization_voxel> u_out_spatialization_voxels;
+uniform RWStructuredBuffer<s_neighborhood> u_out_neighborhoods;
+
+[numthreads(128, 1, 1)]
 void kernel_build_unsorted_voxel_particle_pairs(
 	uint3 thread_id : SV_DispatchThreadID)
 {
-	int particle_index = thread_id.x;
+	uint particle_index = thread_id.x;
 	
 	// In the last thread group, if it's safe to access the buffers.
 	if (particle_index < u_particle_count)
 	{
-		u_out_next_sorted_voxel_particle_pairs[particle_index].voxel_index = 0; // TODO!
+		int3 raw_voxel_coordinate = (int3)floor(u_particle_positions[particle_index].position / u_voxel_size);
+
+		// Which wrapping of the voxel-grid are we in?
+		int3 meta_voxel_coordinate = (raw_voxel_coordinate / u_voxel_count_per_axis);
+
+		// Determine our position within the meta-voxel. Note that this is different than using truncation,
+		// because we want -1 and 1 to map to different values (to avoid excessive collisions around the origin).
+		uint3 wrapping_voxel_coordinate = (
+			raw_voxel_coordinate - 
+			(meta_voxel_coordinate * u_voxel_count_per_axis));
+
+		uint voxel_index = (
+			wrapping_voxel_coordinate.x +
+			(wrapping_voxel_coordinate.y * u_voxel_count_per_axis) +
+			(wrapping_voxel_coordinate.z * (u_voxel_count_per_axis * u_voxel_count_per_axis)));
+
+		u_out_next_sorted_voxel_particle_pairs[particle_index].voxel_index = voxel_index;
 		u_out_next_sorted_voxel_particle_pairs[particle_index].particle_index = particle_index;
+
+		// LIES!
+		u_out_neighborhoods[particle_index].neighborhood_min_voxel_coord = wrapping_voxel_coordinate;
 	}
 }
 
 /* SCRATCH
-Their buffers:
-[particle_count] { particle_position } 
-[particle_count] { particle_index } 
-[particle_count] { neighborhood } 
-
 Our buffers:
-[particle_count] { particle_index, voxel_index } 
+[particle_count] { particle_position } 
+[particle_count] { sort_key_voxel_index, particle_index }
 [voxel_count] { sorted_particle_index }
+[particle_count] { access_min_voxel_coord } 
 
 Kernels:
 Import: positions -> { particle_index, voxel_index }
 Sort by voxel_index.
 Find each voxel's position in the particle indices.
-Export: particle indices, neighborhoods
+Export: particle indices, voxels, min_voxel_coords.
 */

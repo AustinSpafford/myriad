@@ -18,7 +18,7 @@ public struct SwarmShaderForcefieldState // Represents: s_forcefield_state.
 	public Matrix4x4 SimulationToForcefieldMatrix;
 	public Matrix4x4 ForcefieldToSimulationMatrix;
 
-	public int ForcefieldType; // See ForcefieldTypeValues.
+	public uint ForcefieldType; // See ForcefieldTypeValues.
 	public float ForcefieldLength; // See interpretation-notes in ForcefieldTypeValues.
 
 	public float FalloffInnerRadius; // Full-effect within this radius.
