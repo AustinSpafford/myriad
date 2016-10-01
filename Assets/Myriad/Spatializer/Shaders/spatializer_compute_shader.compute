@@ -16,6 +16,31 @@ uniform RWStructuredBuffer<s_voxel_particle_pair> u_out_next_sorted_voxel_partic
 uniform RWStructuredBuffer<s_spatialization_voxel> u_out_spatialization_voxels;
 uniform RWStructuredBuffer<s_neighborhood> u_out_neighborhoods;
 
+uint3 wrap_voxel_coord(
+	int3 unbounded_voxel_coord)
+{
+	// Which wrapping of the voxel-grid are we in?
+	int3 macro_voxel_coordinate = (unbounded_voxel_coord / u_voxel_count_per_axis);
+
+	// Determine our position within the macro-voxel. 
+	// Note that this is different than using truncation, because we want -1 and 1 to map to
+	// different values (to avoid excessive collisions around the origin).
+	uint3 wrapped_voxel_coord = (
+		unbounded_voxel_coord - 
+		(macro_voxel_coordinate * u_voxel_count_per_axis));
+
+	return wrapped_voxel_coord;
+}
+
+uint get_voxel_index_from_voxel_coord(
+	uint3 wrapped_voxel_coord)
+{
+	return (
+		wrapped_voxel_coord.x +
+		(wrapped_voxel_coord.y * u_voxel_count_per_axis) +
+		(wrapped_voxel_coord.z * (u_voxel_count_per_axis * u_voxel_count_per_axis)));
+}
+
 [numthreads(128, 1, 1)]
 void kernel_build_unsorted_voxel_particle_pairs(
 	uint3 thread_id : SV_DispatchThreadID)
@@ -25,27 +50,43 @@ void kernel_build_unsorted_voxel_particle_pairs(
 	// In the last thread group, if it's safe to access the buffers.
 	if (particle_index < u_particle_count)
 	{
-		int3 raw_voxel_coordinate = (int3)floor(u_particle_positions[particle_index].position / u_voxel_size);
+		float3 position_in_voxel_space = (u_particle_positions[particle_index].position / u_voxel_size);
+
+		int3 unbounded_voxel_coord = (int3)floor(position_in_voxel_space);
 
 		// Which wrapping of the voxel-grid are we in?
-		int3 meta_voxel_coordinate = (raw_voxel_coordinate / u_voxel_count_per_axis);
+		int3 macro_voxel_coordinate = (unbounded_voxel_coord / u_voxel_count_per_axis);
 
 		// Determine our position within the meta-voxel. Note that this is different than using truncation,
 		// because we want -1 and 1 to map to different values (to avoid excessive collisions around the origin).
-		uint3 wrapping_voxel_coordinate = (
-			raw_voxel_coordinate - 
-			(meta_voxel_coordinate * u_voxel_count_per_axis));
+		uint3 wrapped_voxel_coord = (
+			unbounded_voxel_coord - 
+			(macro_voxel_coordinate * u_voxel_count_per_axis));
 
-		uint voxel_index = (
-			wrapping_voxel_coordinate.x +
-			(wrapping_voxel_coordinate.y * u_voxel_count_per_axis) +
-			(wrapping_voxel_coordinate.z * (u_voxel_count_per_axis * u_voxel_count_per_axis)));
+		float3 position_fraction = (position_in_voxel_space - unbounded_voxel_coord);
 
-		u_out_next_sorted_voxel_particle_pairs[particle_index].voxel_index = voxel_index;
-		u_out_next_sorted_voxel_particle_pairs[particle_index].particle_index = particle_index;
+		// Create an offset that's (-1, -1, -1) in the lowest-corner of each voxel, and (0, 0, 0) in
+		// the highest-corner. This allows us to specify each particle's
+		// neighborhood (which is a group of 8 adjacent voxels) by the coordinate of the lowest-corner voxel.
+		int3 offset_from_particle_voxel_to_neighborhood_min_voxel_coord = 
+			(int3)floor(position_fraction - 0.5f);
 
-		// LIES!
-		u_out_neighborhoods[particle_index].neighborhood_min_voxel_coord = wrapping_voxel_coordinate;
+		// Output results.
+		{
+			// NOTE: We're providing the initial particle-sorted pairings, which will
+			// soon become voxel-sorted so they're spatially-relevent.
+
+			u_out_next_sorted_voxel_particle_pairs[particle_index].voxel_index = 
+				get_voxel_index_from_voxel_coord(wrapped_voxel_coord);
+
+			u_out_next_sorted_voxel_particle_pairs[particle_index].particle_index = 
+				particle_index;
+
+			u_out_neighborhoods[particle_index].neighborhood_min_voxel_coord = 
+				wrap_voxel_coord(
+					wrapped_voxel_coord +
+					offset_from_particle_voxel_to_neighborhood_min_voxel_coord);
+		}
 	}
 }
 

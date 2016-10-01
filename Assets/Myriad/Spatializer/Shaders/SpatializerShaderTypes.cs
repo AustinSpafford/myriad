@@ -14,7 +14,7 @@ public struct SpatializerShaderParticlePosition // Represents: s_particle_positi
 
 	public override string ToString()
 	{
-		return Position.ToString();
+		return Position.ToString("n2");
 	}
 }
 
@@ -25,7 +25,7 @@ public struct SpatializerShaderVoxelParticlePair // Represents: s_voxel_particle
 
 	public override string ToString()
 	{
-		return String.Format("v=[{0}], p=[{1}]", VoxelIndex, ParticleIndex);
+		return String.Format("v=[{0}], p=[{1}]", (int)VoxelIndex, (int)ParticleIndex);
 	}
 };
 
@@ -35,7 +35,7 @@ public struct SpatializerShaderSpatializationVoxel // Represents: s_spatializati
 
 	public override string ToString()
 	{
-		return String.Format("vpi=[{1}]", FirstVoxelParticlePairIndex);
+		return String.Format("vpi=[{1}]", (int)FirstVoxelParticlePairIndex);
 	}
 };
 
@@ -52,9 +52,9 @@ public struct SpatializerShaderNeighborhood // Represents: s_neighborhood
 	{
 		return String.Format(
 			"({0}, {1}, {2})",
-			NeighborhoodMinVoxelCoord_0,
-			NeighborhoodMinVoxelCoord_1,
-			NeighborhoodMinVoxelCoord_2);
+			(int)NeighborhoodMinVoxelCoord_0,
+			(int)NeighborhoodMinVoxelCoord_1,
+			(int)NeighborhoodMinVoxelCoord_2);
 	}
 }
 

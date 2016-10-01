@@ -121,7 +121,7 @@ public class ParticleSpatializer : MonoBehaviour
 			
 #pragma warning disable 0168 // Warning that variable is assigned but never referenced (these variables are for inspection in the debugger).
 			var allPerParticleValues = 
-				ParticleBufferCombinedEnumeration.ZipParticleBuffers(
+				DebugParticleBufferCombinedEnumeration.ZipParticleBuffers(
 					debugParticlePositions,
 					debugUnsortedParticlePairs,
 					debugNeighborhoods).ToArray();
@@ -133,7 +133,7 @@ public class ParticleSpatializer : MonoBehaviour
 		return result;
 	}
 
-	private struct ParticleBufferCombinedEnumeration
+	private struct DebugParticleBufferCombinedEnumeration
 	{
 		public SpatializerShaderParticlePosition position;
 		public SpatializerShaderVoxelParticlePair voxelParticlePair;
@@ -142,13 +142,13 @@ public class ParticleSpatializer : MonoBehaviour
 		public override string ToString()
 		{
 			return String.Format(
-				"{0,-20}{1,-20}{2}",
+				"{0,-23}{1,-20}{2}",
 				position,
 				voxelParticlePair,
 				neighborhood);
 		}
 		
-		public static IEnumerable<ParticleBufferCombinedEnumeration> ZipParticleBuffers(
+		public static IEnumerable<DebugParticleBufferCombinedEnumeration> ZipParticleBuffers(
 			SpatializerShaderParticlePosition[] particlePositions,
 			SpatializerShaderVoxelParticlePair[] voxelParticlePairs,
 			SpatializerShaderNeighborhood[] neighborhoods)
@@ -161,7 +161,7 @@ public class ParticleSpatializer : MonoBehaviour
 					voxelParticlePairIterator.MoveNext() &&
 					neighborhoodsIterator.MoveNext())
 				{
-					yield return new ParticleBufferCombinedEnumeration()
+					yield return new DebugParticleBufferCombinedEnumeration()
 					{
 						position = particlePositionIterator.Current,
 						voxelParticlePair = voxelParticlePairIterator.Current,
