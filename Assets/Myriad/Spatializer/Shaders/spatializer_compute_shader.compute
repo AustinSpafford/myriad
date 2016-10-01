@@ -1,5 +1,6 @@
 ﻿// We must identify the kernel (entry-point) functions.
 #pragma kernel kernel_build_unsorted_voxel_particle_pairs
+#pragma kernel kernel_advance_sort_of_voxel_particle_pairs
 
 #include "spatializer_shader_types.cginc"
 
@@ -15,6 +16,10 @@ uniform RWStructuredBuffer<s_voxel_particle_pair> u_out_next_sorted_voxel_partic
 
 uniform RWStructuredBuffer<s_spatialization_voxel> u_out_spatialization_voxels;
 uniform RWStructuredBuffer<s_neighborhood> u_out_neighborhoods;
+
+uniform uint u_sort_comparison_group_sublist_size_power; // comparison_group_sublist_size = 2^power
+uniform uint u_sort_comparison_distance; // distance = 2^(comparison_group_sublist_size_power - 1)
+uniform uint u_sort_direction_alternation_sublist_size_power; // direction_alternation_sublist_size = 2^power
 
 uint3 wrap_voxel_coord(
 	int3 unbounded_voxel_coord)
@@ -88,18 +93,48 @@ void kernel_build_unsorted_voxel_particle_pairs(
 					offset_from_particle_voxel_to_neighborhood_min_voxel_coord);
 		}
 	}
+	else
+	{
+		// This voxel-particle pair needs to replaced with a dummy value that the sort
+		// algorithm (which only operates on powers of two) will place at the end of the buffer. That
+		// will keep all the sort-waste particles from mucking up the later spatialization stages.
+		// NOTE: We're assuming the threadGroup is already a small power of two, so there should be no thread-remainder.
+		u_out_next_sorted_voxel_particle_pairs[particle_index].voxel_index = ((uint)-1 >> 1); // Largest positive integer.
+		u_out_next_sorted_voxel_particle_pairs[particle_index].particle_index = ((uint)-1 >> 1); // Largest positive integer.
+	}
 }
 
-/* SCRATCH
-Our buffers:
-[particle_count] { particle_position } 
-[particle_count] { sort_key_voxel_index, particle_index }
-[voxel_count] { sorted_particle_index }
-[particle_count] { access_min_voxel_coord } 
+[numthreads(128, 1, 1)]
+void kernel_advance_sort_of_voxel_particle_pairs(
+	uint3 thread_id : SV_DispatchThreadID)
+{
+	// This function implements a single-step of: https://en.wikipedia.org/wiki/Bitonic_sorter
+	// NOTE: We're assuming the threadGroup is already a small power of two, so there should be no thread-remainder.
 
-Kernels:
-Import: positions -> { particle_index, voxel_index }
-Sort by voxel_index.
-Find each voxel's position in the particle indices.
-Export: particle indices, voxels, min_voxel_coords.
-*/
+	uint self_index = thread_id.x;
+
+	bool self_is_first_half_of_comparison = 
+		(((self_index >> (u_sort_comparison_group_sublist_size_power - 1)) & 1) == 0);
+
+	bool sublist_is_ascending = (((self_index >> u_sort_direction_alternation_sublist_size_power) & 1) == 0);
+
+	uint partner_index = (uint)(
+		self_index + 
+		(self_is_first_half_of_comparison ? (int)u_sort_comparison_distance : (-1 * (int)u_sort_comparison_distance)));
+
+	bool self_desires_lower_key = (sublist_is_ascending == self_is_first_half_of_comparison);
+
+	int self_to_partner_sort_key_difference = (
+		u_readable_sorted_voxel_particle_pairs[partner_index].voxel_index -
+		u_readable_sorted_voxel_particle_pairs[self_index].voxel_index);
+
+	bool self_has_desired_key = (
+		(self_to_partner_sort_key_difference == 0) ||
+		(self_desires_lower_key == (self_to_partner_sort_key_difference > 0)));
+
+	uint desired_value_index = (self_has_desired_key ? self_index : partner_index);
+
+	u_out_next_sorted_voxel_particle_pairs[self_index] = 
+		u_readable_sorted_voxel_particle_pairs[desired_value_index];
+}
+

@@ -32,7 +32,7 @@ public class SwarmSimulator : MonoBehaviour
 
 	public void Start()
 	{
-		particleSpatializer.SetMaxParticleCount(SwarmerCount);
+		particleSpatializer.SetDesiredMaxParticleCount(SwarmerCount);
 	}
 
 	public void OnEnable()

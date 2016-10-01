@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 public class ParticleSpatializer : MonoBehaviour
 {
@@ -23,6 +24,7 @@ public class ParticleSpatializer : MonoBehaviour
 	public bool DebugMessagesEnabled = false;
 	
 	public int MaxParticleCount { get; private set; }
+	public int WastedParticleCount { get; private set; }
 
 	public bool IsInitialized
 	{
@@ -31,6 +33,7 @@ public class ParticleSpatializer : MonoBehaviour
 			return (
 				(SpatializerComputeShader != null) &&
 				(kernelForBuildUnsortedVoxelParticlePairs != -1) &&
+				(kernelForAdvanceSortOfVoxelParticlePairs != -1) &&
 				(scratchParticlePositionsBuffer != null) &&
 				(neighborhoodsBuffer != null) &&
 				(spatializationVoxelsBuffer != null) &&
@@ -48,12 +51,16 @@ public class ParticleSpatializer : MonoBehaviour
 		ReleaseBuffers();
 	}
 
-	public void SetMaxParticleCount(
-		int maxParticleCount)
+	public void SetDesiredMaxParticleCount(
+		int desiredMaxParticleCount)
 	{
-		if (MaxParticleCount != maxParticleCount)
+		// The bitonic sort can only operate on dataset sizes that are powers of two, so the simplest
+		// workaround is to make sure we're allocating enough storage by rounding up to the next power.
+		int actualMaxParticleCount = CeilingToPowerOfTwo(desiredMaxParticleCount);
+
+		if (MaxParticleCount != actualMaxParticleCount)
 		{
-			MaxParticleCount = maxParticleCount;
+			MaxParticleCount = actualMaxParticleCount;
 
 			if (isActiveAndEnabled)
 			{
@@ -61,6 +68,8 @@ public class ParticleSpatializer : MonoBehaviour
 				TryAllocateBuffers();
 			}
 		}
+
+		WastedParticleCount = (actualMaxParticleCount - desiredMaxParticleCount);
 	}
 
 	public TypedComputeBuffer<SpatializerShaderParticlePosition> GetScratchParticlePositionsComputeBuffer(
@@ -85,6 +94,7 @@ public class ParticleSpatializer : MonoBehaviour
 #pragma warning disable 0219 // Warning that variable is assigned but never referenced (these variables are for inspection in the debugger).
 		SpatializerShaderParticlePosition[] debugParticlePositions = null;
 		SpatializerShaderVoxelParticlePair[] debugUnsortedParticlePairs = null;
+		List<SpatializerShaderVoxelParticlePair[]> debugVoxelParticlePairsPerSortStep = null;
 		SpatializerShaderNeighborhood[] debugNeighborhoods = null;
 #pragma warning restore 0219
 
@@ -93,15 +103,10 @@ public class ParticleSpatializer : MonoBehaviour
 			debugParticlePositions = particlePositionsBuffer.DebugGetDataBlocking();
 		}
 
-		SetFundamentalShaderUniforms(
-			particleCount, 
-			voxelSize);
-
 		BuildUnsortedVoxelParticlePairs(
 			particleCount, 
 			particlePositionsBuffer,
-			voxelParticlePairBuffers.CurrentComputeBuffer,
-			neighborhoodsBuffer);
+			voxelSize);
 
 		if (DebugCaptureSingleFrame)
 		{
@@ -109,7 +114,9 @@ public class ParticleSpatializer : MonoBehaviour
 			debugNeighborhoods = neighborhoodsBuffer.DebugGetDataBlocking();
 		}
 
-		// TODO: Sort by voxel_index.
+		SortVoxelParticlePairs(
+			particleCount,
+			out debugVoxelParticlePairsPerSortStep);
 
 		// TODO: Find each voxel's position in the particle indices.
 
@@ -125,6 +132,12 @@ public class ParticleSpatializer : MonoBehaviour
 					debugParticlePositions,
 					debugUnsortedParticlePairs,
 					debugNeighborhoods).ToArray();
+
+			var sortStepsDebug = DebugSortStepKeys(debugVoxelParticlePairsPerSortStep).ToArray();
+
+			Debug.Assert(DebugSortedVoxelParticlePairsAreValid(
+				particleCount, 
+				debugVoxelParticlePairsPerSortStep.LastOrDefault()));
 #pragma warning restore 0168
 			
 			Debug.LogWarning("Finished debug-dumping the compute buffers. Surprised? Attach the unity debugger and breakpoint this line.");
@@ -173,6 +186,7 @@ public class ParticleSpatializer : MonoBehaviour
 	}
 
 	private int kernelForBuildUnsortedVoxelParticlePairs = -1;
+	private int kernelForAdvanceSortOfVoxelParticlePairs = -1;
 
 	private TypedComputeBuffer<SpatializerShaderParticlePosition> scratchParticlePositionsBuffer = null;
 	private TypedComputeBuffer<SpatializerShaderNeighborhood> neighborhoodsBuffer = null;
@@ -199,6 +213,9 @@ public class ParticleSpatializer : MonoBehaviour
 		{
 			kernelForBuildUnsortedVoxelParticlePairs = 
 				SpatializerComputeShader.FindKernel("kernel_build_unsorted_voxel_particle_pairs");
+			
+			kernelForAdvanceSortOfVoxelParticlePairs = 
+				SpatializerComputeShader.FindKernel("kernel_advance_sort_of_voxel_particle_pairs");
 
 			if (scratchParticlePositionsBuffer == null)
 			{
@@ -267,22 +284,16 @@ public class ParticleSpatializer : MonoBehaviour
 		}
 	}
 
-	private void SetFundamentalShaderUniforms(
+	private void BuildUnsortedVoxelParticlePairs(
 		int particleCount,
+		TypedComputeBuffer<SpatializerShaderParticlePosition> particlePositionsBuffer,
 		float voxelSize)
 	{
 		SpatializerComputeShader.SetInt("u_particle_count", particleCount);
 
 		SpatializerComputeShader.SetInt("u_voxel_count_per_axis", VoxelsPerAxis);
 		SpatializerComputeShader.SetFloat("u_voxel_size", voxelSize);
-	}
 
-	private void BuildUnsortedVoxelParticlePairs(
-		int particleCount,
-		TypedComputeBuffer<SpatializerShaderParticlePosition> particlePositionsBuffer,
-		TypedComputeBuffer<SpatializerShaderVoxelParticlePair> outUnsortedVoxelParticlePairsBuffer,
-		TypedComputeBuffer<SpatializerShaderNeighborhood> outNeighborhoodsBuffer)
-	{
 		SpatializerComputeShader.SetBuffer(
 			kernelForBuildUnsortedVoxelParticlePairs, 
 			"u_particle_positions", 
@@ -291,17 +302,75 @@ public class ParticleSpatializer : MonoBehaviour
 		SpatializerComputeShader.SetBuffer(
 			kernelForBuildUnsortedVoxelParticlePairs, 
 			"u_out_next_sorted_voxel_particle_pairs", 
-			outUnsortedVoxelParticlePairsBuffer);
+			voxelParticlePairBuffers.CurrentComputeBuffer);
 
 		SpatializerComputeShader.SetBuffer(
 			kernelForBuildUnsortedVoxelParticlePairs, 
 			"u_out_neighborhoods", 
-			outNeighborhoodsBuffer);
-		
+			neighborhoodsBuffer);
+
+		// NOTE: We'll initialize all particles that the sort-algorithm is going to touch.
+		// Any exccess/waste particles will be initialized such that they sort to the end of the buffer.
+		int sortableParticleCount = CeilingToPowerOfTwo(particleCount);
+
 		ComputeShaderHelpers.DispatchLinearComputeShader(
 			SpatializerComputeShader, 
 			kernelForBuildUnsortedVoxelParticlePairs, 
-			particleCount);
+			sortableParticleCount);
+	}
+
+	private void SortVoxelParticlePairs(
+		int particleCount,
+		out List<SpatializerShaderVoxelParticlePair[]> outDebugParticlePairsPerSortStep)
+	{
+		// Algorithm reference: https://en.wikipedia.org/wiki/Bitonic_sorter
+
+		outDebugParticlePairsPerSortStep = 
+			DebugCaptureSingleFrame ?
+				new List<SpatializerShaderVoxelParticlePair[]>() :
+				null;
+
+		// For convenience, take a snapshot of the initial-conditions.
+		if (DebugCaptureSingleFrame)
+		{
+			outDebugParticlePairsPerSortStep.Add(
+				voxelParticlePairBuffers.CurrentComputeBuffer.DebugGetDataBlocking());
+		}
+
+		int sortableParticleCount = CeilingToPowerOfTwo(particleCount);
+
+		// Repeatedly merge sublists of increasing size until the merged-sublist is the size of the entire buffer.
+		for (int mergedSublistSizePower = 1;
+			(1 << mergedSublistSizePower) <= (Int64)sortableParticleCount;
+			++mergedSublistSizePower)
+		{
+			// To merge the sublists, start with large-scale comparison passes and refine down to comparing adjacent elements.
+			for (int comparisonSublistSizePower = mergedSublistSizePower;
+				comparisonSublistSizePower > 0;
+				--comparisonSublistSizePower)
+			{
+				SpatializerComputeShader.SetInt("u_sort_comparison_group_sublist_size_power", comparisonSublistSizePower);
+				SpatializerComputeShader.SetInt("u_sort_comparison_distance", (1 << (comparisonSublistSizePower - 1)));
+				SpatializerComputeShader.SetInt("u_sort_direction_alternation_sublist_size_power", mergedSublistSizePower);				
+
+				voxelParticlePairBuffers.SwapBuffersAndBindToShaderKernel(
+					SpatializerComputeShader,
+					kernelForAdvanceSortOfVoxelParticlePairs,
+					"u_readable_sorted_voxel_particle_pairs",
+					"u_out_next_sorted_voxel_particle_pairs");
+
+				ComputeShaderHelpers.DispatchLinearComputeShader(
+					SpatializerComputeShader, 
+					kernelForAdvanceSortOfVoxelParticlePairs, 
+					sortableParticleCount);
+
+				if (DebugCaptureSingleFrame)
+				{
+					outDebugParticlePairsPerSortStep.Add(
+						voxelParticlePairBuffers.CurrentComputeBuffer.DebugGetDataBlocking());
+				}
+			}
+		}
 	}
 
 	private void ValidateSufficientParticleCount(
@@ -314,5 +383,77 @@ public class ParticleSpatializer : MonoBehaviour
 				MaxParticleCount,
 				desiredParticleCount));
 		}
+	}
+
+	private static int CeilingToPowerOfTwo(
+		int value)
+	{
+		return (Mathf.IsPowerOfTwo(value) ? value : Mathf.NextPowerOfTwo(value));
+	}
+
+	private static IEnumerable<string> DebugSortStepKeys(
+		List<SpatializerShaderVoxelParticlePair[]> debugVoxelParticlePairsPerSortStep)
+	{
+		if (debugVoxelParticlePairsPerSortStep.Count > 0)
+		{
+			int particleCount = debugVoxelParticlePairsPerSortStep.First().Length;
+
+			var elementHistory = new StringBuilder();
+
+			for (int particleStorageIndex = 0;
+				particleStorageIndex < particleCount;
+				++particleStorageIndex)
+			{
+				elementHistory.Length = 0;
+
+				for (int sortStepIndex = 0;
+					sortStepIndex < debugVoxelParticlePairsPerSortStep.Count;
+					++sortStepIndex)
+				{
+					elementHistory.AppendFormat(
+						" {0,10}",
+						(int)debugVoxelParticlePairsPerSortStep[sortStepIndex][particleStorageIndex].ParticleIndex);
+				}
+
+				yield return elementHistory.ToString();
+			}
+		}
+	}
+
+	private static bool DebugSortedVoxelParticlePairsAreValid(
+		int particleCount,
+		SpatializerShaderVoxelParticlePair[] debugVoxelParticlePairs)
+	{
+		bool result = true;
+
+		// If any of the particle-indices were dropped (eg. stomped by a duplicate), error out.
+		{
+			var sortedParticleIndicesFromPairs = 
+				debugVoxelParticlePairs
+					.Select(element => element.ParticleIndex)
+					.OrderBy(element => element)
+					.Take(particleCount);
+
+			var expectedParticleIndices = 
+				Enumerable.Range(0, particleCount).Select(element => (uint)element);			
+			
+			if (sortedParticleIndicesFromPairs.SequenceEqual(expectedParticleIndices) == false)
+			{
+				result = false;
+			}
+		}
+
+		// If the voxels are not in ascending order, error out.
+		{
+			var expectedVoxelParticlePairs = 
+				debugVoxelParticlePairs.OrderBy(element => element.VoxelIndex);			
+
+			if (debugVoxelParticlePairs.SequenceEqual(expectedVoxelParticlePairs) == false)
+			{
+				result = false;
+			}
+		}
+
+		return result;
 	}
 }
