@@ -26,6 +26,8 @@ public class ParticleSpatializer : MonoBehaviour
 	public int MaxParticleCount { get; private set; }
 	public int WastedParticleCount { get; private set; }
 
+	public int TotalVoxelCount { get { return (VoxelsPerAxis * VoxelsPerAxis * VoxelsPerAxis); } }
+
 	public bool IsInitialized
 	{
 		get
@@ -94,8 +96,9 @@ public class ParticleSpatializer : MonoBehaviour
 #pragma warning disable 0219 // Warning that variable is assigned but never referenced (these variables are for inspection in the debugger).
 		SpatializerShaderParticlePosition[] debugParticlePositions = null;
 		SpatializerShaderVoxelParticlePair[] debugUnsortedParticlePairs = null;
-		List<SpatializerShaderVoxelParticlePair[]> debugVoxelParticlePairsPerSortStep = null;
 		SpatializerShaderNeighborhood[] debugNeighborhoods = null;
+		List<SpatializerShaderVoxelParticlePair[]> debugVoxelParticlePairsPerSortStep = null;
+		SpatializerShaderSpatializationVoxel[] debugSpatializationVoxels = null;
 #pragma warning restore 0219
 
 		if (DebugCaptureSingleFrame)
@@ -118,7 +121,12 @@ public class ParticleSpatializer : MonoBehaviour
 			particleCount,
 			out debugVoxelParticlePairsPerSortStep);
 
-		// TODO: Find each voxel's position in the particle indices.
+		BuildSpatializationVoxels(particleCount);
+
+		if (DebugCaptureSingleFrame)
+		{
+			debugSpatializationVoxels = spatializationVoxelsBuffer.DebugGetDataBlocking();
+		}
 
 		// TODO: Export: particle indices, neighborhoods
 
@@ -187,6 +195,7 @@ public class ParticleSpatializer : MonoBehaviour
 
 	private int kernelForBuildUnsortedVoxelParticlePairs = -1;
 	private int kernelForAdvanceSortOfVoxelParticlePairs = -1;
+	private int kernelForBuildSpatializationVoxels = -1;
 
 	private TypedComputeBuffer<SpatializerShaderParticlePosition> scratchParticlePositionsBuffer = null;
 	private TypedComputeBuffer<SpatializerShaderNeighborhood> neighborhoodsBuffer = null;
@@ -217,6 +226,9 @@ public class ParticleSpatializer : MonoBehaviour
 			kernelForAdvanceSortOfVoxelParticlePairs = 
 				SpatializerComputeShader.FindKernel("kernel_advance_sort_of_voxel_particle_pairs");
 
+			kernelForBuildSpatializationVoxels = 
+				SpatializerComputeShader.FindKernel("kernel_build_spatialization_voxels");
+
 			if (scratchParticlePositionsBuffer == null)
 			{
 				scratchParticlePositionsBuffer = 
@@ -232,7 +244,7 @@ public class ParticleSpatializer : MonoBehaviour
 			if (spatializationVoxelsBuffer == null)
 			{
 				spatializationVoxelsBuffer = 
-					new TypedComputeBuffer<SpatializerShaderSpatializationVoxel>(MaxParticleCount);
+					new TypedComputeBuffer<SpatializerShaderSpatializationVoxel>(TotalVoxelCount);
 			}
 
 			voxelParticlePairBuffers.TryAllocateComputeBuffersWithGarbage(MaxParticleCount);		
@@ -371,6 +383,28 @@ public class ParticleSpatializer : MonoBehaviour
 				}
 			}
 		}
+	}
+
+	private void BuildSpatializationVoxels(
+		int particleCount)
+	{
+		SpatializerComputeShader.SetInt("u_particle_count", particleCount);
+		SpatializerComputeShader.SetInt("u_total_voxel_count", TotalVoxelCount);		
+
+		SpatializerComputeShader.SetBuffer(
+			kernelForBuildSpatializationVoxels, 
+			"u_out_next_sorted_voxel_particle_pairs", 
+			voxelParticlePairBuffers.CurrentComputeBuffer);
+
+		SpatializerComputeShader.SetBuffer(
+			kernelForBuildSpatializationVoxels, 
+			"u_out_spatialization_voxels", 
+			spatializationVoxelsBuffer);
+
+		ComputeShaderHelpers.DispatchLinearComputeShader(
+			SpatializerComputeShader, 
+			kernelForBuildSpatializationVoxels, 
+			TotalVoxelCount);
 	}
 
 	private void ValidateSufficientParticleCount(

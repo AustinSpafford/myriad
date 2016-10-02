@@ -35,7 +35,7 @@ public struct SpatializerShaderSpatializationVoxel // Represents: s_spatializati
 
 	public override string ToString()
 	{
-		return String.Format("vpi=[{1}]", (int)FirstVoxelParticlePairIndex);
+		return String.Format("vpi=[{0}]", (int)FirstVoxelParticlePairIndex);
 	}
 };
 
