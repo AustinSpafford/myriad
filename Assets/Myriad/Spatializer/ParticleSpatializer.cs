@@ -412,7 +412,7 @@ public class ParticleSpatializer : MonoBehaviour
 				{
 					elementHistory.AppendFormat(
 						" {0,10}",
-						(int)debugVoxelParticlePairsPerSortStep[sortStepIndex][particleStorageIndex].ParticleIndex);
+						(int)debugVoxelParticlePairsPerSortStep[sortStepIndex][particleStorageIndex].VoxelIndex);
 				}
 
 				yield return elementHistory.ToString();

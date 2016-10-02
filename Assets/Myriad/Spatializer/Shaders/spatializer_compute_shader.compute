@@ -4,6 +4,8 @@
 
 #include "spatializer_shader_types.cginc"
 
+#define k_max_positive_integer (int)((uint)-1 >> 1)
+
 uniform uint u_particle_count;
 
 uniform uint u_voxel_count_per_axis;
@@ -96,11 +98,12 @@ void kernel_build_unsorted_voxel_particle_pairs(
 	else
 	{
 		// This voxel-particle pair needs to replaced with a dummy value that the sort
-		// algorithm (which only operates on powers of two) will place at the end of the buffer. That
-		// will keep all the sort-waste particles from mucking up the later spatialization stages.
-		// NOTE: We're assuming the threadGroup is already a small power of two, so there should be no thread-remainder.
-		u_out_next_sorted_voxel_particle_pairs[particle_index].voxel_index = ((uint)-1 >> 1); // Largest positive integer.
-		u_out_next_sorted_voxel_particle_pairs[particle_index].particle_index = ((uint)-1 >> 1); // Largest positive integer.
+		// algorithm (which only operates on powers of two) will place at the end of the buffer.
+		// That will keep all the sort-waste particles from mucking up the later spatialization stages.
+		// NOTE: We're assuming the threadGroup is already a small power of two for this step, so there shouldn't be any excess-threads.
+		u_out_next_sorted_voxel_particle_pairs[particle_index].voxel_index = k_max_positive_integer;
+		u_out_next_sorted_voxel_particle_pairs[particle_index].particle_index = k_max_positive_integer;
+		u_out_neighborhoods[particle_index].neighborhood_min_voxel_coord = k_max_positive_integer;
 	}
 }
 
@@ -109,7 +112,7 @@ void kernel_advance_sort_of_voxel_particle_pairs(
 	uint3 thread_id : SV_DispatchThreadID)
 {
 	// This function implements a single-step of: https://en.wikipedia.org/wiki/Bitonic_sorter
-	// NOTE: We're assuming the threadGroup is already a small power of two, so there should be no thread-remainder.
+	// NOTE: We're assuming the threadGroup is already a small power of two for this step, so there shouldn't be any excess-threads.
 
 	uint self_index = thread_id.x;
 
