@@ -15,6 +15,7 @@ public class SwarmSimulator : MonoBehaviour
 	public int MaxForcefieldCount = 16;
 
 	public float SwarmerNeighborhoodRadius = 0.25f;
+	public int MaxNeighborCount = 100;
 
 	public float LocalTimeScale = 1.0f;
 
@@ -174,6 +175,7 @@ public class SwarmSimulator : MonoBehaviour
 		// Bind behavior/advancement constants.
 		{
 			BehaviorComputeShader.SetFloat("u_neighborhood_radius", SwarmerNeighborhoodRadius);
+			BehaviorComputeShader.SetInt("u_max_neighbor_count", MaxNeighborCount);			
 				
 			BehaviorComputeShader.SetFloat("u_delta_time", localDeltaTime);
 		}

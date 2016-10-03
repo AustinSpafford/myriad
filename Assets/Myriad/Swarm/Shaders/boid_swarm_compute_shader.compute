@@ -19,6 +19,7 @@ uniform uint u_forcefield_count;
 uniform StructuredBuffer<s_forcefield_state> u_forcefields;
 
 uniform float u_neighborhood_radius;
+uniform uint u_max_neighbor_count;
 
 uniform float u_delta_time;
 
@@ -107,7 +108,7 @@ float3 build_flocking_impulse(
 	uint swarmer_index,
 	float3 swarmer_position)
 {
-	float neighbor_count = 0.0001f;
+	float neighbor_count = 0.0f;
 	float3 attraction_summation = (float3)0.0f;
 	float3 collision_avoidance_summation = (float3)0.0f;
 	float3 alignment_summation = (float3)0.0f;
@@ -118,9 +119,10 @@ float3 build_flocking_impulse(
 	int neighborhood_enumeration_index = 0;
 	uint neighborhood_voxel_index = (uint)-1;
 	uint candidate_voxel_particle_pair_index = u_swarmer_count; // Guaranteed to fail.
+	uint processed_candidate_count = 0;
 
 	// Until the enumeration internally-terminates, keep processing neighbors.
-	while (true)
+	while (processed_candidate_count < u_max_neighbor_count)
 	{
 		// While the candidate-particle fails to reside in the current voxel, advance the neighborhood-voxel enumeration.
 		// NOTE: There's internal-termination for when the entire enumeration process completes.
@@ -186,6 +188,7 @@ float3 build_flocking_impulse(
 
 		// Advance to the next candidate-particle.
 		++candidate_voxel_particle_pair_index;
+		++processed_candidate_count;
 	}
 
 	float3 flocking_summation = (
@@ -193,7 +196,7 @@ float3 build_flocking_impulse(
 		(k_neighbor_collision_avoidance_scalar * collision_avoidance_summation) +
 		(k_neighbor_alignment_scalar * alignment_summation));
 
-	return (flocking_summation / neighbor_count);
+	return (flocking_summation / max(neighbor_count, 1));
 }
 
 [numthreads(64, 1, 1)]
