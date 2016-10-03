@@ -3,10 +3,17 @@
 
 #include "swarm_shader_types.cginc"
 #include "swarm_shader_utilities.cginc"
+#include "..\..\Spatializer\Shaders\spatializer_shader_types.cginc"
+#include "..\..\Spatializer\Shaders\spatializer_shader_utilities.cginc"
 
 uniform uint u_swarmer_count;
 uniform StructuredBuffer<s_swarmer_state> u_readable_swarmers;
 uniform RWStructuredBuffer<s_swarmer_state> u_out_next_swarmers;
+
+uniform uint u_voxel_count_per_axis;
+uniform StructuredBuffer<s_voxel_particle_pair> u_spatialization_voxel_particle_pairs;
+uniform StructuredBuffer<s_spatialization_voxel> u_spatialization_voxels;
+uniform StructuredBuffer<s_neighborhood> u_spatialization_neighborhoods;
 
 uniform uint u_forcefield_count;
 uniform StructuredBuffer<s_forcefield_state> u_forcefields;
@@ -105,37 +112,80 @@ float3 build_flocking_impulse(
 	float3 collision_avoidance_summation = (float3)0.0f;
 	float3 alignment_summation = (float3)0.0f;
 
-	// Factor in the other boids.
-	for (uint neighbor_index = 0; neighbor_index < u_swarmer_count; ++neighbor_index)
+	uint3 neighborhood_min_voxel_coord = u_spatialization_neighborhoods[swarmer_index].neighborhood_min_voxel_coord;
+
+	// Start the neighborhood enumeration by forcing the first candidate to be a guaranteed-failure.
+	int neighborhood_enumeration_index = 0;
+	uint neighborhood_voxel_index = (uint)-1;
+	uint candidate_voxel_particle_pair_index = u_swarmer_count; // Guaranteed to fail.
+
+	// Until the enumeration internally-terminates, keep processing neighbors.
+	while (true)
 	{
-		float3 swarmer_to_neighbor =
-			(u_readable_swarmers[neighbor_index].position - swarmer_position);
+		// While the candidate-particle fails to reside in the current voxel, advance the neighborhood-voxel enumeration.
+		// NOTE: There's internal-termination for when the entire enumeration process completes.
+		while ((candidate_voxel_particle_pair_index >= u_swarmer_count) ||
+			(u_spatialization_voxel_particle_pairs[candidate_voxel_particle_pair_index].voxel_index != neighborhood_voxel_index))
+		{
+			neighborhood_voxel_index =
+				spatialization_get_neighborhood_enumeration_voxel_index(
+					neighborhood_min_voxel_coord,
+					u_voxel_count_per_axis,
+					/*inout*/ neighborhood_enumeration_index);
+			
+			// If the enumeration has completed, bail out.
+			if (neighborhood_enumeration_index == -1)
+			{
+				break;
+			}
 
-		float distance = max(0.001, length(swarmer_to_neighbor)); // Minimum-distance avoids a potential divide-by-zero.
+			candidate_voxel_particle_pair_index =
+				u_spatialization_voxels[neighborhood_voxel_index].first_voxel_particle_pair_index;
+		}
+		
+		// If the enumeration has completed, bail out.
+		if (neighborhood_enumeration_index == -1)
+		{
+			break;
+		}
 
-		float3 swarmer_to_neighbor_direction = (swarmer_to_neighbor / distance);
+		uint neighbor_index = 
+			u_spatialization_voxel_particle_pairs[candidate_voxel_particle_pair_index].particle_index;
+		
+		// Process the potential-neighbor.
+		{
+			float3 swarmer_to_neighbor =
+				(u_readable_swarmers[neighbor_index].position - swarmer_position);
 
-		float case_is_neighbor = (
-			(neighbor_index != swarmer_index) * // Ignore comparisons against ourselves (without disrupting branching).
-			(distance < u_neighborhood_radius));
+			float distance = max(0.001, length(swarmer_to_neighbor)); // Minimum-distance avoids a potential divide-by-zero.
 
-		float distance_fraction = saturate(distance / u_neighborhood_radius);
-		float proximity_fraction = (1.0f - distance_fraction);
+			float3 swarmer_to_neighbor_direction = (swarmer_to_neighbor / distance);
 
-		neighbor_count += case_is_neighbor;
+			float case_is_neighbor = (
+				(neighbor_index != swarmer_index) * // Ignore comparisons against ourselves (without disrupting branching).
+				(distance < u_neighborhood_radius));
 
-		attraction_summation += (
-			case_is_neighbor *
-			swarmer_to_neighbor_direction);
+			float distance_fraction = saturate(distance / u_neighborhood_radius);
+			float proximity_fraction = (1.0f - distance_fraction);
 
-		collision_avoidance_summation += (
-			case_is_neighbor *
-			(proximity_fraction * proximity_fraction) *
-			(-1 * swarmer_to_neighbor_direction));
+			neighbor_count += case_is_neighbor;
 
-		alignment_summation += (
-			case_is_neighbor *
-			u_readable_swarmers[neighbor_index].velocity);
+			attraction_summation += (
+				case_is_neighbor *
+				swarmer_to_neighbor_direction);
+
+			collision_avoidance_summation += (
+				case_is_neighbor *
+				(proximity_fraction * proximity_fraction) *
+				(-1 * swarmer_to_neighbor_direction));
+
+			alignment_summation += (
+				case_is_neighbor *
+				u_readable_swarmers[neighbor_index].velocity);
+		}
+
+		// Advance to the next candidate-particle.
+		++candidate_voxel_particle_pair_index;
 	}
 
 	float3 flocking_summation = (

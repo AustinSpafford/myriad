@@ -15,7 +15,6 @@ public class SwarmSimulator : MonoBehaviour
 	public int MaxForcefieldCount = 16;
 
 	public float SwarmerNeighborhoodRadius = 0.25f;
-	public int MaximumNeighborsPerSwarmer = 100;
 
 	public float LocalTimeScale = 1.0f;
 
@@ -139,27 +138,45 @@ public class SwarmSimulator : MonoBehaviour
 		float localDeltaTime,
 		ParticleSpatializer.NeighborhoodResults swarmerNeighborhoods)
 	{
-		TypedComputeBuffer<SwarmShaderForcefieldState> forcefieldsComputeBuffer;
-		int activeForcefieldCount;
-		BuildForcefieldsBuffer(
-			out forcefieldsComputeBuffer,
-			out activeForcefieldCount);
-		
-		BehaviorComputeShader.SetInt("u_forcefield_count", activeForcefieldCount);
+		// Bind the swarmers.
+		{
+			BehaviorComputeShader.SetInt("u_swarmer_count", SwarmerCount);
 
-		BehaviorComputeShader.SetBuffer(advanceSwarmersKernel, "u_forcefields", forcefieldsComputeBuffer);
-		
-		BehaviorComputeShader.SetInt("u_swarmer_count", SwarmerCount);
+			swarmerStateBuffers.SwapBuffersAndBindToShaderKernel(
+				BehaviorComputeShader,
+				advanceSwarmersKernel,
+				"u_readable_swarmers",
+				"u_out_next_swarmers");
+		}
 
-		swarmerStateBuffers.SwapBuffersAndBindToShaderKernel(
-			BehaviorComputeShader,
-			advanceSwarmersKernel,
-			"u_readable_swarmers",
-			"u_out_next_swarmers");
+		// Bind the spatialization results.
+		{
+			BehaviorComputeShader.SetInt("u_voxel_count_per_axis", particleSpatializer.VoxelsPerAxis);
 
-		BehaviorComputeShader.SetFloat("u_neighborhood_radius", SwarmerNeighborhoodRadius);
+			BehaviorComputeShader.SetBuffer(advanceSwarmersKernel, "u_spatialization_voxel_particle_pairs", swarmerNeighborhoods.VoxelParticlePairsBuffer);
+			BehaviorComputeShader.SetBuffer(advanceSwarmersKernel, "u_spatialization_voxels", swarmerNeighborhoods.SpatializationVoxelsBuffer);
+			BehaviorComputeShader.SetBuffer(advanceSwarmersKernel, "u_spatialization_neighborhoods", swarmerNeighborhoods.NeighborhoodsBuffer);
+		}
+
+		// Bind the forcefields.
+		{
+			TypedComputeBuffer<SwarmShaderForcefieldState> forcefieldsComputeBuffer;
+			int activeForcefieldCount;
+			BuildForcefieldsBuffer(
+				out forcefieldsComputeBuffer,
+				out activeForcefieldCount);
+
+			BehaviorComputeShader.SetInt("u_forcefield_count", activeForcefieldCount);
+
+			BehaviorComputeShader.SetBuffer(advanceSwarmersKernel, "u_forcefields", forcefieldsComputeBuffer);
+		}
+
+		// Bind behavior/advancement constants.
+		{
+			BehaviorComputeShader.SetFloat("u_neighborhood_radius", SwarmerNeighborhoodRadius);
 				
-		BehaviorComputeShader.SetFloat("u_delta_time", localDeltaTime);
+			BehaviorComputeShader.SetFloat("u_delta_time", localDeltaTime);
+		}
 
 		ComputeShaderHelpers.DispatchLinearComputeShader(
 			BehaviorComputeShader, 

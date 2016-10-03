@@ -87,8 +87,6 @@ public class ParticleSpatializer : MonoBehaviour
 		TypedComputeBuffer<SpatializerShaderParticlePosition> particlePositionsBuffer,
 		float neighborhoodRadius)
 	{
-		var result = new NeighborhoodResults();
-
 		ValidateSufficientParticleCount(particleCount);
 
 		float voxelSize = (2.0f * neighborhoodRadius);
@@ -162,6 +160,13 @@ public class ParticleSpatializer : MonoBehaviour
 			
 			Debug.LogWarning("Finished debug-dumping the compute buffers. Surprised? Attach the unity debugger and breakpoint this line.");
 		}
+		
+		var result = new NeighborhoodResults()
+		{
+			VoxelParticlePairsBuffer = voxelParticlePairBuffers.CurrentComputeBuffer,
+			SpatializationVoxelsBuffer = spatializationVoxelsBuffer,
+			NeighborhoodsBuffer = neighborhoodsBuffer,
+		};
 
 		return result;
 	}
