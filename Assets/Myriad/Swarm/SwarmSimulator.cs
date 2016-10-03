@@ -16,6 +16,18 @@ public class SwarmSimulator : MonoBehaviour
 
 	public float SwarmerNeighborhoodRadius = 0.25f;
 	public int MaxNeighborCount = 100;
+	
+	public float SwarmerSpeedMin = 0.1f;
+	public float SwarmerSpeedIdle = 0.5f;
+	public float SwarmerSpeedMax = 1.0f;
+	
+	public float IdealVelocityBlendingRate = 10.0f;
+
+	public float NeighborAttractionScalar = 0.1f;
+	public float NeighborCollisionAvoidanceScalar = 10.0f;
+	public float NeighborAlignmentScalar = 0.1f;
+
+	public float SwarmerModelScale = 0.04f;
 
 	public float LocalTimeScale = 1.0f;
 
@@ -175,8 +187,20 @@ public class SwarmSimulator : MonoBehaviour
 		// Bind behavior/advancement constants.
 		{
 			BehaviorComputeShader.SetFloat("u_neighborhood_radius", SwarmerNeighborhoodRadius);
-			BehaviorComputeShader.SetInt("u_max_neighbor_count", MaxNeighborCount);			
-				
+			BehaviorComputeShader.SetInt("u_max_neighbor_count", MaxNeighborCount);
+			
+			BehaviorComputeShader.SetFloat("u_swarmer_speed_min", SwarmerSpeedMin);
+			BehaviorComputeShader.SetFloat("u_swarmer_speed_idle", SwarmerSpeedIdle);
+			BehaviorComputeShader.SetFloat("u_swarmer_speed_max", SwarmerSpeedMax);
+			
+			BehaviorComputeShader.SetFloat("u_ideal_velocity_blending_rate", IdealVelocityBlendingRate);
+
+			BehaviorComputeShader.SetFloat("u_neighbor_attraction_scalar", NeighborAttractionScalar);
+			BehaviorComputeShader.SetFloat("u_neighbor_collision_avoidance_scalar", NeighborCollisionAvoidanceScalar);
+			BehaviorComputeShader.SetFloat("u_neighbor_alignment_scalar", NeighborAlignmentScalar);
+			
+			BehaviorComputeShader.SetFloat("u_swarmer_model_scale", SwarmerModelScale);
+							
 			BehaviorComputeShader.SetFloat("u_delta_time", localDeltaTime);
 		}
 

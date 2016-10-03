@@ -21,19 +21,19 @@ uniform StructuredBuffer<s_forcefield_state> u_forcefields;
 uniform float u_neighborhood_radius;
 uniform uint u_max_neighbor_count;
 
+uniform float u_swarmer_speed_min;
+uniform float u_swarmer_speed_idle;
+uniform float u_swarmer_speed_max;
+
+uniform float u_ideal_velocity_blending_rate;
+
+uniform float u_neighbor_attraction_scalar;
+uniform float u_neighbor_collision_avoidance_scalar;
+uniform float u_neighbor_alignment_scalar;
+
+uniform float u_swarmer_model_scale;
+
 uniform float u_delta_time;
-
-static const float k_ideal_velocity_blending_rate = 10.0f;
-
-static const float k_swarmer_speed_min = 0.1f;
-static const float k_swarmer_speed_idle = 0.5f;
-static const float k_swarmer_speed_max = 1.0f;
-
-static const float k_neighbor_attraction_scalar = 0.1f;
-static const float k_neighbor_collision_avoidance_scalar = 10.0f;
-static const float k_neighbor_alignment_scalar = 0.1f;
-
-static const float k_swarmer_model_scale= 0.04f;
 
 float3 build_forcefields_impulse(
 	float3 swarmer_position)
@@ -192,9 +192,9 @@ float3 build_flocking_impulse(
 	}
 
 	float3 flocking_summation = (
-		(k_neighbor_attraction_scalar * attraction_summation) +
-		(k_neighbor_collision_avoidance_scalar * collision_avoidance_summation) +
-		(k_neighbor_alignment_scalar * alignment_summation));
+		(u_neighbor_attraction_scalar * attraction_summation) +
+		(u_neighbor_collision_avoidance_scalar * collision_avoidance_summation) +
+		(u_neighbor_alignment_scalar * alignment_summation));
 
 	return (flocking_summation / max(neighbor_count, 1));
 }
@@ -212,7 +212,7 @@ void kernel_advance_swarmer_states(
 
 		// Default to idling forwards.
 		float3 idealVelocity =
-			(k_swarmer_speed_idle * normalize(new_swarmer_state.velocity));
+			(u_swarmer_speed_idle * normalize(new_swarmer_state.velocity));
 
 		idealVelocity += build_forcefields_impulse(new_swarmer_state.position);
 
@@ -222,7 +222,7 @@ void kernel_advance_swarmer_states(
 			lerp(
 				new_swarmer_state.velocity,
 				idealVelocity,
-				saturate(u_delta_time * k_ideal_velocity_blending_rate));
+				saturate(u_delta_time * u_ideal_velocity_blending_rate));
 
 		new_swarmer_state.position +=
 			(u_delta_time * new_swarmer_state.velocity);
@@ -234,7 +234,7 @@ void kernel_advance_swarmer_states(
 				new_swarmer_state.position,
 				new_swarmer_state.velocity,
 				new_swarmer_state.local_up,
-				k_swarmer_model_scale);
+				u_swarmer_model_scale);
 
 		u_out_next_swarmers[swarmer_index] = new_swarmer_state;
 	}
