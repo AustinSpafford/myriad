@@ -98,6 +98,7 @@ public class ParticleSpatializer : MonoBehaviour
 		SpatializerShaderVoxelParticlePair[] debugUnsortedParticlePairs = null;
 		SpatializerShaderNeighborhood[] debugNeighborhoods = null;
 		List<SpatializerShaderVoxelParticlePair[]> debugVoxelParticlePairsPerSortStep = null;
+		SpatializerShaderVoxelParticlePair[] debugSortedParticlePairs = null;
 		SpatializerShaderSpatializationVoxel[] debugSpatializationVoxels = null;
 #pragma warning restore 0219
 
@@ -120,6 +121,11 @@ public class ParticleSpatializer : MonoBehaviour
 		SortVoxelParticlePairs(
 			particleCount,
 			out debugVoxelParticlePairsPerSortStep);
+		
+		if (DebugCaptureSingleFrame)
+		{
+			debugSortedParticlePairs = voxelParticlePairBuffers.CurrentComputeBuffer.DebugGetDataBlocking();
+		}
 
 		BuildSpatializationVoxels(particleCount);
 
@@ -142,11 +148,17 @@ public class ParticleSpatializer : MonoBehaviour
 					debugNeighborhoods).ToArray();
 
 			var sortStepsDebug = DebugSortStepKeys(debugVoxelParticlePairsPerSortStep).ToArray();
+#pragma warning restore 0168
 
 			Debug.Assert(DebugSortedVoxelParticlePairsAreValid(
 				particleCount, 
-				debugVoxelParticlePairsPerSortStep.LastOrDefault()));
-#pragma warning restore 0168
+				debugSortedParticlePairs));
+
+			Debug.Assert(DebugSpatializationVoxelsAreValid(
+				particleCount, 
+				debugSortedParticlePairs,
+				TotalVoxelCount,
+				debugSpatializationVoxels));
 			
 			Debug.LogWarning("Finished debug-dumping the compute buffers. Surprised? Attach the unity debugger and breakpoint this line.");
 		}
@@ -393,7 +405,7 @@ public class ParticleSpatializer : MonoBehaviour
 
 		SpatializerComputeShader.SetBuffer(
 			kernelForBuildSpatializationVoxels, 
-			"u_out_next_sorted_voxel_particle_pairs", 
+			"u_readable_sorted_voxel_particle_pairs", 
 			voxelParticlePairBuffers.CurrentComputeBuffer);
 
 		SpatializerComputeShader.SetBuffer(
@@ -469,22 +481,64 @@ public class ParticleSpatializer : MonoBehaviour
 					.Take(particleCount);
 
 			var expectedParticleIndices = 
-				Enumerable.Range(0, particleCount).Select(element => (uint)element);			
+				Enumerable.Range(0, particleCount).Select(element => (uint)element);
 			
 			if (sortedParticleIndicesFromPairs.SequenceEqual(expectedParticleIndices) == false)
 			{
-				result = false;
+				result = true;
 			}
 		}
 
 		// If the voxels are not in ascending order, error out.
 		{
 			var expectedVoxelParticlePairs = 
-				debugVoxelParticlePairs.OrderBy(element => element.VoxelIndex);			
+				debugVoxelParticlePairs.OrderBy(element => element.VoxelIndex);
 
 			if (debugVoxelParticlePairs.SequenceEqual(expectedVoxelParticlePairs) == false)
 			{
-				result = false;
+				result = true;
+			}
+		}
+
+		return result;
+	}
+
+	private static bool DebugSpatializationVoxelsAreValid(
+		int particleCount,
+		SpatializerShaderVoxelParticlePair[] debugSortedVoxelParticlePairs,
+		int voxelCount,
+		SpatializerShaderSpatializationVoxel[] debugSpatializationVoxels)
+	{
+		bool result = true;
+
+		for (uint voxelIndex = 0; voxelIndex < voxelCount; ++voxelIndex)
+		{
+			uint voxelParticlePairIndex = debugSpatializationVoxels[voxelIndex].FirstVoxelParticlePairIndex;
+
+			if (voxelParticlePairIndex < particleCount)
+			{
+				// Our voxel must either be pointing to a pair within it (equal), or pointing to a pair that's in the
+				// next voxel that contains a pair (less-than).
+				if ((voxelIndex <= debugSortedVoxelParticlePairs[voxelParticlePairIndex].VoxelIndex) == false)
+				{
+					result = false;
+				}
+
+				// If this voxel contains pairs, we must be pointing to the *first* pair in the voxel.
+				if ((debugSortedVoxelParticlePairs[voxelParticlePairIndex].VoxelIndex == voxelIndex) &&
+					(voxelParticlePairIndex > 0) &&
+					((debugSortedVoxelParticlePairs[voxelParticlePairIndex - 1].VoxelIndex < voxelIndex) == false))
+				{
+					result = false;
+				}
+			}
+			else
+			{
+				// If this empty tail-voxel isn't parked at the pair-array's terminator.
+				if (voxelParticlePairIndex != particleCount)
+				{
+					result = false;
+				}
 			}
 		}
 

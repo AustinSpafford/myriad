@@ -149,7 +149,27 @@ void kernel_build_spatialization_voxels(
 {
 	uint voxel_index = thread_id.x;
 
+	// In the last thread group, if it's safe to access the buffers.
 	if (voxel_index < u_total_voxel_count)
 	{
+		uint candidates_first_index = 0;
+		uint candidates_term_index = u_particle_count; // NOTE: By using "term" instead of "last", "first will correctly end up out-of-bounds when the entire array is smaller than the target value.
+
+		while (candidates_first_index != candidates_term_index)
+		{
+			uint middle_index = ((candidates_first_index + candidates_term_index) >> 1);
+
+			bool target_is_in_lower_half =
+				(voxel_index <= u_readable_sorted_voxel_particle_pairs[middle_index].voxel_index);
+
+			// Ensure that we're always making progress, even in the last few steps
+			// where the fact that middle_index is rounded down means first_index==middle_index.
+			uint safe_moved_first_index = max(middle_index, (candidates_first_index + 1));
+			
+			candidates_first_index = (target_is_in_lower_half ? candidates_first_index : safe_moved_first_index);
+			candidates_term_index = (target_is_in_lower_half ? middle_index : candidates_term_index);
+		}
+
+		u_out_spatialization_voxels[voxel_index].first_voxel_particle_pair_index = candidates_first_index;
 	}
 }
