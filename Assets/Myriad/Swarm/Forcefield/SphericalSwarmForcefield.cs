@@ -22,10 +22,13 @@ public class SphericalSwarmForcefield : MonoBehaviour
 		object sender,
 		CollectingForcefieldsEventArgs eventArgs)
 	{
+		float localToWorldUniformScale = 
+			(transform.localToWorldMatrix.GetScale().magnitude / Mathf.Sqrt(3.0f));
+
 		eventArgs.ForcefieldAppender.AppendSphericalForcefield(
 			transform.position,
-			FalloffInnerRadius,
-			FalloffOuterRadius,
+			(FalloffInnerRadius * localToWorldUniformScale),
+			(FalloffOuterRadius * localToWorldUniformScale),
 			IdleOutwardForceScalar);
 	}
 }

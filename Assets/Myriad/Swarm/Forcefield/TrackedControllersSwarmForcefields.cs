@@ -54,20 +54,23 @@ public class TrackedControllersSwarmForcefields : MonoBehaviour
 						trackedObject.isActiveAndEnabled &&
 						controllerDevice.valid)
 					{
+						float localToWorldUniformScale = 
+							(trackedObject.transform.localToWorldMatrix.GetScale().magnitude / Mathf.Sqrt(3.0f));
+
 						bool gripPressed = controllerDevice.GetPress(EVRButtonId.k_EButton_Grip);					
 						float triggerFraction = controllerDevice.GetAxis(EVRButtonId.k_EButton_SteamVR_Trigger).x;
 						
 						eventArgs.ForcefieldAppender.AppendSphericalForcefield(
 							trackedObject.transform.position,
-							AttractionFalloffInnerRadius,
-							AttractionFalloffOuterRadius,
+							(AttractionFalloffInnerRadius * localToWorldUniformScale),
+							(AttractionFalloffOuterRadius * localToWorldUniformScale),
 							(-1.0f * (gripPressed ? GrippedAttractionScalar : IdleAttractionScalar)));
 						
 						eventArgs.ForcefieldAppender.AppendThrustCapsuleForcefield(
 							trackedObject.transform.position,
 							(trackedObject.transform.position + (ThrustCoreLength * trackedObject.transform.forward)),
-							ThrustFalloffInnerRadius,
-							ThrustFalloffOuterRadius,
+							(ThrustFalloffInnerRadius * localToWorldUniformScale),
+							(ThrustFalloffOuterRadius * localToWorldUniformScale),
 							Mathf.Lerp(IdleThrustScalar, TriggerPulledThrustScalar, triggerFraction));
 					}
 				}

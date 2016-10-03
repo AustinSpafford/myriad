@@ -25,11 +25,14 @@ public class PlanarSwarmForcefield : MonoBehaviour
 		object sender,
 		CollectingForcefieldsEventArgs eventArgs)
 	{
+		float localToWorldUniformScale = 
+			(transform.localToWorldMatrix.GetScale().magnitude / Mathf.Sqrt(3.0f));
+
 		eventArgs.ForcefieldAppender.AppendPlanarForcefield(
 			transform.TransformPoint(LocalPosition),
 			transform.TransformDirection(LocalPlaneNormal),
-			FalloffInnerRadius,
-			FalloffOuterRadius,
+			(FalloffInnerRadius * localToWorldUniformScale),
+			(FalloffOuterRadius * localToWorldUniformScale),
 			IdleForceScalar);
 	}
 }

@@ -34,10 +34,13 @@ public class TrackedCamerasSwarmForcefields : MonoBehaviour
 		if ((trackedCamera != null) &&
 			trackedCamera.isActiveAndEnabled)
 		{
+			float localToWorldUniformScale = 
+				(trackedCamera.transform.localToWorldMatrix.GetScale().magnitude / Mathf.Sqrt(3.0f));
+
 			eventArgs.ForcefieldAppender.AppendSphericalForcefield(
 				trackedCamera.transform.position,
-				FalloffInnerRadius,
-				FalloffOuterRadius,
+				(FalloffInnerRadius * localToWorldUniformScale),
+				(FalloffOuterRadius * localToWorldUniformScale),
 				(-1.0f * IdleAttractionScalar));
 		}
 	}
