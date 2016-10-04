@@ -68,7 +68,7 @@ public class TrackedControllersSwarmForcefields : MonoBehaviour
 						
 						eventArgs.ForcefieldAppender.AppendThrustCapsuleForcefield(
 							trackedObject.transform.position,
-							(trackedObject.transform.position + (ThrustCoreLength * trackedObject.transform.forward)),
+							(trackedObject.transform.position + (Mathf.Max(0.0001f, ThrustCoreLength) * trackedObject.transform.forward)),
 							(ThrustFalloffInnerRadius * localToWorldUniformScale),
 							(ThrustFalloffOuterRadius * localToWorldUniformScale),
 							Mathf.Lerp(IdleThrustScalar, TriggerPulledThrustScalar, triggerFraction));

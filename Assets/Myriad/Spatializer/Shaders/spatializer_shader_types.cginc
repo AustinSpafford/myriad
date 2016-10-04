@@ -16,7 +16,7 @@ struct s_voxel_particle_pair // Represents: SpatializerShaderVoxelParticlePair, 
 
 struct s_spatialization_voxel // Represents: SpatializerShaderSpatializationVoxel, which contains any usage documentation.
 {
-	uint first_voxel_particle_pair_index;
+	uint voxel_particle_pairs_first_index;
 };
 
 struct s_neighborhood // Represents: SpatializerShaderNeighborhood, which contains any usage documentation.

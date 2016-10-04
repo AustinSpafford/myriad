@@ -32,8 +32,8 @@ struct s_swarmer_state // Represents: SwarmShaderSwarmerState, which contains an
 	float pad_1; // For aligning vectors to 16-byte cache-boundaries.
 
 	float3 local_up;
-
-	float pad_2; // For aligning vectors to 16-byte cache-boundaries.
+	
+	float debug_accepted_candidates_fraction;
 
 	float4x4 cached_model_to_swarm_matrix;
 };

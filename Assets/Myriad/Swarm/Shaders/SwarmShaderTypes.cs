@@ -39,7 +39,7 @@ public struct SwarmShaderSwarmerState // Represents: s_swarmer_state.
 
 	public Vector3 LocalUp; // For determining orientation.
 	
-	private float Pad2; // See native-representation for padding description.
+	public float DebugAcceptedCandidatesFraction;
 	
 	private Matrix4x4 CachedModelToSwarmMatrix;
 }

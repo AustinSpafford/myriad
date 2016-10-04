@@ -165,6 +165,7 @@ public class SwarmSimulator : MonoBehaviour
 		// Bind the spatialization results.
 		{
 			BehaviorComputeShader.SetInt("u_voxel_count_per_axis", particleSpatializer.VoxelsPerAxis);
+			BehaviorComputeShader.SetInt("u_total_voxel_count", particleSpatializer.TotalVoxelCount);			
 
 			BehaviorComputeShader.SetBuffer(advanceSwarmersKernel, "u_spatialization_voxel_particle_pairs", swarmerNeighborhoods.VoxelParticlePairsBuffer);
 			BehaviorComputeShader.SetBuffer(advanceSwarmersKernel, "u_spatialization_voxels", swarmerNeighborhoods.SpatializationVoxelsBuffer);

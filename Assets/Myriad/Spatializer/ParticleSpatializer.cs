@@ -518,7 +518,7 @@ public class ParticleSpatializer : MonoBehaviour
 
 		for (uint voxelIndex = 0; voxelIndex < voxelCount; ++voxelIndex)
 		{
-			uint voxelParticlePairIndex = debugSpatializationVoxels[voxelIndex].FirstVoxelParticlePairIndex;
+			uint voxelParticlePairIndex = debugSpatializationVoxels[voxelIndex].VoxelParticlePairsFirstIndex;
 
 			if (voxelParticlePairIndex < particleCount)
 			{

@@ -148,6 +148,6 @@ void kernel_build_spatialization_voxels(
 			candidates_term_index = (target_is_in_lower_half ? middle_index : candidates_term_index);
 		}
 
-		u_out_spatialization_voxels[voxel_index].first_voxel_particle_pair_index = candidates_first_index;
+		u_out_spatialization_voxels[voxel_index].voxel_particle_pairs_first_index = candidates_first_index;
 	}
 }

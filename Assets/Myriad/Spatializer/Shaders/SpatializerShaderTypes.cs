@@ -31,11 +31,11 @@ public struct SpatializerShaderVoxelParticlePair // Represents: s_voxel_particle
 
 public struct SpatializerShaderSpatializationVoxel // Represents: s_spatialization_voxel
 {
-	public uint FirstVoxelParticlePairIndex;
+	public uint VoxelParticlePairsFirstIndex;
 
 	public override string ToString()
 	{
-		return String.Format("vpi=[{0}]", (int)FirstVoxelParticlePairIndex);
+		return String.Format("vpf=[{0}]", (int)VoxelParticlePairsFirstIndex);
 	}
 };
 
