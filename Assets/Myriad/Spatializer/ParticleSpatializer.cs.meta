@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 3016a620f3962cc47b820be54aa186c1
+timeCreated: 1475099524
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - SpatializerComputeShader: {fileID: 7200000, guid: 4b5acbb06e9966042843fd369cfe63de,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

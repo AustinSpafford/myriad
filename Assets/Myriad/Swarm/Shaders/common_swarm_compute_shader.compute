@@ -1,0 +1,23 @@
+﻿// We must identify the kernel (entry-point) functions.
+#pragma kernel kernel_extract_swarmer_positions
+
+#include "swarm_shader_types.cginc"
+#include "..\..\Spatializer\Shaders\spatializer_shader_types.cginc"
+
+uniform uint u_swarmer_count;
+
+uniform StructuredBuffer<s_swarmer_state> u_readable_swarmers;
+uniform RWStructuredBuffer<s_particle_position> u_out_swarmer_positions;
+
+[numthreads(128, 1, 1)]
+void kernel_extract_swarmer_positions(
+	uint3 thread_id : SV_DispatchThreadID)
+{
+	uint swarmer_index = thread_id.x;
+	
+	// In the last thread group, if it's safe to access the buffers.
+	if (swarmer_index < u_swarmer_count)
+	{
+		u_out_swarmer_positions[swarmer_index].position = u_readable_swarmers[swarmer_index].position;
+	}
+}

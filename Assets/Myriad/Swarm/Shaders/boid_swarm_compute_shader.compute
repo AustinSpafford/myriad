@@ -1,0 +1,303 @@
+﻿// We must identify the kernel (entry-point) functions.
+#pragma kernel kernel_advance_swarmer_states
+
+#include "swarm_shader_types.cginc"
+#include "swarm_shader_utilities.cginc"
+#include "..\..\Spatializer\Shaders\spatializer_shader_types.cginc"
+#include "..\..\Spatializer\Shaders\spatializer_shader_utilities.cginc"
+
+uniform uint u_swarmer_count;
+uniform StructuredBuffer<s_swarmer_state> u_readable_swarmers;
+uniform RWStructuredBuffer<s_swarmer_state> u_out_next_swarmers;
+
+uniform uint u_voxel_count_per_axis;
+uniform uint u_total_voxel_count;
+uniform StructuredBuffer<s_voxel_particle_pair> u_spatialization_voxel_particle_pairs;
+uniform StructuredBuffer<s_spatialization_voxel> u_spatialization_voxels;
+uniform StructuredBuffer<s_neighborhood> u_spatialization_neighborhoods;
+
+uniform uint u_forcefield_count;
+uniform StructuredBuffer<s_forcefield_state> u_forcefields;
+
+uniform float u_neighborhood_radius;
+uniform uint u_max_neighbor_count;
+
+uniform float u_swarmer_speed_min;
+uniform float u_swarmer_speed_idle;
+uniform float u_swarmer_speed_max;
+
+uniform float u_ideal_velocity_blending_rate;
+
+uniform float u_neighbor_attraction_scalar;
+uniform float u_neighbor_collision_avoidance_scalar;
+uniform float u_neighbor_alignment_scalar;
+
+uniform float u_swarmer_model_scale;
+
+uniform float u_delta_time;
+
+float3 build_forcefields_impulse(
+	float3 swarmer_position)
+{
+	float3 result = (float3)0.0f;
+
+	for (uint forcefield_index = 0; 
+		forcefield_index < u_forcefield_count; 
+		++forcefield_index)
+	{
+		s_forcefield_state forcefield = u_forcefields[forcefield_index];
+
+		float3 swarmer_in_forcefield_space = mul(
+			forcefield.simulation_to_forcefield_matrix, 
+			float4(swarmer_position, 1.0f)).xyz;
+
+		float distance_to_field_core;
+		float3 field_force_direction;
+
+		switch (forcefield.forcefield_type)
+		{
+			case k_forcefield_type_global:
+				distance_to_field_core = 0.0f;
+				field_force_direction = float3(0.0f, 1.0f, 0.0f);
+				break;
+
+			case k_forcefield_type_plane:
+				distance_to_field_core = max(0.0f, swarmer_in_forcefield_space.y);
+				field_force_direction = float3(0.0f, 1.0f, 0.0f);
+				break;
+
+			case k_forcefield_type_sphere:
+				distance_to_field_core = length(swarmer_in_forcefield_space);
+				field_force_direction = (swarmer_in_forcefield_space / distance_to_field_core);
+				break;
+
+			case k_forcefield_type_thrust_capsule:
+				distance_to_field_core =
+					distance(
+						float3(0.0f, clamp(swarmer_in_forcefield_space.y, 0.0f, forcefield.forcefield_length), 0.0f),
+						swarmer_in_forcefield_space);
+				field_force_direction = float3(0.0f, 1.0f, 0.0f);
+				break;
+
+			default:
+				distance_to_field_core = 0.0f;
+				field_force_direction = float3(0.0f, 0.0f, 0.0f);
+				break;
+		}
+
+		field_force_direction = 
+			mul(
+				forcefield.forcefield_to_simulation_matrix, 
+				float4(field_force_direction, 0.0f)).xyz;
+
+		float effect_fraction = (
+			1.0f -
+			smoothstep(
+				forcefield.falloff_inner_radius,
+				forcefield.falloff_outer_radius,
+				distance_to_field_core));
+
+		result += (
+			(effect_fraction * forcefield.force_scalar) * 
+			field_force_direction);
+	}
+
+	return result;
+}
+
+uint2 get_voxel_particle_pair_range_indices(
+	uint voxel_index)
+{
+	uint voxel_particle_pairs_term_index = (
+		((voxel_index + 1) < u_total_voxel_count) ?
+			u_spatialization_voxels[voxel_index + 1].voxel_particle_pairs_first_index :
+			u_swarmer_count);
+
+	return uint2(
+		u_spatialization_voxels[voxel_index].voxel_particle_pairs_first_index,
+		voxel_particle_pairs_term_index);
+}
+
+uint calculate_unlimited_neighbor_count(
+	uint3 neighborhood_min_voxel_coord)
+{
+	uint result = 0;
+
+	for (int neighborhood_enumeration_index = 0;
+		neighborhood_enumeration_index != -1;
+		/* internal-increment */)
+	{
+		uint voxel_index =
+			spatialization_get_neighborhood_enumeration_voxel_index(
+				neighborhood_min_voxel_coord,
+				u_voxel_count_per_axis,
+				/*inout*/ neighborhood_enumeration_index);
+
+		uint2 voxel_particle_pair_range_indices = 
+			get_voxel_particle_pair_range_indices(voxel_index);
+
+		result += (voxel_particle_pair_range_indices[1] - voxel_particle_pair_range_indices[0]);
+	}
+
+	return result;
+}
+
+float3 build_flocking_impulse(
+	uint swarmer_index,
+	float3 swarmer_position,
+	out float out_debug_accepted_candidates_fraction)
+{
+	uint3 neighborhood_min_voxel_coord = 
+		u_spatialization_neighborhoods[swarmer_index].neighborhood_min_voxel_coord;
+	
+	uint unlimited_neighbor_count =
+		calculate_unlimited_neighbor_count(neighborhood_min_voxel_coord);
+
+	// To avoid degrading into N^2 comparisons in overcrowded situations, we'll limit
+	// ourselves to only comparing against this fraction of swarmers in each voxel.
+	float acceptable_candidates_fraction = (
+		(unlimited_neighbor_count < u_max_neighbor_count) ?
+			1.0f :
+			(u_max_neighbor_count / (float)unlimited_neighbor_count));
+
+	float neighbor_count = 0.0f;
+	float3 attraction_summation = (float3)0.0f;
+	float3 collision_avoidance_summation = (float3)0.0f;
+	float3 alignment_summation = (float3)0.0f;
+
+	// Start the neighborhood enumeration by forcing the first candidate to be a guaranteed-failure.
+	int neighborhood_enumeration_index = 0;
+	uint2 pending_voxel_particle_range_indices = uint2(0, 0); // Set ourselves up to immediatley pull in indices from the first voxel.
+
+	// Until the enumeration internally-terminates, keep processing neighbors.
+	for (;;)
+	{
+		// While we don't have any pending candidates for processing.
+		// NOTE: There's internal-termination for when the entire enumeration-process completes.
+		while (pending_voxel_particle_range_indices[0] == pending_voxel_particle_range_indices[1])
+		{
+			uint neighborhood_voxel_index =
+				spatialization_get_neighborhood_enumeration_voxel_index(
+					neighborhood_min_voxel_coord,
+					u_voxel_count_per_axis,
+					/*inout*/ neighborhood_enumeration_index);
+			
+			// If the enumeration has completed, bail out.
+			if (neighborhood_enumeration_index == -1)
+			{
+				break;
+			}
+
+			pending_voxel_particle_range_indices = 
+				get_voxel_particle_pair_range_indices(neighborhood_voxel_index);
+
+			uint unlimited_candidate_count_in_voxel = 
+				(pending_voxel_particle_range_indices[1] - pending_voxel_particle_range_indices[0]);
+
+			uint acceptable_candidate_count_in_voxel =
+				(uint)((unlimited_candidate_count_in_voxel * acceptable_candidates_fraction) + 0.5f);
+
+			pending_voxel_particle_range_indices[1] = (
+				pending_voxel_particle_range_indices[0] +
+				acceptable_candidate_count_in_voxel);
+		}
+		
+		// If the enumeration has completed, bail out.
+		if (neighborhood_enumeration_index == -1)
+		{
+			break;
+		}
+
+		uint neighbor_index = 
+			u_spatialization_voxel_particle_pairs[pending_voxel_particle_range_indices[0]].particle_index;
+		
+		// Process the potential-neighbor.
+		{
+			float3 swarmer_to_neighbor =
+				(u_readable_swarmers[neighbor_index].position - swarmer_position);
+
+			float distance = max(0.001, length(swarmer_to_neighbor)); // Minimum-distance avoids a potential divide-by-zero.
+
+			float3 swarmer_to_neighbor_direction = (swarmer_to_neighbor / distance);
+
+			float case_is_neighbor = (
+				(neighbor_index != swarmer_index) * // Ignore comparisons against ourselves (without disrupting branching).
+				(distance < u_neighborhood_radius));
+
+			float distance_fraction = saturate(distance / u_neighborhood_radius);
+			float proximity_fraction = (1.0f - distance_fraction);
+
+			neighbor_count += case_is_neighbor;
+
+			attraction_summation += (
+				case_is_neighbor *
+				swarmer_to_neighbor_direction);
+
+			collision_avoidance_summation += (
+				case_is_neighbor *
+				(proximity_fraction * proximity_fraction) *
+				(-1 * swarmer_to_neighbor_direction));
+
+			alignment_summation += (
+				case_is_neighbor *
+				u_readable_swarmers[neighbor_index].velocity);
+		}
+
+		// Advance to the next candidate-particle.
+		pending_voxel_particle_range_indices[0] = (pending_voxel_particle_range_indices[0] + 1);
+	}
+
+	float3 flocking_summation = (
+		(u_neighbor_attraction_scalar * attraction_summation) +
+		(u_neighbor_collision_avoidance_scalar * collision_avoidance_summation) +
+		(u_neighbor_alignment_scalar * alignment_summation));
+
+	out_debug_accepted_candidates_fraction = acceptable_candidates_fraction;
+
+	return (flocking_summation / max(neighbor_count, 1));
+}
+
+[numthreads(64, 1, 1)]
+void kernel_advance_swarmer_states(
+	uint3 thread_id : SV_DispatchThreadID)
+{
+	uint swarmer_index = thread_id.x;
+
+	// In the last thread group, if it's safe to access the buffers.
+	if (swarmer_index < u_swarmer_count)
+	{
+		s_swarmer_state new_swarmer_state = u_readable_swarmers[swarmer_index];
+
+		// Default to idling forwards.
+		float3 idealVelocity =
+			(u_swarmer_speed_idle * normalize(new_swarmer_state.velocity));
+
+		idealVelocity += build_forcefields_impulse(new_swarmer_state.position);
+
+		idealVelocity += 
+			build_flocking_impulse(
+				swarmer_index, 
+				new_swarmer_state.position,
+				/*out*/ new_swarmer_state.debug_accepted_candidates_fraction);
+
+		new_swarmer_state.velocity =
+			lerp(
+				new_swarmer_state.velocity,
+				idealVelocity,
+				saturate(u_delta_time * u_ideal_velocity_blending_rate));
+
+		new_swarmer_state.position +=
+			(u_delta_time * new_swarmer_state.velocity);
+
+		new_swarmer_state.local_up = float3(0.0f, 1.0f, 0.0f); // TODO: Animate this as the boid turns left/right.
+
+		new_swarmer_state.cached_model_to_swarm_matrix =
+			build_swarmer_model_to_swarm_matrix(
+				new_swarmer_state.position,
+				new_swarmer_state.velocity,
+				new_swarmer_state.local_up,
+				u_swarmer_model_scale);
+
+		u_out_next_swarmers[swarmer_index] = new_swarmer_state;
+	}
+}

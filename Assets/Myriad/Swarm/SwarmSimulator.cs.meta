@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 5724f1ee539a9ec47ac5b01957a0daf4
+timeCreated: 1475164302
+licenseType: Free
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - BehaviorComputeShader: {fileID: 7200000, guid: eaefd313604aac04e95f7cb3c6f40eb1,
+      type: 3}
+  - CommonSwarmComputeShader: {fileID: 7200000, guid: 3d8c5c6cd510d3e479d9c4f3323a4285,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
