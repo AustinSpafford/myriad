@@ -2,8 +2,8 @@
 {
 	Properties
 	{
-		u_main_texture("Texture", 2D) = "white" {}
-		u_color("Color", Color) = (1, 1, 1, 1)
+		u_main_texture ("Texture", 2D) = "white" {}
+		u_color ("Color", Color) = (1, 1, 1, 1)
 	}
 
 	SubShader
