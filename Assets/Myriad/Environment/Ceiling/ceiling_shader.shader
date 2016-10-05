@@ -67,7 +67,7 @@
 				result.world_normal = normalize(mul(unity_ObjectToWorld, normal));
 				result.world_tangent = normalize(mul(unity_ObjectToWorld, tangent));
 				result.world_binormal = normalize(mul(unity_ObjectToWorld, binormal));
-				result.world_position_to_camera = (_WorldSpaceCameraPos - mul(unity_ObjectToWorld, position)).xyz;
+				result.world_position_to_camera = (_WorldSpaceCameraPos.xyz - mul(unity_ObjectToWorld, position).xyz);
 				result.texture_coord = ((texture_coord - 0.5f) / u_tile_edge_length);
 				
 				return result;

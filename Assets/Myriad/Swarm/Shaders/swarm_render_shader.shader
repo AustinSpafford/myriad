@@ -58,14 +58,13 @@
 				float4x4 model_to_world_matrix = 
 					mul(u_swarm_to_world_matrix, swarmer_state.cached_model_to_swarm_matrix);
 
-				float4x4 model_to_perspective_matrix =
-					mul(UNITY_MATRIX_VP, model_to_world_matrix);
+				float3 world_position = mul(model_to_world_matrix, float4(model_vertex.position, 1.0f)).xyz;
 
-				result.projected_position = mul(model_to_perspective_matrix, float4(model_vertex.position, 1.0f));
+				result.projected_position = mul(UNITY_MATRIX_VP, float4(world_position, 1.0f));
 				result.world_normal = normalize(mul(model_to_world_matrix, float4(model_vertex.normal, 0.0f)));
 				result.albedo_color = model_vertex.albedo_color;
 				result.edge_distances = model_vertex.edge_distances;
-				result.world_position_to_camera = (_WorldSpaceCameraPos - mul(model_to_world_matrix, float4(model_vertex.position, 1.0f))).xyz;
+				result.world_position_to_camera = (_WorldSpaceCameraPos.xyz - world_position);
 
 				#ifdef ENABLE_NEIGHBORHOOD_OVERCROWDING_DEBUGGING
 				result.albedo_color = 
