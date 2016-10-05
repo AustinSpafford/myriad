@@ -1,4 +1,4 @@
-﻿Shader "Myriad/ground_shader"
+﻿Shader "Myriad/ceiling_shader"
 {
 	Properties
 	{
@@ -139,3 +139,4 @@
 		}
 	}
 }
+
