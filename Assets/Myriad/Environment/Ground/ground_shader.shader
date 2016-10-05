@@ -41,10 +41,13 @@
 			
 			struct s_rasterization_vertex
 			{
-				float4 position : SV_POSITION;
-				float4 world_normal : NORMAL;
+				float4 projected_position : SV_POSITION;
+				float3 world_normal : NORMAL;
+				float3 world_tangent : TANGENT;
+				float3 world_binormal : BINORMAL;
 				float2 texture_coord : TEXCOORD0;
-				UNITY_FOG_COORDS(1)
+				float3 world_position_to_camera : TEXCOORD1;
+				UNITY_FOG_COORDS(2)
 			};
 
 			uniform float u_tile_edge_length;
@@ -59,17 +62,23 @@
 			uniform float4 u_pit_fog_color;
 
 			s_rasterization_vertex vertex_shader(
-				float4 position : POSITION,
-				float4 normal : NORMAL,
+				float3 position : POSITION,
+				float3 normal : NORMAL,
+				float3 tangent : TANGENT,
 				float2 texture_coord : TEXCOORD0)
 			{
 				s_rasterization_vertex result;
 
-				result.position = mul(UNITY_MATRIX_MVP, position);
+				float3 binormal = cross(normal, tangent);
+
+				result.projected_position = mul(UNITY_MATRIX_MVP, float4(position, 1));
 				result.world_normal = normalize(mul(unity_ObjectToWorld, normal));
+				result.world_tangent = normalize(mul(unity_ObjectToWorld, tangent));
+				result.world_binormal = normalize(mul(unity_ObjectToWorld, binormal));
+				result.world_position_to_camera = (_WorldSpaceCameraPos - mul(unity_ObjectToWorld, position));
 				result.texture_coord = ((texture_coord - 0.5f) / u_tile_edge_length);
 				
-				UNITY_TRANSFER_FOG(result, result.position);
+				UNITY_TRANSFER_FOG(result, result.projected_position);
 				
 				return result;
 			}
@@ -87,28 +96,43 @@
 					(skewed_square_coord.x < skewed_square_coord.y) ?
 						float3(
 							skewed_square_coord.x,
-							frac(skewed_square_coord.y + (1.0f - skewed_square_coord.x)),
+							(skewed_square_coord.y - skewed_square_coord.x),
 							(1.0f - skewed_square_coord.y)) :
 						float3(
 							(1.0f - skewed_square_coord.x),
-							frac(skewed_square_coord.x + (1.0f - skewed_square_coord.y)),
+							(skewed_square_coord.x - skewed_square_coord.y),
 							skewed_square_coord.y);
 
 				return triangle_coord;
 			}
 			
-			fixed4 fragment_shader(
+			float4 fragment_shader(
 				s_rasterization_vertex raster_state) : 
 					SV_Target
 			{
 				float3 triangle_coord = 
 					convert_square_coord_to_triangle_coord(raster_state.texture_coord.xy);
 
-				fixed4 result = (
-					u_surface_color *
-					fixed4(triangle_coord, 1));
+				float distance_from_edge = min(triangle_coord.x, min(triangle_coord.y, triangle_coord.z));
+
+				float3 albedo_color = u_surface_color;
+				float3 world_normal = normalize(raster_state.world_normal);
+				float3 world_tangent = normalize(raster_state.world_tangent);
+				float3 world_binormal = normalize(raster_state.world_binormal);
+
+				if (distance_from_edge >= lerp((1.0f / 3.0f), 0.0f, u_pit_edge_length_fraction))
+				{
+					float3 world_direction_towards_camera = normalize(raster_state.world_position_to_camera);
+
+					albedo_color = (u_pit_bottom_color * dot(world_direction_towards_camera, world_normal));
+				}
+
+				float4 result = float4(albedo_color, 1);
 				
 				UNITY_APPLY_FOG(raster_state.fogCoord, result);
+
+				// Debug-views.
+				//result = float4(triangle_coord, 1);
 
 				return result;
 			}
