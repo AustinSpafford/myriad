@@ -126,7 +126,7 @@ Material:
       second: 0.5
     - first:
         name: u_pit_edge_length_fraction
-      second: 0.9
+      second: 0.5
     - first:
         name: u_tile_edge_length
       second: 0.02
@@ -139,7 +139,7 @@ Material:
       second: {r: 0, g: 0, b: 0, a: 1}
     - first:
         name: u_pit_bottom_color
-      second: {r: 0.8235294, g: 0.8778905, b: 0.9411765, a: 1}
+      second: {r: 0.5808823, g: 0.5808823, b: 0.5808823, a: 1}
     - first:
         name: u_pit_depth
       second: {r: 0.5, g: 1, b: 1, a: 1}
@@ -151,7 +151,7 @@ Material:
       second: {r: 0.5, g: 1, b: 1, a: 1}
     - first:
         name: u_surface_color
-      second: {r: 0.7474048, g: 0.7593246, b: 0.7941176, a: 1}
+      second: {r: 0.09910249, g: 0.14698867, b: 0.28676468, a: 1}
     - first:
         name: u_tile_offset_fraction
       second: {r: 0, g: 0, b: 0, a: 0}
