@@ -2,7 +2,7 @@
 {
 	Properties
 	{
-		u_tile_edge_length ("TileEdgeLength", Float) = 1
+		u_tile_edge_length ("TileEdgeLength", Float) = 0.5
 		
 		u_pit_edge_length_fraction ("PitEdgeLengthFraction", Range(0, 1)) = 0.8
 		u_pit_depth_to_width_ratio ("PitDepthToWidthRatio", Float) = 0.5
@@ -65,7 +65,7 @@
 
 				result.position = mul(UNITY_MATRIX_MVP, position);
 				result.world_normal = normalize(mul(unity_ObjectToWorld, normal));
-				result.texture_coord = texture_coord;
+				result.texture_coord = ((texture_coord - 0.5f) / u_tile_edge_length);
 				
 				UNITY_TRANSFER_FOG(result, result.position);
 				
@@ -78,7 +78,7 @@
 			{
 				fixed4 result = (
 					u_surface_color *
-					fixed4(raster_state.texture_coord.xy, 0, 1));
+					fixed4(frac(raster_state.texture_coord.xy), 0, 1));
 				
 				UNITY_APPLY_FOG(raster_state.fogCoord, result);
 
