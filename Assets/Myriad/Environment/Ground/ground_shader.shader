@@ -27,9 +27,6 @@
 			// Identify the entry-point functions.
 			#pragma vertex vertex_shader
 			#pragma fragment fragment_shader
-
-			// Enable support for fog-calculations.
-			#pragma multi_compile_fog
 			
 			#include "UnityCG.cginc"
 
@@ -43,7 +40,6 @@
 				float3 world_binormal : BINORMAL;
 				float2 texture_coord : TEXCOORD0;
 				float3 world_position_to_camera : TEXCOORD1;
-				UNITY_FOG_COORDS(2)
 			};
 
 			uniform float u_tile_edge_length;
@@ -73,8 +69,6 @@
 				result.world_binormal = normalize(mul(unity_ObjectToWorld, binormal));
 				result.world_position_to_camera = (_WorldSpaceCameraPos - mul(unity_ObjectToWorld, position)).xyz;
 				result.texture_coord = ((texture_coord - 0.5f) / u_tile_edge_length);
-				
-				UNITY_TRANSFER_FOG(result, result.projected_position);
 				
 				return result;
 			}
@@ -126,7 +120,16 @@
 
 				float4 result = float4(albedo_color, 1);
 				
-				UNITY_APPLY_FOG(raster_state.fogCoord, result);
+				// Apply fog.
+				{
+					float squared_distance_to_camera =
+						dot(raster_state.world_position_to_camera, raster_state.world_position_to_camera);
+
+					float camera_proximity = 
+						exp2(-1 * (unity_FogParams.x * unity_FogParams.x) * squared_distance_to_camera);
+
+					result.rgb = lerp(unity_FogColor.rgb, result.rgb, saturate(camera_proximity));
+				}
 
 				// Debug-views.
 				//result = float4(triangle_coord, 1);

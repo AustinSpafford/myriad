@@ -26,7 +26,6 @@
 			struct s_rasterization_vertex
 			{
 				float4 projected_position : SV_POSITION;
-				UNITY_FOG_COORDS(0)
 			};
 			
 			s_rasterization_vertex vertex_shader(
@@ -36,8 +35,6 @@
 
 				result.projected_position = mul(UNITY_MATRIX_MVP, float4(position, 1));
 				
-				UNITY_TRANSFER_FOG(result, result.projected_position);
-				
 				return result;
 			}
 			
@@ -45,11 +42,7 @@
 				s_rasterization_vertex raster_state) : 
 					SV_Target
 			{
-				float4 result = float4(1, 1, 1, 1);
-				
-				UNITY_APPLY_FOG(raster_state.fogCoord, result);
-
-				return result;
+				return unity_FogColor;
 			}
 
 			ENDCG

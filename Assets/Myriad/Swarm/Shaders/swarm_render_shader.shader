@@ -2,8 +2,6 @@
 {
 	Properties
 	{
-		u_main_texture ("Texture", 2D) = "white" {}
-		u_color ("Color", Color) = (1, 1, 1, 1)
 	}
 
 	SubShader
@@ -23,9 +21,6 @@
 			// Identify the entry-point functions.
 			#pragma vertex vertex_shader
 			#pragma fragment fragment_shader
-
-			// Enable support for fog-calculations.
-			#pragma multi_compile_fog
 			
 			#include "UnityCG.cginc"
 
@@ -35,11 +30,11 @@
 			
 			struct s_rasterization_vertex
 			{
-				float4 position : SV_POSITION;
+				float4 projected_position : SV_POSITION;
 				float4 world_normal : NORMAL;
 				float4 albedo_color : COLOR0;
-				float2 texture_coord : TEXCOORD0;
-				UNITY_FOG_COORDS(1)
+				float3 edge_distances : TEXCOORD0;
+				float3 world_position_to_camera : TEXCOORD1;
 			};
 
 			uniform sampler2D u_main_texture;
@@ -66,12 +61,11 @@
 				float4x4 model_to_perspective_matrix =
 					mul(UNITY_MATRIX_VP, model_to_world_matrix);
 
-				result.position = mul(model_to_perspective_matrix, float4(model_vertex.position, 1.0f));
+				result.projected_position = mul(model_to_perspective_matrix, float4(model_vertex.position, 1.0f));
 				result.world_normal = normalize(mul(model_to_world_matrix, float4(model_vertex.normal, 0.0f)));
 				result.albedo_color = model_vertex.albedo_color;
-				result.texture_coord = model_vertex.texture_coord;
-				
-				UNITY_TRANSFER_FOG(result, result.position);
+				result.edge_distances = model_vertex.edge_distances;
+				result.world_position_to_camera = (_WorldSpaceCameraPos - mul(model_to_world_matrix, float4(model_vertex.position, 1.0f))).xyz;
 
 				#ifdef ENABLE_NEIGHBORHOOD_OVERCROWDING_DEBUGGING
 				result.albedo_color = 
@@ -84,19 +78,36 @@
 				return result;
 			}
 			
-			fixed4 fragment_shader(
+			float4 fragment_shader(
 				s_rasterization_vertex raster_state) : 
 					SV_Target
 			{
-				fixed4 result = (
-					tex2D(u_main_texture, raster_state.texture_coord) *
-					raster_state.albedo_color *
-					u_color);
+				float distance_to_edge = 
+					min(raster_state.edge_distances.x, min(raster_state.edge_distances.y, raster_state.edge_distances.z));
+
+				float case_is_edge = smoothstep(0.05, 0.0, distance_to_edge);
+
+				float3 surface_color =
+					lerp(
+						raster_state.albedo_color,
+						0, // (0.2 * raster_state.albedo_color),
+						case_is_edge);
 
 				// TODO: Better-than-debug lighting.
-				result *= saturate(dot(raster_state.world_normal, float4(0, 1, 0, 0)));
+				surface_color *= saturate(dot(raster_state.world_normal, float4(0, 1, 0, 0)));
+
+				float4 result = float4(surface_color, 1);
 				
-				UNITY_APPLY_FOG(raster_state.fogCoord, result);
+				// Apply fog.
+				{
+					float squared_distance_to_camera =
+						dot(raster_state.world_position_to_camera, raster_state.world_position_to_camera);
+
+					float camera_proximity = 
+						exp2(-1 * (unity_FogParams.x * unity_FogParams.x) * squared_distance_to_camera);
+
+					result.rgb = lerp(unity_FogColor.rgb, result.rgb, saturate(camera_proximity));
+				}
 
 				return result;
 			}

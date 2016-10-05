@@ -55,12 +55,26 @@ public class SwarmRenderer : MonoBehaviour
 	
 	private TypedComputeBuffer<SwarmShaderSwarmerModelVertex> swarmerModelVerticesBuffer = null;
 
+	private static float DistanceToLine(
+		Vector3 subjectPoint,
+		Vector3 linePointAlpha,
+		Vector3 linePointBravo)
+	{
+		Vector3 lineToSubjectDelta = (subjectPoint - linePointAlpha);
+
+		return Vector3.Distance(
+			lineToSubjectDelta,
+			Vector3.Project(
+				lineToSubjectDelta, 
+				(linePointBravo - linePointAlpha)));
+	}
+
 	private static void AppendVertexToModel(
 		Vector3 position,
 		Vector3 normal,
 		Color albedoColor,
 		Color glowColor,
-		Vector2 textureCoord,
+		Vector3 edgeDistances,
 		float leftWingFraction,
 		float rightWingFraction,
 		Matrix4x4 placementMatrix,
@@ -72,7 +86,7 @@ public class SwarmRenderer : MonoBehaviour
 			Normal = placementMatrix.MultiplyVector(normal),
 			AlbedoColor = albedoColor,
 			GlowColor = glowColor,
-			TextureCoord = textureCoord,
+			EdgeDistances = edgeDistances,
 			LeftWingFraction = leftWingFraction,
 			RightWingFraction = rightWingFraction,
 		});
@@ -80,7 +94,7 @@ public class SwarmRenderer : MonoBehaviour
 
 	private static void AppendRawTriangleVerticesToModel(
 		Vector3[] positions,
-		Vector2[] textureCoords,
+		bool[] renderOpposingEdge,
 		Color albedoColor,
 		Color glowColor,
 		float leftWingFraction,
@@ -89,7 +103,7 @@ public class SwarmRenderer : MonoBehaviour
 		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
 	{
 		if ((positions.Length != 3) ||
-			(textureCoords.Length != 3))
+			(renderOpposingEdge.Length != 3))
 		{
 			throw new System.ArgumentException();
 		}
@@ -97,15 +111,35 @@ public class SwarmRenderer : MonoBehaviour
 		Vector3 triangleNormal = Vector3.Cross(
 			positions[2] - positions[0],
 			positions[1] - positions[0]).normalized;
+
+		// NOTE: If we ever start distorting the model's faces, it might be worthwhile to 
+		// move this math down into the vertex-shader so it stays accurate.
+		Vector3 unfilteredDistancesToOpposingEdges = new Vector3(
+			DistanceToLine(positions[0], positions[1], positions[2]),
+			DistanceToLine(positions[1], positions[2], positions[0]),
+			DistanceToLine(positions[2], positions[0], positions[1]));
 		
-		for (int index = 0; index < 3; ++index)
+		for (int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
 		{
+			// Build a vector that gives all edge-distances at this vertex's position.
+			Vector3 edgeDistances = Vector3.zero;
+			edgeDistances[vertexIndex] = unfilteredDistancesToOpposingEdges[vertexIndex];
+			
+			// NOTE: To hide any particular edge, we make it so all the vertices have a large distance to it.
+			for (int edgeIndex = 0; edgeIndex < 3; ++edgeIndex)
+			{
+				if (renderOpposingEdge[edgeIndex] == false)
+				{
+					edgeDistances[edgeIndex] = 100.0f; // Force the "distance" far out beyond the model's extents.
+				}
+			}
+
 			AppendVertexToModel(
-				positions[index],
+				positions[vertexIndex],
 				triangleNormal,
 				albedoColor,
 				glowColor,
-				textureCoords[index],
+				edgeDistances,
 				leftWingFraction,
 				rightWingFraction,
 				placementMatrix,
@@ -122,16 +156,9 @@ public class SwarmRenderer : MonoBehaviour
 		Matrix4x4 placementMatrix,
 		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
 	{
-		var textureCoords = new Vector2[]
-		{
-			new Vector2(0.5f, 1.0f),
-			new Vector2(0.0f, 0.0f),
-			new Vector2(1.0f, 0.0f),
-		};
-
 		AppendRawTriangleVerticesToModel(
 			positions,
-			textureCoords,
+			new bool[] { true, true, true }, // renderOpposingEdge
 			albedoColor,
 			glowColor,
 			leftWingFraction,
@@ -154,17 +181,9 @@ public class SwarmRenderer : MonoBehaviour
 			throw new System.ArgumentException();
 		}
 
-		var textureCoords = new Vector2[]
-		{
-			new Vector2(0.0f, 0.0f),
-			new Vector2(1.0f, 0.0f),
-			new Vector2(1.0f, 1.0f),
-			new Vector2(0.0f, 1.0f),
-		};
-
 		AppendRawTriangleVerticesToModel(
 			new Vector3[] { positions[0], positions[1], positions[3] },
-			new Vector2[] { textureCoords[0], textureCoords[1], textureCoords[3] },
+			new bool[] { false, true, true }, // renderOpposingEdge, note that we're not rendering the quad's seam-edge.
 			albedoColor,
 			glowColor,
 			leftWingFraction,
@@ -174,7 +193,7 @@ public class SwarmRenderer : MonoBehaviour
 
 		AppendRawTriangleVerticesToModel(
 			new Vector3[] { positions[3], positions[1], positions[2] },
-			new Vector2[] { textureCoords[3], textureCoords[1], textureCoords[2] },
+			new bool[] { true, true, false }, // renderOpposingEdge, note that we're not rendering the quad's seam-edge.
 			albedoColor,
 			glowColor,
 			leftWingFraction,
