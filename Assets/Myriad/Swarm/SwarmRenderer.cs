@@ -51,6 +51,8 @@ public class SwarmRenderer : MonoBehaviour
 		}
 	}
 
+	private const float DisabledDistanceFromEdge = 100.0f; // This just needs to be large enough to be guaranteed to be well outside the model's bounds.
+
 	private SwarmSimulator swarmSimulator = null;
 	
 	private TypedComputeBuffer<SwarmShaderSwarmerModelVertex> swarmerModelVerticesBuffer = null;
@@ -74,7 +76,7 @@ public class SwarmRenderer : MonoBehaviour
 		Vector3 normal,
 		Color albedoColor,
 		Color glowColor,
-		Vector3 edgeDistances,
+		Vector4 edgeDistances,
 		float leftWingFraction,
 		float rightWingFraction,
 		Matrix4x4 placementMatrix,
@@ -94,7 +96,7 @@ public class SwarmRenderer : MonoBehaviour
 
 	private static void AppendRawTriangleVerticesToModel(
 		Vector3[] positions,
-		bool[] renderOpposingEdge,
+		bool triangleIsHalfOfQuad,
 		Color albedoColor,
 		Color glowColor,
 		float leftWingFraction,
@@ -102,8 +104,7 @@ public class SwarmRenderer : MonoBehaviour
 		Matrix4x4 placementMatrix,
 		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
 	{
-		if ((positions.Length != 3) ||
-			(renderOpposingEdge.Length != 3))
+		if (positions.Length != 3)
 		{
 			throw new System.ArgumentException();
 		}
@@ -118,28 +119,36 @@ public class SwarmRenderer : MonoBehaviour
 			DistanceToLine(positions[0], positions[1], positions[2]),
 			DistanceToLine(positions[1], positions[2], positions[0]),
 			DistanceToLine(positions[2], positions[0], positions[1]));
+
+		// NOTE: For the "fourth edgeDistance" to work, the quad has to be wider than tall, and with 
+		// with parallel first and third edges. If those assumptions fail a small visual artifact appears
+		// where the quad's two triangles meet.
+		Vector4[] perVertexEdgeDistances = new Vector4[] {
+			new Vector4(
+				unfilteredDistancesToOpposingEdges[0],
+				(triangleIsHalfOfQuad ? DisabledDistanceFromEdge : 0), // Erase the quad's shared-edge by never approaching zero.
+				0,
+				(triangleIsHalfOfQuad ? unfilteredDistancesToOpposingEdges[2] : DisabledDistanceFromEdge)), // Fake an edge outside the triangle that's parallel to our first.
+			new Vector4(
+				0,
+				(triangleIsHalfOfQuad ? DisabledDistanceFromEdge : unfilteredDistancesToOpposingEdges[1]), // Erase the quad's shared-edge by never approaching zero.
+				0,
+				(triangleIsHalfOfQuad ? unfilteredDistancesToOpposingEdges[2] : DisabledDistanceFromEdge)), // Fake an edge outside the triangle that's parallel to our first.
+			new Vector4(
+				0,
+				(triangleIsHalfOfQuad ? DisabledDistanceFromEdge : 0), // Erase the quad's shared-edge by never approaching zero.
+				unfilteredDistancesToOpposingEdges[2],
+				(triangleIsHalfOfQuad ? 0 : DisabledDistanceFromEdge)), // Fake an edge outside the triangle that's parallel to our first.
+		};
 		
 		for (int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
 		{
-			// Build a vector that gives all edge-distances at this vertex's position.
-			Vector3 edgeDistances = Vector3.zero;
-			edgeDistances[vertexIndex] = unfilteredDistancesToOpposingEdges[vertexIndex];
-			
-			// NOTE: To hide any particular edge, we make it so all the vertices have a large distance to it.
-			for (int edgeIndex = 0; edgeIndex < 3; ++edgeIndex)
-			{
-				if (renderOpposingEdge[edgeIndex] == false)
-				{
-					edgeDistances[edgeIndex] = 100.0f; // Force the "distance" far out beyond the model's extents.
-				}
-			}
-
 			AppendVertexToModel(
 				positions[vertexIndex],
 				triangleNormal,
 				albedoColor,
 				glowColor,
-				edgeDistances,
+				perVertexEdgeDistances[vertexIndex],
 				leftWingFraction,
 				rightWingFraction,
 				placementMatrix,
@@ -158,7 +167,7 @@ public class SwarmRenderer : MonoBehaviour
 	{
 		AppendRawTriangleVerticesToModel(
 			positions,
-			new bool[] { true, true, true }, // renderOpposingEdge
+			false, // triangleIsHalfOfQuad
 			albedoColor,
 			glowColor,
 			leftWingFraction,
@@ -182,8 +191,8 @@ public class SwarmRenderer : MonoBehaviour
 		}
 
 		AppendRawTriangleVerticesToModel(
-			new Vector3[] { positions[0], positions[1], positions[3] },
-			new bool[] { false, true, true }, // renderOpposingEdge, note that we're not rendering the quad's seam-edge.
+			new Vector3[] { positions[0], positions[1], positions[2] },
+			true, // triangleIsHalfOfQuad
 			albedoColor,
 			glowColor,
 			leftWingFraction,
@@ -192,8 +201,8 @@ public class SwarmRenderer : MonoBehaviour
 			ref inoutSwarmerModelVertices);
 
 		AppendRawTriangleVerticesToModel(
-			new Vector3[] { positions[3], positions[1], positions[2] },
-			new bool[] { true, true, false }, // renderOpposingEdge, note that we're not rendering the quad's seam-edge.
+			new Vector3[] { positions[2], positions[3], positions[0] },
+			true, // triangleIsHalfOfQuad
 			albedoColor,
 			glowColor,
 			leftWingFraction,

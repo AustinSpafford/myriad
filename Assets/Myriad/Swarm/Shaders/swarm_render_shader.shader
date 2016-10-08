@@ -26,14 +26,14 @@
 
 			#include "swarm_shader_types.cginc"
 
-			#define ENABLE_NEIGHBORHOOD_OVERCROWDING_DEBUGGING
+			//#define ENABLE_NEIGHBORHOOD_OVERCROWDING_DEBUGGING
 			
 			struct s_rasterization_vertex
 			{
 				float4 projected_position : SV_POSITION;
 				float4 world_normal : NORMAL;
 				float4 albedo_color : COLOR0;
-				float3 edge_distances : TEXCOORD0;
+				float4 edge_distances : TEXCOORD0;
 				float3 world_position_to_camera : TEXCOORD1;
 			};
 
@@ -78,19 +78,20 @@
 			}
 			
 			float4 fragment_shader(
-				s_rasterization_vertex raster_state) : 
-					SV_Target
+				s_rasterization_vertex raster_state) :
+				SV_Target
 			{
-				float distance_to_edge = 
-					min(raster_state.edge_distances.x, min(raster_state.edge_distances.y, raster_state.edge_distances.z));
+				float distance_to_edge = min(
+					min(raster_state.edge_distances[0], raster_state.edge_distances[1]),
+					min(raster_state.edge_distances[2], raster_state.edge_distances[3]));
 
-				float case_is_edge = smoothstep(0.05, 0.0, distance_to_edge);
+				float edge_fraction = smoothstep(0.05, 0.0, distance_to_edge);
 
 				float3 surface_color =
 					lerp(
 						raster_state.albedo_color,
 						0, // (0.2 * raster_state.albedo_color),
-						case_is_edge);
+						edge_fraction);
 
 				// TODO: Better-than-debug lighting.
 				surface_color *= saturate(dot(raster_state.world_normal, float4(0, 1, 0, 0)));

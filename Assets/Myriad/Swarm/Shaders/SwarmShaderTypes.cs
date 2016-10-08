@@ -57,12 +57,12 @@ struct SwarmShaderSwarmerModelVertex // Represents: s_swarmer_model_vertex.
 	public Vector4 AlbedoColor;
 	public Vector4 GlowColor;
 	
-	public Vector3 EdgeDistances;
+	public Vector4 EdgeDistances;
+	
+	private Vector2 Pad2; // See native-representation for padding description.
 
 	public float LeftWingFraction;
 	public float RightWingFraction;
-	
-	private Vector3 Pad2; // See native-representation for padding description.
 }
 
 #pragma warning restore 0169, 1635
