@@ -280,7 +280,7 @@ public class SwarmSimulator : MonoBehaviour
 				{
 					initialSwarmers.Add(new SwarmShaderSwarmerState()
 					{
-						Position = (0.5f * Vector3.Scale(UnityEngine.Random.onUnitSphere, transform.localScale)),
+						Position = Vector3.Scale(new Vector3(3.0f, 0.5f, 3.0f), UnityEngine.Random.insideUnitSphere),
 						Velocity = (0.05f * UnityEngine.Random.onUnitSphere), // Just a gentle nudge to indicate a direction.
 						LocalUp = UnityEngine.Random.onUnitSphere,
 					});
