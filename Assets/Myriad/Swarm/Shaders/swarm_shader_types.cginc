@@ -49,7 +49,7 @@ struct s_swarmer_model_vertex // Represents: SwarmShaderSwarmerModelVertex, whic
 	float pad_1; // For aligning vector-reads to 16-byte cache-boundaries.
 
 	float4 albedo_color;
-	float4 glow_color;
+	float4 emission_color;
 
 	float4 edge_distances;
 
