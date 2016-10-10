@@ -264,7 +264,7 @@ public class SwarmRenderer : MonoBehaviour
 		Vector3 topRightPosition = (Quaternion.AngleAxis(120.0f, Vector3.up) * topForwardPosition);
 		Vector3 topLeftPosition = (Quaternion.AngleAxis(-120.0f, Vector3.up) * topForwardPosition);
 		
-		Vector4 sideColor = new Color(0.4f, 0.4f, 0.7f);
+		Vector4 sideColor = new Color(0.6f, 0.6f, 0.6f);
 
 		Vector4 rearColor = (useDebugColoring ? (Vector4)Color.green : sideColor);
 
@@ -281,9 +281,9 @@ public class SwarmRenderer : MonoBehaviour
 		Vector4 topFacetAlbedoColor = (
 			useDebugColoring ? 
 				(useTopHalfColoring ? Color.yellow : Color.cyan): 
-				new Color(1.0f, 0.8f, 0.3f));
+				new Color(0.1f, 0.1f, 0.1f));
 
-		Vector4 topFacetEmissionColor = topFacetAlbedoColor;
+		Vector4 topFacetEmissionColor = new Color(1.0f, 0.8f, 0.1f);
 		
 		Vector4 disabledEmissionColor = Color.black;
 

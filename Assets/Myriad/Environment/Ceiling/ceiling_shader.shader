@@ -2,16 +2,16 @@
 {
 	Properties
 	{
-		u_tile_edge_length("TileEdgeLength", Float) = 0.5
+		u_tile_edge_length("Tile Edge Length", Float) = 0.5
 
-		u_pit_edge_length_fraction("PitEdgeLengthFraction", Range(0, 1)) = 0.8
-		u_pit_depth_to_width_ratio("PitDepthToWidthRatio", Float) = 0.5
+		u_pit_edge_length_fraction("Pit Edge Length Fraction", Range(0, 1)) = 0.8
+		u_pit_depth_to_width_ratio("Pit Depth-to-Width Ratio", Float) = 0.5
 
-		u_surface_color("SurfaceColor", Color) = (0.5, 0.5, 1, 1)
+		u_surface_color("Surface Color", Color) = (0.5, 0.5, 1, 1)
 
-		u_pit_side_color("PitSideColor", Color) = (0.5, 1, 1, 1)
-		u_pit_bottom_color("PitBottomColor", Color) = (1, 0.5, 0.5, 1)
-		u_pit_fog_color("PitFogColor", Color) = (1, 1, 0.5, 1)
+		u_pit_side_color("Pit Side Color", Color) = (0.5, 1, 1, 1)
+		u_pit_bottom_color("Pit Bottom Color", Color) = (1, 0.5, 0.5, 1)
+		u_pit_fog_color("Pit Fog Color", Color) = (1, 1, 0.5, 1)
 	}
 
 	SubShader
