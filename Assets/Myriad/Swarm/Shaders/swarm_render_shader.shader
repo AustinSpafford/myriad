@@ -32,7 +32,7 @@
 
 			#include "swarm_shader_types.cginc"
 
-			//#define ENABLE_NEIGHBORHOOD_OVERCROWDING_DEBUGGING
+			#define ENABLE_NEIGHBORHOOD_OVERCROWDING_DEBUGGING
 			
 			struct s_rasterization_vertex
 			{
@@ -98,10 +98,10 @@
 				result.world_position_to_camera = (_WorldSpaceCameraPos.xyz - world_position);
 
 				#ifdef ENABLE_NEIGHBORHOOD_OVERCROWDING_DEBUGGING
-				result.albedo_color = 
+				result.diffuse_color = 
 					lerp(
 						float4(1, 0, 1, 1),
-						result.albedo_color,
+						result.diffuse_color,
 						smoothstep(0.5, 1.0f, swarmer_state.debug_accepted_candidates_fraction));
 				#endif
 
