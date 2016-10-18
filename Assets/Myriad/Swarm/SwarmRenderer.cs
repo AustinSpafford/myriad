@@ -51,16 +51,32 @@ public class SwarmRenderer : MonoBehaviour
 		}
 	}
 
+	private const float DisabledDistanceFromEdge = 100.0f; // This just needs to be large enough to be guaranteed to be well outside the model's bounds.
+
 	private SwarmSimulator swarmSimulator = null;
 	
 	private TypedComputeBuffer<SwarmShaderSwarmerModelVertex> swarmerModelVerticesBuffer = null;
+
+	private static float DistanceToLine(
+		Vector3 subjectPoint,
+		Vector3 linePointAlpha,
+		Vector3 linePointBravo)
+	{
+		Vector3 lineToSubjectDelta = (subjectPoint - linePointAlpha);
+
+		return Vector3.Distance(
+			lineToSubjectDelta,
+			Vector3.Project(
+				lineToSubjectDelta, 
+				(linePointBravo - linePointAlpha)));
+	}
 
 	private static void AppendVertexToModel(
 		Vector3 position,
 		Vector3 normal,
 		Color albedoColor,
-		Color glowColor,
-		Vector2 textureCoord,
+		Color emissionColor,
+		Vector4 edgeDistances,
 		float leftWingFraction,
 		float rightWingFraction,
 		Matrix4x4 placementMatrix,
@@ -71,8 +87,8 @@ public class SwarmRenderer : MonoBehaviour
 			Position = placementMatrix.MultiplyPoint(position),
 			Normal = placementMatrix.MultiplyVector(normal),
 			AlbedoColor = albedoColor,
-			GlowColor = glowColor,
-			TextureCoord = textureCoord,
+			EmissionColor = emissionColor,
+			EdgeDistances = edgeDistances,
 			LeftWingFraction = leftWingFraction,
 			RightWingFraction = rightWingFraction,
 		});
@@ -80,16 +96,15 @@ public class SwarmRenderer : MonoBehaviour
 
 	private static void AppendRawTriangleVerticesToModel(
 		Vector3[] positions,
-		Vector2[] textureCoords,
+		bool triangleIsHalfOfQuad,
 		Color albedoColor,
-		Color glowColor,
+		Color emissionColor,
 		float leftWingFraction,
 		float rightWingFraction,
 		Matrix4x4 placementMatrix,
 		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
 	{
-		if ((positions.Length != 3) ||
-			(textureCoords.Length != 3))
+		if (positions.Length != 3)
 		{
 			throw new System.ArgumentException();
 		}
@@ -97,15 +112,43 @@ public class SwarmRenderer : MonoBehaviour
 		Vector3 triangleNormal = Vector3.Cross(
 			positions[2] - positions[0],
 			positions[1] - positions[0]).normalized;
+
+		// NOTE: If we ever start distorting the model's faces, it might be worthwhile to 
+		// move this math down into the vertex-shader so it stays accurate.
+		Vector3 unfilteredDistancesToOpposingEdges = new Vector3(
+			DistanceToLine(positions[0], positions[1], positions[2]),
+			DistanceToLine(positions[1], positions[2], positions[0]),
+			DistanceToLine(positions[2], positions[0], positions[1]));
+
+		// NOTE: For the "fourth edgeDistance" to work, the quad has to be wider than tall, and with 
+		// with parallel first and third edges. If those assumptions fail a small visual artifact appears
+		// where the quad's two triangles meet.
+		Vector4[] perVertexEdgeDistances = new Vector4[] {
+			new Vector4(
+				unfilteredDistancesToOpposingEdges[0],
+				(triangleIsHalfOfQuad ? DisabledDistanceFromEdge : 0), // Erase the quad's shared-edge by never approaching zero.
+				0,
+				(triangleIsHalfOfQuad ? unfilteredDistancesToOpposingEdges[2] : DisabledDistanceFromEdge)), // Fake an edge outside the triangle that's parallel to our first.
+			new Vector4(
+				0,
+				(triangleIsHalfOfQuad ? DisabledDistanceFromEdge : unfilteredDistancesToOpposingEdges[1]), // Erase the quad's shared-edge by never approaching zero.
+				0,
+				(triangleIsHalfOfQuad ? unfilteredDistancesToOpposingEdges[2] : DisabledDistanceFromEdge)), // Fake an edge outside the triangle that's parallel to our first.
+			new Vector4(
+				0,
+				(triangleIsHalfOfQuad ? DisabledDistanceFromEdge : 0), // Erase the quad's shared-edge by never approaching zero.
+				unfilteredDistancesToOpposingEdges[2],
+				(triangleIsHalfOfQuad ? 0 : DisabledDistanceFromEdge)), // Fake an edge outside the triangle that's parallel to our first.
+		};
 		
-		for (int index = 0; index < 3; ++index)
+		for (int vertexIndex = 0; vertexIndex < 3; ++vertexIndex)
 		{
 			AppendVertexToModel(
-				positions[index],
+				positions[vertexIndex],
 				triangleNormal,
 				albedoColor,
-				glowColor,
-				textureCoords[index],
+				emissionColor,
+				perVertexEdgeDistances[vertexIndex],
 				leftWingFraction,
 				rightWingFraction,
 				placementMatrix,
@@ -116,24 +159,17 @@ public class SwarmRenderer : MonoBehaviour
 	private static void AppendSimpleTriangleVerticesToModel(
 		Vector3[] positions,
 		Color albedoColor,
-		Color glowColor,
+		Color emissionColor,
 		float leftWingFraction,
 		float rightWingFraction,
 		Matrix4x4 placementMatrix,
 		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
 	{
-		var textureCoords = new Vector2[]
-		{
-			new Vector2(0.5f, 1.0f),
-			new Vector2(0.0f, 0.0f),
-			new Vector2(1.0f, 0.0f),
-		};
-
 		AppendRawTriangleVerticesToModel(
 			positions,
-			textureCoords,
+			false, // triangleIsHalfOfQuad
 			albedoColor,
-			glowColor,
+			emissionColor,
 			leftWingFraction,
 			rightWingFraction,
 			placementMatrix,
@@ -143,7 +179,7 @@ public class SwarmRenderer : MonoBehaviour
 	private static void AppendSimpleQuadVerticesToModel(
 		Vector3[] positions,
 		Color albedoColor,
-		Color glowColor,
+		Color emissionColor,
 		float leftWingFraction,
 		float rightWingFraction,
 		Matrix4x4 placementMatrix,
@@ -154,29 +190,21 @@ public class SwarmRenderer : MonoBehaviour
 			throw new System.ArgumentException();
 		}
 
-		var textureCoords = new Vector2[]
-		{
-			new Vector2(0.0f, 0.0f),
-			new Vector2(1.0f, 0.0f),
-			new Vector2(1.0f, 1.0f),
-			new Vector2(0.0f, 1.0f),
-		};
-
 		AppendRawTriangleVerticesToModel(
-			new Vector3[] { positions[0], positions[1], positions[3] },
-			new Vector2[] { textureCoords[0], textureCoords[1], textureCoords[3] },
+			new Vector3[] { positions[0], positions[1], positions[2] },
+			true, // triangleIsHalfOfQuad
 			albedoColor,
-			glowColor,
+			emissionColor,
 			leftWingFraction,
 			rightWingFraction,
 			placementMatrix,
 			ref inoutSwarmerModelVertices);
 
 		AppendRawTriangleVerticesToModel(
-			new Vector3[] { positions[3], positions[1], positions[2] },
-			new Vector2[] { textureCoords[3], textureCoords[1], textureCoords[2] },
+			new Vector3[] { positions[2], positions[3], positions[0] },
+			true, // triangleIsHalfOfQuad
 			albedoColor,
-			glowColor,
+			emissionColor,
 			leftWingFraction,
 			rightWingFraction,
 			placementMatrix,
@@ -194,13 +222,13 @@ public class SwarmRenderer : MonoBehaviour
 		Vector3 rightPosition = new Vector3(1.0f, 0.0f, -1.0f);
 		Vector3 leftPosition = new Vector3(-1.0f, 0.0f, -1.0f);
 
-		Vector4 centerFacetGlowColor = Color.black;
+		Vector4 centerFacetEmissionColor = Color.black;
 
 		// Top-facet.
 		AppendSimpleTriangleVerticesToModel(
 			new Vector3[] { forwardPosition, leftPosition, rightPosition }, // BUG! Doesn't unity/D3D use a clockwise winding?
 			(useDebugColoring ? Color.cyan : Color.yellow),
-			centerFacetGlowColor,
+			centerFacetEmissionColor,
 			leftWingFraction,
 			rightWingFraction,
 			placementMatrix,
@@ -210,7 +238,7 @@ public class SwarmRenderer : MonoBehaviour
 		AppendSimpleTriangleVerticesToModel(
 			new Vector3[] { forwardPosition, rightPosition, leftPosition, }, // BUG! Doesn't unity/D3D use a clockwise winding?
 			(useDebugColoring ? Color.white : Color.yellow),
-			centerFacetGlowColor,
+			centerFacetEmissionColor,
 			leftWingFraction,
 			rightWingFraction,
 			placementMatrix,
@@ -236,7 +264,7 @@ public class SwarmRenderer : MonoBehaviour
 		Vector3 topRightPosition = (Quaternion.AngleAxis(120.0f, Vector3.up) * topForwardPosition);
 		Vector3 topLeftPosition = (Quaternion.AngleAxis(-120.0f, Vector3.up) * topForwardPosition);
 		
-		Vector4 sideColor = new Color(0.4f, 0.4f, 0.7f);
+		Vector4 sideColor = new Color(0.6f, 0.6f, 0.6f);
 
 		Vector4 rearColor = (useDebugColoring ? (Vector4)Color.green : sideColor);
 
@@ -250,18 +278,20 @@ public class SwarmRenderer : MonoBehaviour
 			frontRightColor = swapStorage;
 		}
 		
-		Vector4 topFacetColor = (
+		Vector4 topFacetAlbedoColor = (
 			useDebugColoring ? 
 				(useTopHalfColoring ? Color.yellow : Color.cyan): 
-				new Color(1.0f, 0.8f, 0.3f));
+				new Color(0.1f, 0.1f, 0.1f));
+
+		Vector4 topFacetEmissionColor = new Color(1.0f, 0.8f, 0.1f);
 		
-		Vector4 disabledGlowColor = Color.black;
+		Vector4 disabledEmissionColor = Color.black;
 
 		// Rear-facet.
 		AppendSimpleQuadVerticesToModel(
 			new Vector3[] { baseLeftPosition, baseRightPosition, topRightPosition, topLeftPosition },
 			rearColor,
-			disabledGlowColor,
+			disabledEmissionColor,
 			leftWingFraction,
 			rightWingFraction,
 			placementMatrix,
@@ -271,7 +301,7 @@ public class SwarmRenderer : MonoBehaviour
 		AppendSimpleQuadVerticesToModel(
 			new Vector3[] { baseForwardPosition, baseLeftPosition, topLeftPosition, topForwardPosition },
 			frontLeftColor,
-			disabledGlowColor,
+			disabledEmissionColor,
 			leftWingFraction,
 			rightWingFraction,
 			placementMatrix,
@@ -281,7 +311,7 @@ public class SwarmRenderer : MonoBehaviour
 		AppendSimpleQuadVerticesToModel(
 			new Vector3[] { baseRightPosition, baseForwardPosition, topForwardPosition, topRightPosition },
 			frontRightColor,
-			disabledGlowColor,
+			disabledEmissionColor,
 			leftWingFraction,
 			rightWingFraction,
 			placementMatrix,
@@ -290,8 +320,8 @@ public class SwarmRenderer : MonoBehaviour
 		// Top-facet.
 		AppendSimpleTriangleVerticesToModel(
 			new Vector3[] { topForwardPosition, topLeftPosition, topRightPosition },
-			topFacetColor,
-			disabledGlowColor,
+			topFacetAlbedoColor,
+			topFacetEmissionColor,
 			leftWingFraction,
 			rightWingFraction,
 			placementMatrix,

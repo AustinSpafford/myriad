@@ -5,7 +5,7 @@ struct s_particle_position // Represents: SpatializerShaderParticlePosition, whi
 {
 	float3 position;
 	
-	float pad_0; // For aligning vectors to 16-byte cache-boundaries.
+	float pad_0; // For aligning vector-reads to 16-byte cache-boundaries.
 };
 
 struct s_voxel_particle_pair // Represents: SpatializerShaderVoxelParticlePair, which contains any usage documentation.
@@ -23,5 +23,5 @@ struct s_neighborhood // Represents: SpatializerShaderNeighborhood, which contai
 {
 	uint3 neighborhood_min_voxel_coord;
 	
-	uint pad_0; // For aligning vectors to 16-byte cache-boundaries.
+	uint pad_0; // For aligning vector-reads to 16-byte cache-boundaries.
 };
