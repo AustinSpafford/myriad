@@ -5,6 +5,11 @@ Temp/
 Library/
 Output/
 
+# ========================== #
+# Excluded for Rights Reaons #
+# ========================== #
+WithoutRights/
+
 # ===================================== #
 # Visual Studio / MonoDevelop generated #
 # ===================================== #
