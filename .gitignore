@@ -8,7 +8,7 @@ Output/
 # ========================== #
 # Excluded for Rights Reaons #
 # ========================== #
-*WithoutRights*
+*.without_rights.*
 
 # ===================================== #
 # Visual Studio / MonoDevelop generated #
