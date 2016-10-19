@@ -177,14 +177,14 @@ public class AudioLabelBroadcaster : MonoBehaviour
 	private IEnumerator LoadLabelsFileAsync(
 		TextAsset newLabelsFile)
 	{
+		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
 		if (DebugEnabled)
 		{
 			Debug.LogFormat(
 				"Starting async load of [{0}].",
 				newLabelsFile.name);
 		}
-
-		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
 		var inProgressUnsortedLabelEvents = new List<SortableLabelEvent>(500);
 
