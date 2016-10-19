@@ -7,9 +7,9 @@ using System.Linq;
 
 public enum AudioLabelEventType
 {
-	ImmediateLabel,
-	IntervalLabelStarting,
-	IntervalLabelEnding,
+	Immediate,
+	IntervalStarting,
+	IntervalEnding,
 }
 
 public class AudioLabelEventArgs : EventArgs
@@ -24,6 +24,15 @@ public class AudioLabelEventArgs : EventArgs
 	public string LabelName;
 }
 
+public class AudioLabelRemappingEventArgs : EventArgs
+{
+	public AudioLabelBroadcaster Broadcaster;
+
+	public string OriginalLabelName;
+
+	public List<string> OutRemappedLabelNames;
+}
+
 public class AudioLabelEventStreamRestartingEventArgs : EventArgs
 {
 	public AudioLabelBroadcaster Broadcaster;
@@ -36,6 +45,8 @@ public class AudioLabelBroadcaster : MonoBehaviour
 
 	public string[] IgnoredLabelPrefixes = new string[0];
 
+	public bool OnlyBroadcastRemappedLabels = false;
+
 	public float MaxLoadMillisecondsPerFrame = 1.0f;
 
 	public bool DebugEnabled = false;
@@ -45,6 +56,9 @@ public class AudioLabelBroadcaster : MonoBehaviour
 	// The audio-label event is the main purpose for this class.
 	// It allows annotation-files to be spooled out to other systems as our sibling audio-source is played.
 	public static event EventHandler<AudioLabelEventArgs> AudioLabelEventTriggered;
+
+	// Give label-remappers a chance to remap/fork any labels we're about to broadcast.
+	public static event EventHandler<AudioLabelRemappingEventArgs> AudioLabelRemapping;
 
 	// The stream-restarting event is sent out whenever the audio-clip's playhead moves 
 	// backwards in time, forcing us to throw away everything and re-seek to its new position.
@@ -90,14 +104,14 @@ public class AudioLabelBroadcaster : MonoBehaviour
 
 				// Notify that we're restarting the event-stream.
 				{
-					var eventArgs = new AudioLabelEventStreamRestartingEventArgs()
+					var streamRestartingEventArgs = new AudioLabelEventStreamRestartingEventArgs()
 					{
 						Broadcaster = this,
 					};
 
 					if (AudioLabelEventStreamRestarting != null)
 					{
-						AudioLabelEventStreamRestarting(this, eventArgs);
+						AudioLabelEventStreamRestarting(this, streamRestartingEventArgs);
 					}
 				}
 
@@ -133,6 +147,8 @@ public class AudioLabelBroadcaster : MonoBehaviour
 	private List<SortableLabelEvent> sortedLabelEvents = null;
 
 	private int nextLabelEventIndex = 0;
+
+	private List<string> scratchRemappedLabelNames = new List<string>();
 	
 	private void BroadcastLabelEvents(
 		float targetTime,
@@ -143,7 +159,31 @@ public class AudioLabelBroadcaster : MonoBehaviour
 		{
 			var sourceLabelEvent = sortedLabelEvents[nextLabelEventIndex];
 
-			var eventArgs = new AudioLabelEventArgs()
+			// Give remappers a chance to modify the label.
+			{
+				scratchRemappedLabelNames.Clear();
+
+				if (AudioLabelRemapping != null)
+				{
+					var remappingEventArgs = new AudioLabelRemappingEventArgs()
+					{
+						Broadcaster = this,
+
+						OriginalLabelName = sourceLabelEvent.LabelName,
+
+						OutRemappedLabelNames = scratchRemappedLabelNames,
+					};
+
+					AudioLabelRemapping(this, remappingEventArgs);
+				}
+
+				if (OnlyBroadcastRemappedLabels == false)
+				{
+					scratchRemappedLabelNames.Add(sourceLabelEvent.LabelName);
+				}
+			}
+
+			var labelEventArgs = new AudioLabelEventArgs()
 			{
 				Broadcaster = this,
 				BroadcasterIsSeeking = broadcasterIsSeeking,
@@ -155,19 +195,24 @@ public class AudioLabelBroadcaster : MonoBehaviour
 				LabelName = sourceLabelEvent.LabelName,
 			};
 			
-			if (AudioLabelEventTriggered != null)
+			foreach (string remappedLabelName in scratchRemappedLabelNames)
 			{
-				AudioLabelEventTriggered(this, eventArgs);
-			}
+				labelEventArgs.LabelName = remappedLabelName;
 
-			if (DebugEnabled)
-			{
-				Debug.LogFormat(
-					"{0} {1:n2} {2} {3}", 
-					nextLabelEventIndex,
-					eventArgs.EventTime,
-					eventArgs.EventType,
-					eventArgs.LabelName);
+				if (AudioLabelEventTriggered != null)
+				{
+					AudioLabelEventTriggered(this, labelEventArgs);
+				}
+
+				if (DebugEnabled)
+				{
+					Debug.LogFormat(
+						"{0} {1:n2} {2} {3}", 
+						nextLabelEventIndex,
+						labelEventArgs.EventTime,
+						labelEventArgs.EventType,
+						labelEventArgs.LabelName);
+				}
 			}
 
 			++nextLabelEventIndex;
@@ -216,7 +261,7 @@ public class AudioLabelBroadcaster : MonoBehaviour
 								inProgressUnsortedLabelEvents.Add(new SortableLabelEvent()
 								{
 									EventTime = startTime,
-									EventType = AudioLabelEventType.ImmediateLabel,
+									EventType = AudioLabelEventType.Immediate,
 									LabelName = labelName,
 								});
 							}
@@ -228,14 +273,14 @@ public class AudioLabelBroadcaster : MonoBehaviour
 								inProgressUnsortedLabelEvents.Add(new SortableLabelEvent()
 								{
 									EventTime = startTime,
-									EventType = AudioLabelEventType.IntervalLabelStarting,
+									EventType = AudioLabelEventType.IntervalStarting,
 									LabelName = labelName,
 								});
 
 								inProgressUnsortedLabelEvents.Add(new SortableLabelEvent()
 								{
 									EventTime = endTime,
-									EventType = AudioLabelEventType.IntervalLabelEnding,
+									EventType = AudioLabelEventType.IntervalEnding,
 									LabelName = labelName,
 								});
 							}
