@@ -13,7 +13,7 @@ public class AudioLabelRemapperEditor : Editor
 		labelRemappingsReorderableList = 
 			new ReorderableList(
 				serializedObject,
-				serializedObject.FindProperty("LabelRemappings"),
+				serializedObject.FindProperty("labelRemappings"),
 				draggable: true,
 				displayHeader: true,
 				displayAddButton: true,
@@ -98,7 +98,7 @@ public class AudioLabelRemapperEditor : Editor
 			}
 			
 			AppendSpaceFillingPropertyField(
-				rootProperty.FindPropertyRelative("OriginalLabelPrefix"),
+				rootProperty.FindPropertyRelative("OriginalLabelTrack"),
 				ref subgroupRect);
 		}
 
