@@ -207,8 +207,7 @@ public class AudioLabelBroadcaster : MonoBehaviour
 				if (DebugEnabled)
 				{
 					Debug.LogFormat(
-						"{0} {1:n2} {2} {3}", 
-						nextLabelEventIndex,
+						"{0:n2} {1} {2}", 
 						labelEventArgs.EventTime,
 						labelEventArgs.EventType,
 						labelEventArgs.LabelName);
