@@ -45,7 +45,7 @@ public class AudioLabelRemapper : MonoBehaviour
 
 		foreach (LabelRemappingEntry remappingEntry in labelRemappings)
 		{
-			if (originalLabelTrack.Equals(remappingEntry.OriginalLabelTrack))
+			if (originalLabelTrack.Equals(remappingEntry.OriginalLabelTrack, StringComparison.OrdinalIgnoreCase))
 			{
 				bool numberRangeIsMatched = (
 					(remappingEntry.OriginalLabelRangeIsEnabled == false) ||
