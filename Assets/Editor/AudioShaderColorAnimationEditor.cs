@@ -5,8 +5,8 @@ using System.Collections.Generic;
 
 // Many thanks to the guide on ReorderableList at: http://va.lent.in/unity-make-your-lists-functional-with-reorderablelist/
 
-[CustomEditor(typeof(AudioShaderColors))]
-public class AudioShaderColorsEditor : Editor
+[CustomEditor(typeof(AudioShaderColorAnimation))]
+public class AudioShaderColorAnimationEditor : Editor
 {
 	public void OnEnable()
 	{
