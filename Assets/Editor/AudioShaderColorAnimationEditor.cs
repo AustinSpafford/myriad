@@ -31,12 +31,20 @@ public class AudioShaderColorAnimationEditor : Editor
 				int newElementIndex = list.serializedProperty.arraySize++;
 				SerializedProperty property = list.serializedProperty.GetArrayElementAtIndex(newElementIndex);
 
-				property.FindPropertyRelative("ShaderUniformName").stringValue = "";
-				property.FindPropertyRelative("AudioLabelName").stringValue = "";
-				property.FindPropertyRelative("LabelStartColor").colorValue = Color.white;
-				property.FindPropertyRelative("LabelStartBlendTime").floatValue = 0.1f;
-				property.FindPropertyRelative("LabelEndColor").colorValue = Color.black;
-				property.FindPropertyRelative("LabelEndBlendTime").floatValue = 0.1f;
+				if (newElementIndex > 0)
+				{
+					property.serializedObject.CopyFromSerializedProperty(
+						list.serializedProperty.GetArrayElementAtIndex(newElementIndex - 1));
+				}
+				else
+				{
+					property.FindPropertyRelative("ShaderUniformName").stringValue = "";
+					property.FindPropertyRelative("AudioLabelName").stringValue = "";
+					property.FindPropertyRelative("LabelStartColor").colorValue = Color.white;
+					property.FindPropertyRelative("LabelStartBlendTime").floatValue = 0.1f;
+					property.FindPropertyRelative("LabelEndColor").colorValue = Color.black;
+					property.FindPropertyRelative("LabelEndBlendTime").floatValue = 0.1f;
+				}
 			};
 
 		colorEventsList.drawElementCallback =
@@ -71,6 +79,8 @@ public class AudioShaderColorAnimationEditor : Editor
 		serializedObject.Update();
 
 		colorEventsList.DoLayoutList();
+
+		EditorGUILayout.PropertyField(serializedObject.FindProperty("DebugEnabled"));
 
 		serializedObject.ApplyModifiedProperties();
 	}

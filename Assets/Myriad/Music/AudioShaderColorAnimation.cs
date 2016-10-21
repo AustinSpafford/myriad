@@ -18,6 +18,8 @@ public class AudioShaderColorAnimation : MonoBehaviour
 		public float LabelEndBlendTime;
 	}
 
+	public bool DebugEnabled = false;
+
 	public void OnStart()
 	{
 		ResetColorStates();
@@ -88,6 +90,16 @@ public class AudioShaderColorAnimation : MonoBehaviour
 
 					default:
 						throw new System.ComponentModel.InvalidEnumArgumentException();
+				}
+
+				if (DebugEnabled)
+				{
+					Debug.LogFormat(
+						"[{0}] blending from [{1}] to [{2}] over [{3}]",
+						colorState.ShaderUniformName,
+						colorState.StartColor,
+						colorState.EndColor,
+						colorState.BlendTime);
 				}
 			}
 		}
