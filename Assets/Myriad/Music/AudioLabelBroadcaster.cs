@@ -199,18 +199,18 @@ public class AudioLabelBroadcaster : MonoBehaviour
 			{
 				labelEventArgs.LabelName = remappedLabelName;
 
-				if (AudioLabelEventTriggered != null)
-				{
-					AudioLabelEventTriggered(this, labelEventArgs);
-				}
-
 				if (DebugEnabled)
 				{
 					Debug.LogFormat(
-						"{0:n2} {1} {2}", 
+						"Broadcasting audio-label: {0:n2} {1} {2}", 
 						labelEventArgs.EventTime,
 						labelEventArgs.EventType,
 						labelEventArgs.LabelName);
+				}
+
+				if (AudioLabelEventTriggered != null)
+				{
+					AudioLabelEventTriggered(this, labelEventArgs);
 				}
 			}
 
