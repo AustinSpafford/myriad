@@ -39,8 +39,9 @@ public class SwarmSimulator : MonoBehaviour
 
 	public void Awake()
 	{
-		particleSpatializer = GetComponent<ParticleSpatializer>();
+		audioShaderUniformCollector = GetComponent<AudioShaderUniformCollector>();
 		forcefieldCollector = GetComponent<SwarmForcefieldCollector>();
+		particleSpatializer = GetComponent<ParticleSpatializer>();
 	}
 
 	public void Start()
@@ -89,6 +90,8 @@ public class SwarmSimulator : MonoBehaviour
 
 			ParticleSpatializer.NeighborhoodResults swarmerNeighborhoods = BuildSwarmerNeighborhoods();
 
+			audioShaderUniformCollector.CollectComputeShaderUniforms(BehaviorComputeShader);
+
 			AdvanceSwarmers(localDeltaTime, swarmerNeighborhoods);
 
 			lastRenderedFrameIndex = frameIndex;
@@ -100,8 +103,9 @@ public class SwarmSimulator : MonoBehaviour
 
 	private const int ForcefieldsComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
 	
-	private ParticleSpatializer particleSpatializer = null;
+	private AudioShaderUniformCollector audioShaderUniformCollector = null;
 	private SwarmForcefieldCollector forcefieldCollector = null;
+	private ParticleSpatializer particleSpatializer = null;
 
 	private Queue<TypedComputeBuffer<SwarmShaderForcefieldState> > forcefieldsBufferQueue = null;
 	private PingPongComputeBuffers<SwarmShaderSwarmerState> swarmerStateBuffers = new PingPongComputeBuffers<SwarmShaderSwarmerState>();

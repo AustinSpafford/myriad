@@ -13,7 +13,12 @@ public class SwarmRenderer : MonoBehaviour
 
 	public void Awake()
 	{
+		audioShaderUniformCollector = GetComponent<AudioShaderUniformCollector>();
 		swarmSimulator = GetComponent<SwarmSimulator>();
+
+		// Fork the material so we avoid writing any of the
+		// shader-uniform changes back to the source-material.
+		SwarmMaterial = new Material(SwarmMaterial);
 	}
 
 	public void OnEnable()
@@ -44,6 +49,8 @@ public class SwarmRenderer : MonoBehaviour
 				SwarmMaterial.SetBuffer("u_swarmer_model_vertices", swarmerModelVerticesBuffer);
 				SwarmMaterial.SetMatrix("u_swarm_to_world_matrix", transform.localToWorldMatrix);
 
+				audioShaderUniformCollector.CollectMaterialUniforms(SwarmMaterial);
+
 				Graphics.DrawProcedural(
 					MeshTopology.Triangles, 
 					swarmerModelVerticesBuffer.count,
@@ -53,7 +60,8 @@ public class SwarmRenderer : MonoBehaviour
 	}
 
 	private const float DisabledDistanceFromEdge = 100.0f; // This just needs to be large enough to be guaranteed to be well outside the model's bounds.
-
+	
+	private AudioShaderUniformCollector audioShaderUniformCollector = null;
 	private SwarmSimulator swarmSimulator = null;
 	
 	private TypedComputeBuffer<SwarmShaderSwarmerModelVertex> swarmerModelVerticesBuffer = null;

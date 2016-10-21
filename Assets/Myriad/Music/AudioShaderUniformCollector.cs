@@ -22,14 +22,14 @@ public class AudioShaderUniformCollector : MonoBehaviour, IAudioShaderUniformAcc
 	public bool IsCollecting { get { return (currentCollectionComputeShader != null); } }
 	
 	public void CollectComputeShaderUniforms(
-		ComputeShader computeShader)
+		ComputeShader inoutComputeShader)
 	{
 		if (IsCollecting)
 		{
 			throw new InvalidOperationException();
 		}
 
-		currentCollectionComputeShader = computeShader;
+		currentCollectionComputeShader = inoutComputeShader;
 
 		if (CollectingShaderUniforms != null)
 		{
@@ -48,14 +48,14 @@ public class AudioShaderUniformCollector : MonoBehaviour, IAudioShaderUniformAcc
 	}
 	
 	public void CollectMaterialUniforms(
-		Material material)
+		Material inoutMaterial)
 	{
 		if (IsCollecting)
 		{
 			throw new InvalidOperationException();
 		}
 
-		currentCollectionMaterial = material;
+		currentCollectionMaterial = inoutMaterial;
 
 		if (CollectingShaderUniforms != null)
 		{
