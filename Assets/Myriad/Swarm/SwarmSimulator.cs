@@ -7,8 +7,9 @@ using System.Collections.Generic;
 using UnityEditor;
 #endif // UNITY_EDITOR
 
-[RequireComponent(typeof(SwarmForcefieldCollector))]
 [RequireComponent(typeof(ParticleSpatializer))]
+[RequireComponent(typeof(AudioShaderUniformCollector))]
+[RequireComponent(typeof(SwarmForcefieldCollector))]
 public class SwarmSimulator : MonoBehaviour
 {
 	public int SwarmerCount = 1000;

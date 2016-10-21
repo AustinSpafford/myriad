@@ -33,7 +33,7 @@ public class AudioLabelRemappingEventArgs : EventArgs
 	public List<string> OutRemappedLabelNames;
 }
 
-public class AudioLabelEventStreamRestartingEventArgs : EventArgs
+public class AudioLabelStreamRestartingEventArgs : EventArgs
 {
 	public AudioLabelBroadcaster Broadcaster;
 }
@@ -62,7 +62,7 @@ public class AudioLabelBroadcaster : MonoBehaviour
 
 	// The stream-restarting event is sent out whenever the audio-clip's playhead moves 
 	// backwards in time, forcing us to throw away everything and re-seek to its new position.
-	public static event EventHandler<AudioLabelEventStreamRestartingEventArgs> AudioLabelEventStreamRestarting;
+	public static event EventHandler<AudioLabelStreamRestartingEventArgs> AudioLabelStreamRestarting;
 
 	public void Awake()
 	{
@@ -104,14 +104,14 @@ public class AudioLabelBroadcaster : MonoBehaviour
 
 				// Notify that we're restarting the event-stream.
 				{
-					var streamRestartingEventArgs = new AudioLabelEventStreamRestartingEventArgs()
+					var streamRestartingEventArgs = new AudioLabelStreamRestartingEventArgs()
 					{
 						Broadcaster = this,
 					};
 
-					if (AudioLabelEventStreamRestarting != null)
+					if (AudioLabelStreamRestarting != null)
 					{
-						AudioLabelEventStreamRestarting(this, streamRestartingEventArgs);
+						AudioLabelStreamRestarting(this, streamRestartingEventArgs);
 					}
 				}
 

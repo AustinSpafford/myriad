@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 [RequireComponent(typeof(SwarmSimulator))]
+[RequireComponent(typeof(AudioShaderUniformCollector))]
 public class SwarmRenderer : MonoBehaviour
 {
 	public Material SwarmMaterial;
