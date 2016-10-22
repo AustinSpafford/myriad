@@ -18,9 +18,14 @@ public class AudioIntervalLimiter : MonoBehaviour
 		audioSource = GetComponent<AudioSource>();
 	}
 
-	public void Start()
+	public void OnEnable()
 	{
 		originalVolume = audioSource.volume;
+	}
+
+	public void OnDisable()
+	{
+		audioSource.volume = originalVolume;
 	}
 
 	public void Update()
