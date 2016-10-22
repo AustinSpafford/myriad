@@ -1,0 +1,1100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1000010172141498}
+  m_IsPrefabParent: 1
+--- !u!1 &1000010073137464
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000012597544810}
+  - 114: {fileID: 114000012762716510}
+  m_Layer: 0
+  m_Name: top_face_blinks
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000010172141498
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013168561066}
+  - 114: {fileID: 114000011926836112}
+  - 82: {fileID: 82000010403323132}
+  - 114: {fileID: 114000010794277976}
+  - 114: {fileID: 114000011157833298}
+  m_Layer: 0
+  m_Name: music_player
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000010525035802
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000010614406174}
+  - 114: {fileID: 114000013872632040}
+  - 114: {fileID: 114000012663272990}
+  - 114: {fileID: 114000012964930024}
+  - 114: {fileID: 114000011818038330}
+  m_Layer: 0
+  m_Name: shader_animations
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000010907622990
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013239437944}
+  m_Layer: 0
+  m_Name: movement_pulses
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000010988194452
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013505775072}
+  - 114: {fileID: 114000010062333374}
+  - 114: {fileID: 114000010334044196}
+  m_Layer: 0
+  m_Name: audio_label_remapper
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000012005558274
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013261228542}
+  - 114: {fileID: 114000010890174812}
+  - 114: {fileID: 114000010415990482}
+  - 114: {fileID: 114000013546531552}
+  m_Layer: 0
+  m_Name: audio_label_remapper
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000012372545564
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000011194305836}
+  m_Layer: 0
+  m_Name: unified_style
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!1 &1000012423106034
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000011706065028}
+  - 114: {fileID: 114000012030948072}
+  - 114: {fileID: 114000010695646624}
+  m_Layer: 0
+  m_Name: audio_label_remapper
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000013263117436
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013948403874}
+  m_Layer: 0
+  m_Name: three_groups_style
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000013826909912
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013953934534}
+  - 114: {fileID: 114000014107640488}
+  - 114: {fileID: 114000012872292526}
+  - 114: {fileID: 114000010411598750}
+  - 114: {fileID: 114000012069836506}
+  m_Layer: 0
+  m_Name: shader_animations
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000014036328994
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013628647762}
+  - 114: {fileID: 114000010229580088}
+  m_Layer: 0
+  m_Name: front_facet_blinks
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4000010614406174
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010525035802}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000013948403874}
+  m_RootOrder: 1
+--- !u!4 &4000011194305836
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012372545564}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children:
+  - {fileID: 4000013505775072}
+  - {fileID: 4000013953934534}
+  m_Father: {fileID: 4000013239437944}
+  m_RootOrder: 0
+--- !u!4 &4000011706065028
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012423106034}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000013948403874}
+  m_RootOrder: 0
+--- !u!4 &4000012597544810
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010073137464}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000013168561066}
+  m_RootOrder: 2
+--- !u!4 &4000013168561066
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010172141498}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children:
+  - {fileID: 4000013261228542}
+  - {fileID: 4000013628647762}
+  - {fileID: 4000012597544810}
+  - {fileID: 4000013239437944}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+--- !u!4 &4000013239437944
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010907622990}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children:
+  - {fileID: 4000011194305836}
+  - {fileID: 4000013948403874}
+  m_Father: {fileID: 4000013168561066}
+  m_RootOrder: 3
+--- !u!4 &4000013261228542
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012005558274}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000013168561066}
+  m_RootOrder: 0
+--- !u!4 &4000013505775072
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010988194452}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000011194305836}
+  m_RootOrder: 0
+--- !u!4 &4000013628647762
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000014036328994}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000013168561066}
+  m_RootOrder: 1
+--- !u!4 &4000013948403874
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013263117436}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children:
+  - {fileID: 4000011706065028}
+  - {fileID: 4000010614406174}
+  m_Father: {fileID: 4000013239437944}
+  m_RootOrder: 1
+--- !u!4 &4000013953934534
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013826909912}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000011194305836}
+  m_RootOrder: 1
+--- !u!82 &82000010403323132
+AudioSource:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010172141498}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 4ac94cf321b02d54b8b8b0a0eaa221d5, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+--- !u!114 &114000010062333374
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010988194452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: movement_boost_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: movement_boost_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: movement_boost_group2
+--- !u!114 &114000010229580088
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000014036328994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bdc7b003939f64f8922418c98d1cb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DebugEnabled: 0
+  audioColorEvents:
+  - ShaderUniformName: u_facet_front_left_emission_color
+    AudioLabelName: pulse_facet_front_left
+    LabelStartColor: {r: 0.63235295, g: 0.9513408, b: 1, a: 1}
+    LabelStartBlendTime: 0.05
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.2
+  - ShaderUniformName: u_facet_front_center_emission_color
+    AudioLabelName: pulse_facet_front_center
+    LabelStartColor: {r: 0.6313726, g: 0.95294124, b: 1, a: 1}
+    LabelStartBlendTime: 0.05
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.2
+  - ShaderUniformName: u_facet_front_right_emission_color
+    AudioLabelName: pulse_facet_front_right
+    LabelStartColor: {r: 0.6313726, g: 0.95294124, b: 1, a: 1}
+    LabelStartBlendTime: 0.05
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.2
+--- !u!114 &114000010334044196
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010988194452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_left_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_right_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_left_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_right_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_left_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_right_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_rear_right_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_rear_right_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_rear_right_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: pulse_facet_rear_left_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: pulse_facet_rear_left_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: pulse_facet_rear_left_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: pulse_facet_rear_right_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: pulse_facet_rear_right_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: pulse_facet_rear_right_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: pulse_facet_rear_left_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: pulse_facet_rear_left_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: pulse_facet_rear_left_group2
+--- !u!114 &114000010411598750
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013826909912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d5048205eab74d4ea8945b3f15b0acd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderUniformName: u_swarmer_speed_scalar_group2
+  DebugEnabled: 0
+  audioFloatEvents:
+  - AudioLabelName: behavior_dormant
+    LabelStartTargetValue: 0
+    LabelStartBlendTime: 0
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0
+  - AudioLabelName: movement_boost_group0
+    LabelStartTargetValue: 2
+    LabelStartBlendTime: 0
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0.25
+--- !u!114 &114000010415990482
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012005558274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: BPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_front_left
+  - OriginalLabelTrack: BPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_front_right
+  - OriginalLabelTrack: BPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: pulse_facet_front_center
+--- !u!114 &114000010695646624
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012423106034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_left_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_right_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_rear_left_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_rear_right_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: pulse_facet_rear_left_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: pulse_facet_rear_right_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: pulse_facet_rear_left_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: pulse_facet_rear_right_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: pulse_facet_rear_left_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: pulse_facet_rear_right_group2
+--- !u!114 &114000010794277976
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010172141498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8b0da6954ad2ac4383f097228561ce6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LabelsFile: {fileID: 4900000, guid: e50fc8d8c89ef8b43b042063328e5aac, type: 3}
+  IgnoredLabelPrefixes:
+  - Eighth
+  - Beat
+  - Bar
+  OnlyBroadcastRemappedLabels: 1
+  MaxLoadMillisecondsPerFrame: 2
+  DebugEnabled: 0
+--- !u!114 &114000010890174812
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012005558274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: LPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_top_left
+  - OriginalLabelTrack: LPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: pulse_facet_top_center
+  - OriginalLabelTrack: LPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: pulse_facet_top_right
+--- !u!114 &114000011157833298
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010172141498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8cbe329820832148b522ce97d6d1390, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  IntervalStartTime: 120
+  IntervalDuration: 96
+  FadeInDuration: 1
+  FadeOutDuration: 1
+--- !u!114 &114000011818038330
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010525035802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bdc7b003939f64f8922418c98d1cb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DebugEnabled: 0
+  audioColorEvents:
+  - ShaderUniformName: u_facet_rear_left_emission_color_group0
+    AudioLabelName: pulse_facet_rear_left_group0
+    LabelStartColor: {r: 0.37997404, g: 1, b: 0.30882353, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_rear_right_emission_color_group0
+    AudioLabelName: pulse_facet_rear_right_group0
+    LabelStartColor: {r: 0.3803922, g: 1, b: 0.30980393, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_rear_left_emission_color_group1
+    AudioLabelName: pulse_facet_rear_left_group1
+    LabelStartColor: {r: 0.23022321, g: 0.78275865, b: 0.5146165, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_rear_right_emission_color_group1
+    AudioLabelName: pulse_facet_rear_right_group1
+    LabelStartColor: {r: 0.23137257, g: 0.7843138, b: 0.5137255, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_rear_left_emission_color_group2
+    AudioLabelName: pulse_facet_rear_left_group2
+    LabelStartColor: {r: 0.21196757, g: 0.54114074, b: 0.72068965, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_rear_right_emission_color_group2
+    AudioLabelName: pulse_facet_rear_right_group2
+    LabelStartColor: {r: 0.21176472, g: 0.5411765, b: 0.72156864, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+--- !u!114 &114000011926836112
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010172141498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: facfe0f0d272cb74689fefc6c70f8b03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CopiedTransform: {fileID: 0}
+--- !u!114 &114000012030948072
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012423106034}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: movement_boost_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: movement_boost_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: movement_boost_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: movement_boost_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: movement_boost_group2
+--- !u!114 &114000012069836506
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013826909912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bdc7b003939f64f8922418c98d1cb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DebugEnabled: 0
+  audioColorEvents:
+  - ShaderUniformName: u_facet_rear_left_emission_color_group0
+    AudioLabelName: pulse_facet_rear_left_group0
+    LabelStartColor: {r: 0.37997404, g: 1, b: 0.30882353, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_rear_right_emission_color_group0
+    AudioLabelName: pulse_facet_rear_right_group0
+    LabelStartColor: {r: 0.3803922, g: 1, b: 0.30980393, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_rear_left_emission_color_group1
+    AudioLabelName: pulse_facet_rear_left_group1
+    LabelStartColor: {r: 0.3803922, g: 1, b: 0.30980393, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_rear_right_emission_color_group1
+    AudioLabelName: pulse_facet_rear_right_group1
+    LabelStartColor: {r: 0.3803922, g: 1, b: 0.30980393, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_rear_left_emission_color_group2
+    AudioLabelName: pulse_facet_rear_left_group2
+    LabelStartColor: {r: 0.3803922, g: 1, b: 0.30980393, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_rear_right_emission_color_group2
+    AudioLabelName: pulse_facet_rear_right_group2
+    LabelStartColor: {r: 0.3803922, g: 1, b: 0.30980393, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+--- !u!114 &114000012663272990
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010525035802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d5048205eab74d4ea8945b3f15b0acd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderUniformName: u_swarmer_speed_scalar_group1
+  DebugEnabled: 0
+  audioFloatEvents:
+  - AudioLabelName: behavior_dormant
+    LabelStartTargetValue: 0
+    LabelStartBlendTime: 0
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0
+  - AudioLabelName: movement_boost_group1
+    LabelStartTargetValue: 2
+    LabelStartBlendTime: 0.1
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0.1
+--- !u!114 &114000012762716510
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010073137464}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19bdc7b003939f64f8922418c98d1cb4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  DebugEnabled: 0
+  audioColorEvents:
+  - ShaderUniformName: u_facet_top_left_emission_color
+    AudioLabelName: pulse_facet_top_left
+    LabelStartColor: {r: 1, g: 1, b: 0.8, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_top_center_emission_color
+    AudioLabelName: pulse_facet_top_center
+    LabelStartColor: {r: 1, g: 1, b: 0.8000001, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+  - ShaderUniformName: u_facet_top_right_emission_color
+    AudioLabelName: pulse_facet_top_right
+    LabelStartColor: {r: 1, g: 1, b: 0.8000001, a: 1}
+    LabelStartBlendTime: 0.03
+    LabelEndColor: {r: 0, g: 0, b: 0, a: 1}
+    LabelEndBlendTime: 0.1
+--- !u!114 &114000012872292526
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013826909912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d5048205eab74d4ea8945b3f15b0acd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderUniformName: u_swarmer_speed_scalar_group1
+  DebugEnabled: 0
+  audioFloatEvents:
+  - AudioLabelName: behavior_dormant
+    LabelStartTargetValue: 0
+    LabelStartBlendTime: 0
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0
+  - AudioLabelName: movement_boost_group0
+    LabelStartTargetValue: 2
+    LabelStartBlendTime: 0
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0.25
+--- !u!114 &114000012964930024
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010525035802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d5048205eab74d4ea8945b3f15b0acd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderUniformName: u_swarmer_speed_scalar_group2
+  DebugEnabled: 0
+  audioFloatEvents:
+  - AudioLabelName: behavior_dormant
+    LabelStartTargetValue: 0
+    LabelStartBlendTime: 0
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0
+  - AudioLabelName: movement_boost_group2
+    LabelStartTargetValue: 2
+    LabelStartBlendTime: 0.1
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0.1
+--- !u!114 &114000013546531552
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012005558274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: SongIntro
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_dormant
+  - OriginalLabelTrack: SongVerse
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_dormant
+  - OriginalLabelTrack: SongRiser
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_dormant
+  - OriginalLabelTrack: SongChorus
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_churning
+  - OriginalLabelTrack: SongSolo
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_tiring
+  - OriginalLabelTrack: SongOutro
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_dormant
+--- !u!114 &114000013872632040
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010525035802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d5048205eab74d4ea8945b3f15b0acd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderUniformName: u_swarmer_speed_scalar_group0
+  DebugEnabled: 0
+  audioFloatEvents:
+  - AudioLabelName: behavior_dormant
+    LabelStartTargetValue: 0
+    LabelStartBlendTime: 0
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0
+  - AudioLabelName: movement_boost_group0
+    LabelStartTargetValue: 4
+    LabelStartBlendTime: 0.1
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0.1
+--- !u!114 &114000014107640488
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013826909912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d5048205eab74d4ea8945b3f15b0acd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderUniformName: u_swarmer_speed_scalar_group0
+  DebugEnabled: 0
+  audioFloatEvents:
+  - AudioLabelName: behavior_dormant
+    LabelStartTargetValue: 0
+    LabelStartBlendTime: 0
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0
+  - AudioLabelName: movement_boost_group0
+    LabelStartTargetValue: 2
+    LabelStartBlendTime: 0
+    LabelEndTargetValue: 1
+    LabelEndBlendTime: 0.25

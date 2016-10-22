@@ -297,7 +297,7 @@ void kernel_advance_swarmer_states(
 				idealVelocity,
 				saturate(case_movement_permitted * u_delta_time * u_ideal_velocity_blending_rate));
 		
-		// Allow the speed_scalar to halt movement, but not cause a runaway energy-gain.
+		// Allow the speed_scalar to halt movement, but prevent it from causing an energy-gain cycle.
 		new_swarmer_state.position +=
 			(case_movement_permitted * u_delta_time * new_swarmer_state.velocity);
 
