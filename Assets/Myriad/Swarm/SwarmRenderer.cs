@@ -285,6 +285,9 @@ public class SwarmRenderer : MonoBehaviour
 		float leftSegmentFraction,
 		float rightSegmentFraction,
 		bool useDebugColoring,
+		FacetType frontLeftFacetType,
+		FacetType frontRightFacetType,
+		FacetType rearFacetType,
 		bool useTopHalfColoring,
 		Matrix4x4 placementMatrix,
 		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
@@ -321,16 +324,16 @@ public class SwarmRenderer : MonoBehaviour
 
 		Vector4 topFacetEmissionColor = Color.white;
 		
-		Vector4 disabledEmissionColor = Color.black;
+		Vector4 sideFacetEmissionColor = Color.white;
 
 		// Rear facet.
 		AppendSimpleQuadVerticesToModel(
 			new Vector3[] { baseLeftPosition, baseRightPosition, topRightPosition, topLeftPosition },
 			rearColor,
-			disabledEmissionColor,
+			sideFacetEmissionColor,
 			leftSegmentFraction,
 			rightSegmentFraction,
-			FacetType.Generic,
+			rearFacetType,
 			placementMatrix,
 			ref inoutSwarmerModelVertices);
 
@@ -338,10 +341,10 @@ public class SwarmRenderer : MonoBehaviour
 		AppendSimpleQuadVerticesToModel(
 			new Vector3[] { baseForwardPosition, baseLeftPosition, topLeftPosition, topForwardPosition },
 			frontLeftColor,
-			disabledEmissionColor,
+			sideFacetEmissionColor,
 			leftSegmentFraction,
 			rightSegmentFraction,
-			FacetType.Generic,
+			frontLeftFacetType,
 			placementMatrix,
 			ref inoutSwarmerModelVertices);
 
@@ -349,10 +352,10 @@ public class SwarmRenderer : MonoBehaviour
 		AppendSimpleQuadVerticesToModel(
 			new Vector3[] { baseRightPosition, baseForwardPosition, topForwardPosition, topRightPosition },
 			frontRightColor,
-			disabledEmissionColor,
+			sideFacetEmissionColor,
 			leftSegmentFraction,
 			rightSegmentFraction,
-			FacetType.Generic,
+			frontRightFacetType,
 			placementMatrix,
 			ref inoutSwarmerModelVertices);
 
@@ -372,6 +375,9 @@ public class SwarmRenderer : MonoBehaviour
 		float leftSegmentFraction,
 		float rightSegmentFraction,
 		bool useDebugColoring,
+		FacetType frontLeftFacetType,
+		FacetType frontRightFacetType,
+		FacetType rearFacetType,
 		Matrix4x4 placementMatrix,
 		ref List<SwarmShaderSwarmerModelVertex> inoutSwarmerModelVertices)
 	{
@@ -380,6 +386,9 @@ public class SwarmRenderer : MonoBehaviour
 			leftSegmentFraction,
 			rightSegmentFraction,
 			useDebugColoring,
+			frontLeftFacetType,
+			frontRightFacetType,
+			rearFacetType,
 			true, // useTopHalfColoring
 			placementMatrix,
 			ref inoutSwarmerModelVertices);
@@ -395,6 +404,9 @@ public class SwarmRenderer : MonoBehaviour
 				leftSegmentFraction,
 				rightSegmentFraction,
 				useDebugColoring,
+				frontRightFacetType, // NOTE: Left-right swapped.
+				frontLeftFacetType, // NOTE: Left-right swapped.
+				rearFacetType,
 				false, // useTopHalfColoring
 				(placementMatrix * flippingMatrix),
 				ref inoutSwarmerModelVertices);
@@ -434,6 +446,9 @@ public class SwarmRenderer : MonoBehaviour
 						0.0f, // leftSegmentFraction
 						0.0f, // rightSegmentFraction
 						useDebugColoring,
+						FacetType.Generic, // Front-left (before rotation).
+						FacetType.Generic, // Front-right (before rotation).
+						FacetType.Front, // Rear (before rotation).
 						Matrix4x4.TRS(
 							new Vector3(
 								0.0f, 
@@ -447,6 +462,9 @@ public class SwarmRenderer : MonoBehaviour
 						0.0f, // leftSegmentFraction
 						1.0f, // rightSegmentFraction
 						useDebugColoring,
+						FacetType.Generic, // Front-left (before rotation).
+						FacetType.Front, // Front-right (before rotation).
+						FacetType.Rear, // Rear (before rotation).
 						Matrix4x4.TRS(
 							new Vector3(
 								(1.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)), 
@@ -460,6 +478,9 @@ public class SwarmRenderer : MonoBehaviour
 						1.0f, // leftSegmentFraction
 						0.0f, // rightSegmentFraction
 						useDebugColoring,
+						FacetType.Front, // Front-left (before rotation).
+						FacetType.Generic, // Front-right (before rotation).
+						FacetType.Rear, // Rear (before rotation).
 						Matrix4x4.TRS(
 							new Vector3(
 								(-1.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)), 

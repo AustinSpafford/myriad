@@ -24,23 +24,38 @@ Material:
       second: 1
     m_Colors:
     - first:
+        name: u_facet_front_center_emission_color
+      second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
+        name: u_facet_front_left_emission_color
+      second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
+        name: u_facet_front_right_emission_color
+      second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
+        name: u_facet_rear_left_emission_color
+      second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
+        name: u_facet_rear_right_emission_color
+      second: {r: 0, g: 0, b: 0, a: 1}
+    - first:
         name: u_facet_top_center_color
       second: {r: 1, g: 1, b: 0.8000001, a: 1}
     - first:
         name: u_facet_top_center_emission_color
-      second: {r: 1, g: 1, b: 0.8, a: 1}
+      second: {r: 0, g: 0, b: 0, a: 1}
     - first:
         name: u_facet_top_left_color
       second: {r: 1, g: 1, b: 0.8, a: 1}
     - first:
         name: u_facet_top_left_emission_color
-      second: {r: 1, g: 1, b: 0.8, a: 1}
+      second: {r: 0, g: 0, b: 0, a: 1}
     - first:
         name: u_facet_top_right_color
       second: {r: 1, g: 1, b: 0.8000001, a: 1}
     - first:
         name: u_facet_top_right_emission_color
-      second: {r: 1, g: 1, b: 0.8, a: 1}
+      second: {r: 0, g: 0, b: 0, a: 1}
     - first:
         name: u_lighting_ground_ambient_color
       second: {r: 1, g: 0.8, b: 0.24999997, a: 1}

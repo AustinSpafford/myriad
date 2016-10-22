@@ -8,6 +8,14 @@ public interface IAudioShaderUniformAccessor
 	void SetColor(
 		string uniformName, 
 		Color color);
+
+	void SetFloat(
+		string uniformName, 
+		float value);
+
+	void SetInt(
+		string uniformName, 
+		int value);
 }
 
 public class CollectingAudioShaderUniformsEventArgs : EventArgs
@@ -85,6 +93,36 @@ public class AudioShaderUniformCollector : MonoBehaviour, IAudioShaderUniformAcc
 		if (currentCollectionMaterial != null)
 		{
 			currentCollectionMaterial.SetColor(uniformName, color);
+		}
+	}
+
+	void IAudioShaderUniformAccessor.SetFloat(
+		string uniformName, 
+		float value)
+	{
+		if (currentCollectionComputeShader != null)
+		{
+			currentCollectionComputeShader.SetFloat(uniformName, value);
+		}
+
+		if (currentCollectionMaterial != null)
+		{
+			currentCollectionMaterial.SetFloat(uniformName, value);
+		}
+	}
+
+	void IAudioShaderUniformAccessor.SetInt(
+		string uniformName, 
+		int value)
+	{
+		if (currentCollectionComputeShader != null)
+		{
+			currentCollectionComputeShader.SetInt(uniformName, value);
+		}
+
+		if (currentCollectionMaterial != null)
+		{
+			currentCollectionMaterial.SetInt(uniformName, value);
 		}
 	}
 
