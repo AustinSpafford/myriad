@@ -260,7 +260,7 @@ public class SwarmRenderer : MonoBehaviour
 
 		// Top facet.
 		AppendSimpleTriangleVerticesToModel(
-			new Vector3[] { forwardPosition, leftPosition, rightPosition }, // BUG! Doesn't unity/D3D use a clockwise winding?
+			new Vector3[] { forwardPosition, rightPosition, leftPosition },
 			(useDebugColoring ? Color.cyan : Color.yellow),
 			centerFacetEmissionColor,
 			leftSegmentFraction,
@@ -271,8 +271,8 @@ public class SwarmRenderer : MonoBehaviour
 
 		// Bottom facet.
 		AppendSimpleTriangleVerticesToModel(
-			new Vector3[] { forwardPosition, rightPosition, leftPosition, }, // BUG! Doesn't unity/D3D use a clockwise winding?
-			(useDebugColoring ? Color.white : Color.yellow),
+			new Vector3[] { forwardPosition, leftPosition, rightPosition },
+			(useDebugColoring ? Color.red : Color.yellow),
 			centerFacetEmissionColor,
 			leftSegmentFraction,
 			rightSegmentFraction,
@@ -317,7 +317,7 @@ public class SwarmRenderer : MonoBehaviour
 		Vector4 topFacetAlbedoColor = (
 			useDebugColoring ? 
 				(useTopHalfColoring ? Color.yellow : Color.cyan): 
-				new Color(0.1f, 0.1f, 0.1f));
+				new Color(0.05f, 0.05f, 0.05f));
 
 		Vector4 topFacetEmissionColor = Color.white;
 		
