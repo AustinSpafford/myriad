@@ -53,8 +53,14 @@ struct s_swarmer_model_vertex // Represents: SwarmShaderSwarmerModelVertex, whic
 
 	float4 edge_distances;
 
-	float2 pad_2; // For aligning vector-reads to 16-byte cache-boundaries.
+	float left_segment_fraction;
+	float center_segment_fraction;
+	float right_segment_fraction;	
+	
+	float generic_facet_fraction;
+	float front_facet_fraction;
+	float rear_facet_fraction;
+	float top_facet_fraction;
 
-	float left_wing_fraction;
-	float right_wing_fraction;
+	float pad_2; // For aligning vector-reads to 16-byte cache-boundaries.
 };

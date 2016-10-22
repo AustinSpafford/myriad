@@ -24,6 +24,15 @@ Material:
       second: 1
     m_Colors:
     - first:
+        name: u_facet_top_center_color
+      second: {r: 1, g: 1, b: 0.8000001, a: 1}
+    - first:
+        name: u_facet_top_left_color
+      second: {r: 1, g: 1, b: 0.8, a: 1}
+    - first:
+        name: u_facet_top_right_color
+      second: {r: 1, g: 1, b: 0.8000001, a: 1}
+    - first:
         name: u_lighting_ground_ambient_color
       second: {r: 1, g: 0.8, b: 0.24999997, a: 1}
     - first:
