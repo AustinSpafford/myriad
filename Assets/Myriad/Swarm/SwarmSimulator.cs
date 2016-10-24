@@ -254,6 +254,62 @@ public class SwarmSimulator : MonoBehaviour
 		inoutSwarmerState.LocalUp = UnityEngine.Random.onUnitSphere;
 	}
 
+	private void SetSwarmerTransformForPinwheelTiledFloor(
+		int swarmerIndex,
+		ref SwarmShaderSwarmerState inoutSwarmerState)
+	{
+		// NOTE: The pinwheels tile as hexagons.
+		int tileIndex = (swarmerIndex / 6);
+		int patternIndex = (swarmerIndex % 6);
+		
+		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / 6));
+		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
+		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
+
+		Vector3 swarmerCenterToRightWingtip = (
+			SwarmerModelScale *
+			new Vector3(
+				(2.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)),
+				0.0f,
+				(-1.0f * Mathf.Sin(30.0f * Mathf.Deg2Rad))));
+
+		Matrix4x4 patternTransform = Matrix4x4.identity;
+
+		patternTransform = (
+			Matrix4x4.TRS(
+				(-1.0f * swarmerCenterToRightWingtip), 
+				Quaternion.identity,
+				Vector3.one) * 
+			patternTransform);
+			
+		patternTransform = (
+			Matrix4x4.TRS(
+				Vector3.zero, 
+				Quaternion.AngleAxis((90.0f + (60.0f * patternIndex)), Vector3.up),
+				Vector3.one) * 
+			patternTransform);
+
+		Vector3 patternPosition = patternTransform.MultiplyPoint(Vector3.zero);
+		Vector3 patternVelocity = (0.05f * patternTransform.MultiplyVector(Vector3.forward)); // Just a gentle nudge to indicate a direction
+		
+		Vector3 tileSize = new Vector3(
+			(6.0f * (swarmerCenterToRightWingtip.x * Mathf.Sin(60.0f * Mathf.Deg2Rad))),
+			0.0f,
+			(3.0f * swarmerCenterToRightWingtip.x));
+
+		Vector3 tilePosition = 
+			Vector3.Scale(
+				tileSize,
+				new Vector3(
+					(tileColumnIndex / 2.0f), 
+					0.0f, 
+					tileRowIndex + (0.5f * (tileColumnIndex % 2))));
+		
+		inoutSwarmerState.Position = (tilePosition + patternPosition);
+		inoutSwarmerState.Velocity = patternVelocity;
+		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
+	}
+
 	private void SetSwarmerTransformForTripletTiledFloor(
 		int swarmerIndex,
 		ref SwarmShaderSwarmerState inoutSwarmerState)
@@ -372,7 +428,8 @@ public class SwarmSimulator : MonoBehaviour
 					var newSwarmerState = new SwarmShaderSwarmerState();
 
 					//SetSwarmerTransformForRandomSetup(ref newSwarmerState);
-					SetSwarmerTransformForTripletTiledFloor(swarmerIndex, ref newSwarmerState);
+					SetSwarmerTransformForPinwheelTiledFloor(swarmerIndex, ref newSwarmerState);
+					//SetSwarmerTransformForTripletTiledFloor(swarmerIndex, ref newSwarmerState);
 
 					initialSwarmers.Add(newSwarmerState);
 				}
