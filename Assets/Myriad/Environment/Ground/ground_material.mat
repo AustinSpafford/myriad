@@ -129,7 +129,7 @@ Material:
       second: 0.9
     - first:
         name: u_tile_edge_length
-      second: 0.02
+      second: 0.01039
     m_Colors:
     - first:
         name: _Color
