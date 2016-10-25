@@ -428,8 +428,8 @@ public class SwarmSimulator : MonoBehaviour
 					var newSwarmerState = new SwarmShaderSwarmerState();
 
 					//SetSwarmerTransformForRandomSetup(ref newSwarmerState);
-					SetSwarmerTransformForPinwheelTiledFloor(swarmerIndex, ref newSwarmerState);
-					//SetSwarmerTransformForTripletTiledFloor(swarmerIndex, ref newSwarmerState);
+					//SetSwarmerTransformForPinwheelTiledFloor(swarmerIndex, ref newSwarmerState);
+					SetSwarmerTransformForTripletTiledFloor(swarmerIndex, ref newSwarmerState);
 
 					initialSwarmers.Add(newSwarmerState);
 				}
