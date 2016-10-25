@@ -24,7 +24,7 @@ float4x4 build_swarmer_model_to_swarm_matrix(
 	float3 swarmer_right = normalize(cross(local_up, swarmer_forward));
 
 	// The corrected up-vector is now strictly implied.
-	float3 swarmer_up = cross(swarmer_right, swarmer_forward);
+	float3 swarmer_up = cross(swarmer_forward, swarmer_right);
 
 	return build_matrix_from_columns(
 		float4((scale * swarmer_right), 0.0f),

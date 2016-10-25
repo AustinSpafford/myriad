@@ -328,7 +328,7 @@ public class SwarmRenderer : MonoBehaviour
 
 		// Rear facet.
 		AppendSimpleQuadVerticesToModel(
-			new Vector3[] { baseLeftPosition, baseRightPosition, topRightPosition, topLeftPosition },
+			new Vector3[] { baseLeftPosition, topLeftPosition, topRightPosition, baseRightPosition },
 			rearColor,
 			sideFacetEmissionColor,
 			leftSegmentFraction,
@@ -339,7 +339,7 @@ public class SwarmRenderer : MonoBehaviour
 
 		// Front-left facet.
 		AppendSimpleQuadVerticesToModel(
-			new Vector3[] { baseForwardPosition, baseLeftPosition, topLeftPosition, topForwardPosition },
+			new Vector3[] { baseForwardPosition, topForwardPosition, topLeftPosition, baseLeftPosition },
 			frontLeftColor,
 			sideFacetEmissionColor,
 			leftSegmentFraction,
@@ -350,7 +350,7 @@ public class SwarmRenderer : MonoBehaviour
 
 		// Front-right facet.
 		AppendSimpleQuadVerticesToModel(
-			new Vector3[] { baseRightPosition, baseForwardPosition, topForwardPosition, topRightPosition },
+			new Vector3[] { baseRightPosition, topRightPosition, topForwardPosition, baseForwardPosition },
 			frontRightColor,
 			sideFacetEmissionColor,
 			leftSegmentFraction,
@@ -361,7 +361,7 @@ public class SwarmRenderer : MonoBehaviour
 
 		// Top facet.
 		AppendSimpleTriangleVerticesToModel(
-			new Vector3[] { topForwardPosition, topLeftPosition, topRightPosition },
+			new Vector3[] { topForwardPosition, topRightPosition, topLeftPosition },
 			topFacetAlbedoColor,
 			topFacetEmissionColor,
 			leftSegmentFraction,
