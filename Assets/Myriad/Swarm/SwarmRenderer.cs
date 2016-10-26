@@ -138,8 +138,8 @@ public class SwarmRenderer : MonoBehaviour
 		}
 
 		Vector3 triangleNormal = Vector3.Cross(
-			positions[2] - positions[0],
-			positions[1] - positions[0]).normalized;
+			(positions[1] - positions[0]),
+			(positions[2] - positions[0])).normalized;
 
 		// NOTE: If we ever start distorting the model's faces, it might be worthwhile to 
 		// move this math down into the vertex-shader so it stays accurate.
