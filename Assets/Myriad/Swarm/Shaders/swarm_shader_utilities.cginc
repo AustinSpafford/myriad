@@ -21,13 +21,13 @@ float4x4 build_swarmer_model_to_swarm_matrix(
 	float3 swarmer_forward = normalize(velocity);
 
 	// Set the swarmer's roll to respect its desired "down".
-	float3 swarmer_left = normalize(cross(swarmer_forward, local_up));
+	float3 swarmer_right = normalize(cross(local_up, swarmer_forward));
 
 	// The corrected up-vector is now strictly implied.
-	float3 swarmer_up = cross(swarmer_left, swarmer_forward);
+	float3 swarmer_up = cross(swarmer_forward, swarmer_right);
 
 	return build_matrix_from_columns(
-		float4((scale * swarmer_left), 0.0f),
+		float4((scale * swarmer_right), 0.0f),
 		float4((scale * swarmer_up), 0.0f),
 		float4((scale * swarmer_forward), 0.0f),
 		float4(position, 1.0f));

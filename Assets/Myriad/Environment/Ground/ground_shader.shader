@@ -79,7 +79,7 @@
 				// Skew the coordinate system into (60, 120, 60, 120) parallelograms.
 				float2 skewed_square_coord = frac(float2(
 					(square_coord.x * k_one_over_sin_60),
-					(square_coord.y + (square_coord.x * 0.5f))));
+					(square_coord.y + ((square_coord.x * k_one_over_sin_60) * 0.5f))));
 
 				// Split the parallelogram into two equalateral triangles.
 				float3 triangle_coord =

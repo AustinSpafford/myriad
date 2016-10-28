@@ -5,6 +5,17 @@ Temp/
 Library/
 Output/
 
+# ========================== #
+# Excluded for Rights Reaons #
+# ========================== #
+*.without_rights.*
+
+# ================================= #
+# Audacity's Pseudo-Version-Control #
+# ================================= #
+*.bak
+*.bak.meta
+
 # ===================================== #
 # Visual Studio / MonoDevelop generated #
 # ===================================== #

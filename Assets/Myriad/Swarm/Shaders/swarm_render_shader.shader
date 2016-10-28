@@ -8,6 +8,21 @@
 
 		u_lighting_sky_diffuse_color("Sky Diffuse Color", Color) = (0.3, 0.3, 0.5, 1)
 		u_lighting_sky_specular_color("Sky Specular Color", Color) = (0.3, 0.3, 0.5, 1)
+
+		u_facet_front_left_emission_color("Facet (Front Left) Emission Color", Color) = (0.0, 0.0, 0.0, 1)
+		u_facet_front_center_emission_color("Facet (Front Center) Emission Color", Color) = (0.0, 0.0, 0.0, 1)
+		u_facet_front_right_emission_color("Facet (Front Right) Emission Color", Color) = (0.0, 0.0, 0.0, 1)
+
+		u_facet_rear_left_emission_color_group0("Facet (Rear Left) Emission Color, Group0", Color) = (0.0, 0.0, 0.0, 1)
+		u_facet_rear_left_emission_color_group1("Facet (Rear Left) Emission Color, Group1", Color) = (0.0, 0.0, 0.0, 1)
+		u_facet_rear_left_emission_color_group2("Facet (Rear Left) Emission Color, Group2", Color) = (0.0, 0.0, 0.0, 1)
+		u_facet_rear_right_emission_color_group0("Facet (Rear Right) Emission Color, Group0", Color) = (0.0, 0.0, 0.0, 1)
+		u_facet_rear_right_emission_color_group1("Facet (Rear Right) Emission Color, Group1", Color) = (0.0, 0.0, 0.0, 1)
+		u_facet_rear_right_emission_color_group2("Facet (Rear Right) Emission Color, Group2", Color) = (0.0, 0.0, 0.0, 1)
+
+		u_facet_top_left_emission_color("Facet (Top Left) Emission Color", Color) = (1.0, 1.0, 0.8, 1)
+		u_facet_top_center_emission_color("Facet (Top Center) Emission Color", Color) = (1.0, 1.0, 0.8, 1)
+		u_facet_top_right_emission_color("Facet (Top Right) Emission Color", Color) = (1.0, 1.0, 0.8, 1)
 	}
 
 	SubShader
@@ -32,7 +47,7 @@
 
 			#include "swarm_shader_types.cginc"
 
-			#define ENABLE_NEIGHBORHOOD_OVERCROWDING_DEBUGGING
+			//#define ENABLE_NEIGHBORHOOD_OVERCROWDING_DEBUGGING
 			
 			struct s_rasterization_vertex
 			{
@@ -56,6 +71,21 @@
 			uniform float4 u_lighting_sky_diffuse_color;
 			uniform float4 u_lighting_sky_specular_color;
 			
+			uniform float4 u_facet_front_left_emission_color;
+			uniform float4 u_facet_front_center_emission_color;
+			uniform float4 u_facet_front_right_emission_color;
+			
+			uniform float4 u_facet_rear_left_emission_color_group0;
+			uniform float4 u_facet_rear_left_emission_color_group1;
+			uniform float4 u_facet_rear_left_emission_color_group2;
+			uniform float4 u_facet_rear_right_emission_color_group0;
+			uniform float4 u_facet_rear_right_emission_color_group1;
+			uniform float4 u_facet_rear_right_emission_color_group2;
+			
+			uniform float4 u_facet_top_left_emission_color;
+			uniform float4 u_facet_top_center_emission_color;
+			uniform float4 u_facet_top_right_emission_color;
+			
 			s_rasterization_vertex vertex_shader(
 				uint vertex_index : SV_VertexID,
 				uint swarmer_index : SV_InstanceID)
@@ -64,6 +94,18 @@
 				
 				s_swarmer_model_vertex model_vertex = u_swarmer_model_vertices[vertex_index];
 				s_swarmer_state swarmer_state = u_swarmers[swarmer_index];
+				
+				int swarmer_group_index = (swarmer_index % 3);
+
+				float4 facet_rear_left_emission_color = (
+					((swarmer_group_index == 0) ? u_facet_rear_left_emission_color_group0 : 0.0f) + 
+					((swarmer_group_index == 1) ? u_facet_rear_left_emission_color_group1 : 0.0f) + 
+					((swarmer_group_index == 2) ? u_facet_rear_left_emission_color_group2 : 0.0f));
+
+				float4 facet_rear_right_emission_color = (
+					((swarmer_group_index == 0) ? u_facet_rear_right_emission_color_group0 : 0.0f) + 
+					((swarmer_group_index == 1) ? u_facet_rear_right_emission_color_group1 : 0.0f) + 
+					((swarmer_group_index == 2) ? u_facet_rear_right_emission_color_group2 : 0.0f));
 
 				float4x4 model_to_world_matrix = 
 					mul(u_swarm_to_world_matrix, swarmer_state.cached_model_to_swarm_matrix);
@@ -90,10 +132,31 @@
 
 				float3 diffuse_surface_color = (diffuse_light_color * model_vertex.albedo_color);
 
+				float4 uniform_emission_color =
+				(
+					(model_vertex.generic_facet_fraction * (
+						float4(0, 0, 0, 1)
+					)) +
+					(model_vertex.front_facet_fraction * (
+						(model_vertex.left_segment_fraction * u_facet_front_left_emission_color) +
+						(model_vertex.center_segment_fraction * u_facet_front_center_emission_color) +
+						(model_vertex.right_segment_fraction * u_facet_front_right_emission_color)
+					)) +
+					(model_vertex.rear_facet_fraction * (
+						(model_vertex.left_segment_fraction * facet_rear_left_emission_color) +
+						(model_vertex.right_segment_fraction * facet_rear_right_emission_color)
+					)) +
+					(model_vertex.top_facet_fraction * (
+						(model_vertex.left_segment_fraction * u_facet_top_left_emission_color) +
+						(model_vertex.center_segment_fraction * u_facet_top_center_emission_color) +
+						(model_vertex.right_segment_fraction * u_facet_top_right_emission_color)
+					))
+				);
+
 				result.projected_position = mul(UNITY_MATRIX_VP, float4(world_position, 1.0f));
 				result.world_normal = world_normal;
 				result.diffuse_color = float4(diffuse_surface_color, 1.0f);
-				result.emission_color = model_vertex.emission_color;
+				result.emission_color = (model_vertex.emission_color * uniform_emission_color);
 				result.edge_distances = model_vertex.edge_distances;
 				result.world_position_to_camera = (_WorldSpaceCameraPos.xyz - world_position);
 
@@ -137,7 +200,7 @@
 				float3 diffuse_color =
 					lerp(
 						raster_state.diffuse_color,
-						0, // (0.2 * raster_state.albedo_color),
+						0, // (0.2 * raster_state.diffuse_color),
 						edge_fraction);
 
 				float3 specular_color = 0.0f;
@@ -158,6 +221,12 @@
 							float3(0, 1, 0),
 							raster_state.world_normal,
 							surface_position_to_camera_direction));
+
+					specular_color =
+						lerp(
+							specular_color,
+							(0.2 * specular_color),
+							edge_fraction);
 				}
 
 				float3 result = (

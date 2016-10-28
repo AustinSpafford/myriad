@@ -22,9 +22,11 @@ uniform StructuredBuffer<s_forcefield_state> u_forcefields;
 uniform float u_neighborhood_radius;
 uniform uint u_max_neighbor_count;
 
-uniform float u_swarmer_speed_min;
 uniform float u_swarmer_speed_idle;
-uniform float u_swarmer_speed_max;
+
+uniform float u_swarmer_speed_scalar_group0;
+uniform float u_swarmer_speed_scalar_group1;
+uniform float u_swarmer_speed_scalar_group2;
 
 uniform float u_ideal_velocity_blending_rate;
 
@@ -268,9 +270,16 @@ void kernel_advance_swarmer_states(
 	{
 		s_swarmer_state new_swarmer_state = u_readable_swarmers[swarmer_index];
 
-		// Default to idling forwards.
+		int swarmer_group_index = (swarmer_index % 3);
+
+		float speed_scalar = (
+			((swarmer_group_index == 0) ? u_swarmer_speed_scalar_group0 : 0.0f) + 
+			((swarmer_group_index == 1) ? u_swarmer_speed_scalar_group1 : 0.0f) + 
+			((swarmer_group_index == 2) ? u_swarmer_speed_scalar_group2 : 0.0f));
+
+		// Default to idling forwards, allowing the speed-scalar to boost the idle-speed.
 		float3 idealVelocity =
-			(u_swarmer_speed_idle * normalize(new_swarmer_state.velocity));
+			((u_swarmer_speed_idle * speed_scalar) * normalize(new_swarmer_state.velocity));
 
 		idealVelocity += build_forcefields_impulse(new_swarmer_state.position);
 
@@ -280,14 +289,17 @@ void kernel_advance_swarmer_states(
 				new_swarmer_state.position,
 				/*out*/ new_swarmer_state.debug_accepted_candidates_fraction);
 
+		float case_movement_permitted = min(speed_scalar, 1.0f);
+
 		new_swarmer_state.velocity =
 			lerp(
 				new_swarmer_state.velocity,
 				idealVelocity,
-				saturate(u_delta_time * u_ideal_velocity_blending_rate));
-
+				saturate(case_movement_permitted * u_delta_time * u_ideal_velocity_blending_rate));
+		
+		// Allow the speed_scalar to halt movement, but prevent it from causing an energy-gain cycle.
 		new_swarmer_state.position +=
-			(u_delta_time * new_swarmer_state.velocity);
+			(case_movement_permitted * u_delta_time * new_swarmer_state.velocity);
 
 		new_swarmer_state.local_up = float3(0.0f, 1.0f, 0.0f); // TODO: Animate this as the boid turns left/right.
 

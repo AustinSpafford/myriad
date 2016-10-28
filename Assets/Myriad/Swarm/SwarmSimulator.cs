@@ -7,8 +7,9 @@ using System.Collections.Generic;
 using UnityEditor;
 #endif // UNITY_EDITOR
 
-[RequireComponent(typeof(SwarmForcefieldCollector))]
 [RequireComponent(typeof(ParticleSpatializer))]
+[RequireComponent(typeof(AudioShaderUniformCollector))]
+[RequireComponent(typeof(SwarmForcefieldCollector))]
 public class SwarmSimulator : MonoBehaviour
 {
 	public int SwarmerCount = 1000;
@@ -17,9 +18,7 @@ public class SwarmSimulator : MonoBehaviour
 	public float SwarmerNeighborhoodRadius = 0.25f;
 	public int MaxNeighborCount = 100;
 	
-	public float SwarmerSpeedMin = 0.1f;
 	public float SwarmerSpeedIdle = 0.5f;
-	public float SwarmerSpeedMax = 1.0f;
 	
 	public float IdealVelocityBlendingRate = 10.0f;
 
@@ -38,8 +37,9 @@ public class SwarmSimulator : MonoBehaviour
 
 	public void Awake()
 	{
-		particleSpatializer = GetComponent<ParticleSpatializer>();
+		audioShaderUniformCollector = GetComponent<AudioShaderUniformCollector>();
 		forcefieldCollector = GetComponent<SwarmForcefieldCollector>();
+		particleSpatializer = GetComponent<ParticleSpatializer>();
 	}
 
 	public void Start()
@@ -88,6 +88,8 @@ public class SwarmSimulator : MonoBehaviour
 
 			ParticleSpatializer.NeighborhoodResults swarmerNeighborhoods = BuildSwarmerNeighborhoods();
 
+			audioShaderUniformCollector.CollectComputeShaderUniforms(BehaviorComputeShader);
+
 			AdvanceSwarmers(localDeltaTime, swarmerNeighborhoods);
 
 			lastRenderedFrameIndex = frameIndex;
@@ -99,8 +101,9 @@ public class SwarmSimulator : MonoBehaviour
 
 	private const int ForcefieldsComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
 	
-	private ParticleSpatializer particleSpatializer = null;
+	private AudioShaderUniformCollector audioShaderUniformCollector = null;
 	private SwarmForcefieldCollector forcefieldCollector = null;
+	private ParticleSpatializer particleSpatializer = null;
 
 	private Queue<TypedComputeBuffer<SwarmShaderForcefieldState> > forcefieldsBufferQueue = null;
 	private PingPongComputeBuffers<SwarmShaderSwarmerState> swarmerStateBuffers = new PingPongComputeBuffers<SwarmShaderSwarmerState>();
@@ -190,9 +193,7 @@ public class SwarmSimulator : MonoBehaviour
 			BehaviorComputeShader.SetFloat("u_neighborhood_radius", SwarmerNeighborhoodRadius);
 			BehaviorComputeShader.SetInt("u_max_neighbor_count", MaxNeighborCount);
 			
-			BehaviorComputeShader.SetFloat("u_swarmer_speed_min", SwarmerSpeedMin);
 			BehaviorComputeShader.SetFloat("u_swarmer_speed_idle", SwarmerSpeedIdle);
-			BehaviorComputeShader.SetFloat("u_swarmer_speed_max", SwarmerSpeedMax);
 			
 			BehaviorComputeShader.SetFloat("u_ideal_velocity_blending_rate", IdealVelocityBlendingRate);
 
@@ -241,6 +242,243 @@ public class SwarmSimulator : MonoBehaviour
 		outActiveForcefieldCount = scratchForcefieldStateList.Count;
 	}
 
+	private void SetSwarmerTransformForHexLaceTiledFloor(
+		int swarmerIndex,
+		ref SwarmShaderSwarmerState inoutSwarmerState)
+	{
+		int swarmersPerTile = 6;
+
+		// NOTE: The lace-pattern tiles as a hexagon.
+		int tileIndex = (swarmerIndex / swarmersPerTile);
+		int patternIndex = (swarmerIndex % swarmersPerTile);
+		
+		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / swarmersPerTile));
+		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
+		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
+
+		Vector3 swarmerCenterToRightWingtip = (
+			SwarmerModelScale *
+			new Vector3(
+				(2.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)),
+				0.0f,
+				(-1.0f * Mathf.Sin(30.0f * Mathf.Deg2Rad))));
+
+		Matrix4x4 patternTransform = Matrix4x4.identity;
+
+		// Place the swarmer along the X+ axis, facing Z+.
+		{
+			patternTransform = (
+				Matrix4x4.TRS(
+					(
+						(-1.0f * swarmerCenterToRightWingtip) + 
+						((2 * swarmerCenterToRightWingtip.x) * Vector3.right)
+					), 
+					Quaternion.identity,
+					Vector3.one) * 
+				patternTransform);
+		}
+
+		// Rotate the swarmer into position around the tile's center.
+		{
+			Vector3 originToTileCenter = 
+				new Vector3(
+					swarmerCenterToRightWingtip.x,
+					0.0f,
+					(2 * (swarmerCenterToRightWingtip.x * Mathf.Sin(60.0f * Mathf.Deg2Rad))));
+
+			patternTransform = (
+				Matrix4x4.TRS(
+					(-1.0f * originToTileCenter), 
+					Quaternion.identity,
+					Vector3.one) * 
+				patternTransform);
+			
+			patternTransform = (
+				Matrix4x4.TRS(
+					Vector3.zero, 
+					Quaternion.AngleAxis((60.0f * patternIndex), Vector3.up),
+					Vector3.one) * 
+				patternTransform);
+
+			patternTransform = (
+				Matrix4x4.TRS(
+					originToTileCenter, 
+					Quaternion.identity,
+					Vector3.one) * 
+				patternTransform);
+		}
+
+		Vector3 patternPosition = patternTransform.MultiplyPoint(Vector3.zero);
+		Vector3 patternVelocity = (0.05f * patternTransform.MultiplyVector(Vector3.forward)); // Just a gentle nudge to indicate a direction
+		
+		Vector3 tileSize = new Vector3(
+			(6.0f * swarmerCenterToRightWingtip.x),
+			0.0f,
+			(4.0f * (swarmerCenterToRightWingtip.x * Mathf.Sin(60.0f * Mathf.Deg2Rad))));
+
+		Vector3 tilePosition = 
+			Vector3.Scale(
+				tileSize,
+				new Vector3(
+					(tileColumnIndex / 2.0f), 
+					0.0f, 
+					tileRowIndex + (0.5f * (tileColumnIndex % 2))));
+		
+		inoutSwarmerState.Position = (tilePosition + patternPosition);
+		inoutSwarmerState.Velocity = patternVelocity;
+		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
+	}
+
+	private void SetSwarmerTransformForPinwheelTiledFloor(
+		int swarmerIndex,
+		ref SwarmShaderSwarmerState inoutSwarmerState)
+	{
+		int swarmersPerTile = 6;
+
+		// NOTE: The pinwheels-clusters tile as a hexagon.
+		int tileIndex = (swarmerIndex / swarmersPerTile);
+		int patternIndex = (swarmerIndex % swarmersPerTile);
+		
+		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / swarmersPerTile));
+		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
+		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
+
+		Vector3 swarmerCenterToRightWingtip = (
+			SwarmerModelScale *
+			new Vector3(
+				(2.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)),
+				0.0f,
+				(-1.0f * Mathf.Sin(30.0f * Mathf.Deg2Rad))));
+
+		Matrix4x4 patternTransform = Matrix4x4.identity;
+
+		patternTransform = (
+			Matrix4x4.TRS(
+				(-1.0f * swarmerCenterToRightWingtip), 
+				Quaternion.identity,
+				Vector3.one) * 
+			patternTransform);
+			
+		patternTransform = (
+			Matrix4x4.TRS(
+				Vector3.zero, 
+				Quaternion.AngleAxis((90.0f + (60.0f * patternIndex)), Vector3.up),
+				Vector3.one) * 
+			patternTransform);
+
+		Vector3 patternPosition = patternTransform.MultiplyPoint(Vector3.zero);
+		Vector3 patternVelocity = (0.05f * patternTransform.MultiplyVector(Vector3.forward)); // Just a gentle nudge to indicate a direction
+		
+		Vector3 tileSize = new Vector3(
+			(6.0f * (swarmerCenterToRightWingtip.x * Mathf.Sin(60.0f * Mathf.Deg2Rad))),
+			0.0f,
+			(3.0f * swarmerCenterToRightWingtip.x));
+
+		Vector3 tilePosition = 
+			Vector3.Scale(
+				tileSize,
+				new Vector3(
+					(tileColumnIndex / 2.0f), 
+					0.0f, 
+					tileRowIndex + (0.5f * (tileColumnIndex % 2))));
+		
+		inoutSwarmerState.Position = (tilePosition + patternPosition);
+		inoutSwarmerState.Velocity = patternVelocity;
+		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
+	}
+
+	private void SetSwarmerTransformForRandomSetup(
+		ref SwarmShaderSwarmerState inoutSwarmerState)
+	{
+		inoutSwarmerState.Position = 
+			Vector3.Scale(new Vector3(3.0f, 0.5f, 3.0f), UnityEngine.Random.insideUnitSphere);
+
+		inoutSwarmerState.Velocity = 
+			(0.05f * UnityEngine.Random.onUnitSphere); // Just a gentle nudge to indicate a direction.
+
+		inoutSwarmerState.LocalUp = UnityEngine.Random.onUnitSphere;
+	}
+
+	private void SetSwarmerTransformForTripletTiledFloor(
+		int swarmerIndex,
+		ref SwarmShaderSwarmerState inoutSwarmerState)
+	{
+		int swarmersPerTile = 6;
+
+		// NOTE: For simplicity the tiles are pairs of triplets (forming a parallelogram).
+		int tileIndex = (swarmerIndex / swarmersPerTile);
+		int patternIndex = (swarmerIndex % swarmersPerTile);
+		
+		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / swarmersPerTile));
+		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
+		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
+
+		Vector3 swarmerCenterToRightWingtip = (
+			SwarmerModelScale *
+			new Vector3(
+				(2.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)),
+				0.0f,
+				(-1.0f * Mathf.Sin(30.0f * Mathf.Deg2Rad))));
+
+		Matrix4x4 patternTransform = Matrix4x4.identity;
+
+		if (patternIndex < 3)
+		{
+			patternTransform = (
+				Matrix4x4.TRS(
+					(-1.0f * swarmerCenterToRightWingtip), 
+					Quaternion.identity,
+					Vector3.one) * 
+				patternTransform);
+			
+			patternTransform = (
+				Matrix4x4.TRS(
+					Vector3.zero, 
+					Quaternion.AngleAxis((90.0f + (120.0f * patternIndex)), Vector3.up),
+					Vector3.one) * 
+				patternTransform);
+		}
+		else
+		{
+			Vector3 swarmerCenterToLeftWingtip = swarmerCenterToRightWingtip;
+			swarmerCenterToLeftWingtip.x *= -1.0f;
+
+			patternTransform = (
+				Matrix4x4.TRS(
+					(-1.0f * swarmerCenterToLeftWingtip), 
+					Quaternion.identity,
+					Vector3.one) * 
+				patternTransform);
+			
+			patternTransform = (
+				Matrix4x4.TRS(
+					Vector3.zero, 
+					Quaternion.AngleAxis((-90.0f + (120.0f * patternIndex)), Vector3.up),
+					Vector3.one) * 
+				patternTransform);
+		}
+
+		Vector3 patternPosition = patternTransform.MultiplyPoint(Vector3.zero);
+		Vector3 patternVelocity = (0.05f * patternTransform.MultiplyVector(Vector3.forward)); // Just a gentle nudge to indicate a direction
+		
+		Vector3 tileSize = new Vector3(
+			(6.0f * (swarmerCenterToRightWingtip.x * Mathf.Sin(60.0f * Mathf.Deg2Rad))),
+			0.0f,
+			(3.0f * swarmerCenterToRightWingtip.x));
+
+		Vector3 tilePosition = 
+			Vector3.Scale(
+				tileSize,
+				new Vector3(
+					(tileColumnIndex / 2.0f), 
+					0.0f, 
+					tileRowIndex + (0.5f * (tileColumnIndex % 2))));
+		
+		inoutSwarmerState.Position = (tilePosition + patternPosition);
+		inoutSwarmerState.Velocity = patternVelocity;
+		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
+	}
+
 	private bool TryAllocateBuffers()
 	{
 		bool result = false;
@@ -263,7 +501,7 @@ public class SwarmSimulator : MonoBehaviour
 				forcefieldsBufferQueue = 
 					new Queue<TypedComputeBuffer<SwarmShaderForcefieldState> >(ForcefieldsComputeBufferCount);
 
-				for (int index = 0; index < ForcefieldsComputeBufferCount; ++index)
+				while (forcefieldsBufferQueue.Count < ForcefieldsComputeBufferCount)
 				{
 					forcefieldsBufferQueue.Enqueue(
 						new TypedComputeBuffer<SwarmShaderForcefieldState>(MaxForcefieldCount));
@@ -276,14 +514,16 @@ public class SwarmSimulator : MonoBehaviour
 			{
 				var initialSwarmers = new List<SwarmShaderSwarmerState>(SwarmerCount);
 				
-				for (int index = 0; index < SwarmerCount; ++index)
+				for (int swarmerIndex = 0; swarmerIndex < SwarmerCount; ++swarmerIndex)
 				{
-					initialSwarmers.Add(new SwarmShaderSwarmerState()
-					{
-						Position = Vector3.Scale(new Vector3(3.0f, 0.5f, 3.0f), UnityEngine.Random.insideUnitSphere),
-						Velocity = (0.05f * UnityEngine.Random.onUnitSphere), // Just a gentle nudge to indicate a direction.
-						LocalUp = UnityEngine.Random.onUnitSphere,
-					});
+					var newSwarmerState = new SwarmShaderSwarmerState();
+
+					SetSwarmerTransformForHexLaceTiledFloor(swarmerIndex, ref newSwarmerState);
+					//SetSwarmerTransformForPinwheelTiledFloor(swarmerIndex, ref newSwarmerState);
+					//SetSwarmerTransformForRandomSetup(ref newSwarmerState);
+					//SetSwarmerTransformForTripletTiledFloor(swarmerIndex, ref newSwarmerState);
+
+					initialSwarmers.Add(newSwarmerState);
 				}
 				
 				swarmerStateBuffers.TryAllocateComputeBuffersWithValues(initialSwarmers.ToArray());
