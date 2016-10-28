@@ -7,9 +7,10 @@ using System.Collections.Generic;
 using UnityEditor;
 #endif // UNITY_EDITOR
 
-[RequireComponent(typeof(ParticleSpatializer))]
 [RequireComponent(typeof(AudioShaderUniformCollector))]
+[RequireComponent(typeof(ParticleSpatializer))]
 [RequireComponent(typeof(SwarmForcefieldCollector))]
+[RequireComponent(typeof(SwarmerModel))]
 public class SwarmSimulator : MonoBehaviour
 {
 	public int SwarmerCount = 1000;
@@ -38,8 +39,9 @@ public class SwarmSimulator : MonoBehaviour
 	public void Awake()
 	{
 		audioShaderUniformCollector = GetComponent<AudioShaderUniformCollector>();
-		forcefieldCollector = GetComponent<SwarmForcefieldCollector>();
 		particleSpatializer = GetComponent<ParticleSpatializer>();
+		swarmForcefieldCollector = GetComponent<SwarmForcefieldCollector>();
+		swarmerModel = GetComponent<SwarmerModel>();
 	}
 
 	public void Start()
@@ -102,8 +104,9 @@ public class SwarmSimulator : MonoBehaviour
 	private const int ForcefieldsComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
 	
 	private AudioShaderUniformCollector audioShaderUniformCollector = null;
-	private SwarmForcefieldCollector forcefieldCollector = null;
 	private ParticleSpatializer particleSpatializer = null;
+	private SwarmForcefieldCollector swarmForcefieldCollector = null;
+	private SwarmerModel swarmerModel = null;
 
 	private Queue<TypedComputeBuffer<SwarmShaderForcefieldState> > forcefieldsBufferQueue = null;
 	private PingPongComputeBuffers<SwarmShaderSwarmerState> swarmerStateBuffers = new PingPongComputeBuffers<SwarmShaderSwarmerState>();
@@ -220,7 +223,7 @@ public class SwarmSimulator : MonoBehaviour
 		TypedComputeBuffer<SwarmShaderForcefieldState> targetForcefieldsBuffer = forcefieldsBufferQueue.Dequeue();
 		forcefieldsBufferQueue.Enqueue(targetForcefieldsBuffer);	
 
-		forcefieldCollector.CollectForcefields(
+		swarmForcefieldCollector.CollectForcefields(
 			transform.localToWorldMatrix,
 			ref scratchForcefieldStateList);
 
@@ -256,12 +259,7 @@ public class SwarmSimulator : MonoBehaviour
 		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
 		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
 
-		Vector3 swarmerCenterToRightWingtip = (
-			SwarmerModelScale *
-			new Vector3(
-				(2.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)),
-				0.0f,
-				(-1.0f * Mathf.Sin(30.0f * Mathf.Deg2Rad))));
+		Vector3 swarmerCenterToRightWingtip = (SwarmerModelScale * swarmerModel.SwarmerCenterToRightWingtip);
 
 		Matrix4x4 patternTransform = Matrix4x4.identity;
 
@@ -343,12 +341,7 @@ public class SwarmSimulator : MonoBehaviour
 		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
 		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
 
-		Vector3 swarmerCenterToRightWingtip = (
-			SwarmerModelScale *
-			new Vector3(
-				(2.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)),
-				0.0f,
-				(-1.0f * Mathf.Sin(30.0f * Mathf.Deg2Rad))));
+		Vector3 swarmerCenterToRightWingtip = (SwarmerModelScale * swarmerModel.SwarmerCenterToRightWingtip);
 
 		Matrix4x4 patternTransform = Matrix4x4.identity;
 
@@ -413,12 +406,7 @@ public class SwarmSimulator : MonoBehaviour
 		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
 		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
 
-		Vector3 swarmerCenterToRightWingtip = (
-			SwarmerModelScale *
-			new Vector3(
-				(2.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)),
-				0.0f,
-				(-1.0f * Mathf.Sin(30.0f * Mathf.Deg2Rad))));
+		Vector3 swarmerCenterToRightWingtip = (SwarmerModelScale * swarmerModel.SwarmerCenterToRightWingtip);
 
 		Matrix4x4 patternTransform = Matrix4x4.identity;
 

@@ -44,7 +44,7 @@ public struct SwarmShaderSwarmerState // Represents: s_swarmer_state.
 	private Matrix4x4 CachedModelToSwarmMatrix;
 }
 
-struct SwarmShaderSwarmerModelVertex // Represents: s_swarmer_model_vertex.
+public struct SwarmShaderSwarmerModelVertex // Represents: s_swarmer_model_vertex.
 {
 	public Vector3 Position;
 
