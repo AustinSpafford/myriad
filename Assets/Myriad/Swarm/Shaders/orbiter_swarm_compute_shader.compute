@@ -51,25 +51,35 @@ void kernel_advance_swarmer_states(
 
 			summedAcceleration += (force * normalize(swarmer_to_forcefield));
 		}
-
-		new_swarmer_state.velocity += (u_delta_time * summedAcceleration);
+		
+		float3 new_velocity = (
+			(new_swarmer_state.speed * new_swarmer_state.local_forward) +
+			(u_delta_time * summedAcceleration));
 
 		// HAX!
-		new_swarmer_state.velocity *= lerp(1.0f, 0.9f, smoothstep(0.5f, 1.0f, length(new_swarmer_state.velocity)));
+		new_velocity *= lerp(1.0f, 0.9f, smoothstep(0.5f, 1.0f, length(new_velocity)));
+		
+		new_swarmer_state.speed = length(new_velocity);
+		new_swarmer_state.local_forward = (new_velocity / new_swarmer_state.speed);
 
-		new_swarmer_state.position +=
-			(u_delta_time * new_swarmer_state.velocity);
+		new_swarmer_state.position += (u_delta_time * new_velocity);
 
 		new_swarmer_state.local_up =
 			any(summedAcceleration) ?
-			normalize(summedAcceleration) :
-			float3(0.0f, 1.0f, 0.0f);
+				normalize(summedAcceleration) :
+				float3(0.0f, 1.0f, 0.0f);
+		
+		ortho_normalize_basis_vectors(
+			new_swarmer_state.local_forward,
+			/*inout*/ new_swarmer_state.local_up,
+			/*out*/ new_swarmer_state.cached_local_right);
 
 		new_swarmer_state.cached_model_center_segment_to_swarm_matrix =
-			build_swarmer_model_to_swarm_matrix(
+			build_transform_from_components(
 				new_swarmer_state.position,
-				new_swarmer_state.velocity,
+				new_swarmer_state.local_forward,
 				new_swarmer_state.local_up,
+				new_swarmer_state.cached_local_right,
 				k_swarmer_model_scale);
 
 		new_swarmer_state.cached_model_left_segment_to_swarm_matrix = new_swarmer_state.cached_model_center_segment_to_swarm_matrix;
