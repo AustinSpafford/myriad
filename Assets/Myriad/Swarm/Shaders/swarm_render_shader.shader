@@ -107,8 +107,15 @@
 					((swarmer_group_index == 1) ? u_facet_rear_right_emission_color_group1 : 0.0f) + 
 					((swarmer_group_index == 2) ? u_facet_rear_right_emission_color_group2 : 0.0f));
 
+				// NOTE: This matrix-blending approach definitely works when the fractions are all 0 or 1,
+				// but it's still unknown how innacurate the results are with intermediate weighting.
+				float4x4 model_to_swarm_matrix = (
+					(model_vertex.left_segment_fraction * swarmer_state.cached_model_left_segment_to_swarm_matrix) +
+					(model_vertex.center_segment_fraction * swarmer_state.cached_model_center_segment_to_swarm_matrix) +
+					(model_vertex.right_segment_fraction * swarmer_state.cached_model_right_segment_to_swarm_matrix));
+
 				float4x4 model_to_world_matrix = 
-					mul(u_swarm_to_world_matrix, swarmer_state.cached_model_to_swarm_matrix);
+					mul(u_swarm_to_world_matrix, model_to_swarm_matrix);
 
 				float3 world_position = 
 					mul(model_to_world_matrix, float4(model_vertex.position, 1.0f)).xyz;

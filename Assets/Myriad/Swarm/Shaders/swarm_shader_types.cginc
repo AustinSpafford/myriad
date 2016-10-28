@@ -35,7 +35,9 @@ struct s_swarmer_state // Represents: SwarmShaderSwarmerState, which contains an
 	
 	float debug_accepted_candidates_fraction;
 
-	float4x4 cached_model_to_swarm_matrix;
+	float4x4 cached_model_left_segment_to_swarm_matrix;
+	float4x4 cached_model_center_segment_to_swarm_matrix;
+	float4x4 cached_model_right_segment_to_swarm_matrix;
 };
 
 struct s_swarmer_model_vertex // Represents: SwarmShaderSwarmerModelVertex, which contains any usage documentation.

@@ -303,12 +303,16 @@ void kernel_advance_swarmer_states(
 
 		new_swarmer_state.local_up = float3(0.0f, 1.0f, 0.0f); // TODO: Animate this as the boid turns left/right.
 
-		new_swarmer_state.cached_model_to_swarm_matrix =
+		new_swarmer_state.cached_model_center_segment_to_swarm_matrix =
 			build_swarmer_model_to_swarm_matrix(
 				new_swarmer_state.position,
 				new_swarmer_state.velocity,
 				new_swarmer_state.local_up,
 				u_swarmer_model_scale);
+		
+		// TODO: Animate the left/right segments.
+		new_swarmer_state.cached_model_left_segment_to_swarm_matrix = new_swarmer_state.cached_model_center_segment_to_swarm_matrix;
+		new_swarmer_state.cached_model_right_segment_to_swarm_matrix = new_swarmer_state.cached_model_center_segment_to_swarm_matrix;
 
 		u_out_next_swarmers[swarmer_index] = new_swarmer_state;
 	}

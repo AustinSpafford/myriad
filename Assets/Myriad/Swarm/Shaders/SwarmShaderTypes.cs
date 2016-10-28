@@ -41,7 +41,9 @@ public struct SwarmShaderSwarmerState // Represents: s_swarmer_state.
 	
 	public float DebugAcceptedCandidatesFraction;
 	
-	private Matrix4x4 CachedModelToSwarmMatrix;
+	private Matrix4x4 CachedModelLeftSegmentToSwarmMatrix;
+	private Matrix4x4 CachedModelCenterSegmentToSwarmMatrix;
+	private Matrix4x4 CachedModelRightSegmentToSwarmMatrix;
 }
 
 public struct SwarmShaderSwarmerModelVertex // Represents: s_swarmer_model_vertex.
