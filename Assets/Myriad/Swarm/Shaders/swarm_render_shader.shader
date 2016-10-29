@@ -172,7 +172,7 @@
 					lerp(
 						float4(1, 0, 1, 1),
 						result.diffuse_color,
-						smoothstep(0.5, 1.0f, swarmer_state.debug_accepted_candidates_fraction));
+						smoothstep(0.5, 1.0f, swarmer_state.cached_debug_accepted_candidates_fraction));
 				#endif
 
 				return result;

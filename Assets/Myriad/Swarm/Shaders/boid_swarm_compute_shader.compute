@@ -242,7 +242,7 @@ float3 build_flocking_impulse(
 
 			alignment_summation += (
 				case_is_neighbor *
-				u_readable_swarmers[neighbor_index].velocity);
+				(u_readable_swarmers[neighbor_index].speed * u_readable_swarmers[neighbor_index].local_forward));
 		}
 
 		// Advance to the next candidate-particle.
@@ -279,7 +279,7 @@ void kernel_advance_swarmer_states(
 
 		// Default to idling forwards, allowing the speed-scalar to boost the idle-speed.
 		float3 idealVelocity =
-			((u_swarmer_speed_idle * speed_scalar) * normalize(new_swarmer_state.velocity));
+			((u_swarmer_speed_idle * speed_scalar) * new_swarmer_state.local_forward);
 
 		idealVelocity += build_forcefields_impulse(new_swarmer_state.position);
 
@@ -287,27 +287,34 @@ void kernel_advance_swarmer_states(
 			build_flocking_impulse(
 				swarmer_index, 
 				new_swarmer_state.position,
-				/*out*/ new_swarmer_state.debug_accepted_candidates_fraction);
+				/*out*/ new_swarmer_state.cached_debug_accepted_candidates_fraction);
 
 		float case_movement_permitted = min(speed_scalar, 1.0f);
 
-		new_swarmer_state.velocity =
+		float3 new_velocity = 
 			lerp(
-				new_swarmer_state.velocity,
+				(new_swarmer_state.speed * new_swarmer_state.local_forward),
 				idealVelocity,
 				saturate(case_movement_permitted * u_delta_time * u_ideal_velocity_blending_rate));
 		
+		new_swarmer_state.speed = length(new_velocity);
+		new_swarmer_state.local_forward = (new_velocity / new_swarmer_state.speed);
+
+		ortho_normalize_basis_vectors(
+			new_swarmer_state.local_forward,
+			/*inout*/ new_swarmer_state.local_up,
+			/*out*/ new_swarmer_state.cached_local_right);
+		
 		// Allow the speed_scalar to halt movement, but prevent it from causing an energy-gain cycle.
 		new_swarmer_state.position +=
-			(case_movement_permitted * u_delta_time * new_swarmer_state.velocity);
-
-		new_swarmer_state.local_up = float3(0.0f, 1.0f, 0.0f); // TODO: Animate this as the boid turns left/right.
+			(case_movement_permitted * u_delta_time * new_velocity);
 
 		new_swarmer_state.cached_model_center_segment_to_swarm_matrix =
-			build_swarmer_model_to_swarm_matrix(
+			build_transform_from_components(
 				new_swarmer_state.position,
-				new_swarmer_state.velocity,
+				new_swarmer_state.local_forward,
 				new_swarmer_state.local_up,
+				new_swarmer_state.cached_local_right,
 				u_swarmer_model_scale);
 		
 		// TODO: Animate the left/right segments.

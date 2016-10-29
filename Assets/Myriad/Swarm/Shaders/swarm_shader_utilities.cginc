@@ -11,24 +11,26 @@ float4x4 build_matrix_from_columns(
 		x_basis.w, y_basis.w, z_basis.w, w_basis.w);
 }
 
-float4x4 build_swarmer_model_to_swarm_matrix(
+float4x4 build_transform_from_components(
 	float3 position,
-	float3 velocity,
+	float3 local_forward,
 	float3 local_up,
+	float3 local_right,
 	float scale)
 {
-	// Keep the nose of the swarmer pointed in its direction of motion.
-	float3 swarmer_forward = normalize(velocity);
-
-	// Set the swarmer's roll to respect its desired "down".
-	float3 swarmer_right = normalize(cross(local_up, swarmer_forward));
-
-	// The corrected up-vector is now strictly implied.
-	float3 swarmer_up = cross(swarmer_forward, swarmer_right);
-
 	return build_matrix_from_columns(
-		float4((scale * swarmer_right), 0.0f),
-		float4((scale * swarmer_up), 0.0f),
-		float4((scale * swarmer_forward), 0.0f),
+		float4((scale * local_right), 0.0f),
+		float4((scale * local_up), 0.0f),
+		float4((scale * local_forward), 0.0f),
 		float4(position, 1.0f));
+}
+
+void ortho_normalize_basis_vectors(
+	float3 local_forward, // NOTE: Assumed to already be normalized.
+	inout float3 inout_local_up,
+	out float3 out_local_right)
+{
+	out_local_right = normalize(cross(inout_local_up, local_forward));
+
+	inout_local_up = cross(local_forward, out_local_right);
 }

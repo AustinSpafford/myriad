@@ -305,9 +305,6 @@ public class SwarmSimulator : MonoBehaviour
 					Vector3.one) * 
 				patternTransform);
 		}
-
-		Vector3 patternPosition = patternTransform.MultiplyPoint(Vector3.zero);
-		Vector3 patternVelocity = (0.05f * patternTransform.MultiplyVector(Vector3.forward)); // Just a gentle nudge to indicate a direction
 		
 		Vector3 tileSize = new Vector3(
 			(6.0f * swarmerCenterToRightWingtip.x),
@@ -322,9 +319,9 @@ public class SwarmSimulator : MonoBehaviour
 					0.0f, 
 					tileRowIndex + (0.5f * (tileColumnIndex % 2))));
 		
-		inoutSwarmerState.Position = (tilePosition + patternPosition);
-		inoutSwarmerState.Velocity = patternVelocity;
-		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
+		inoutSwarmerState.Position = (tilePosition + patternTransform.MultiplyPoint(Vector3.zero));
+		inoutSwarmerState.LocalForward = patternTransform.MultiplyVector(Vector3.forward);
+		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(((patternIndex % 2) == 0) ? Vector3.up : Vector3.down);
 	}
 
 	private void SetSwarmerTransformForPinwheelTiledFloor(
@@ -359,9 +356,6 @@ public class SwarmSimulator : MonoBehaviour
 				Vector3.one) * 
 			patternTransform);
 
-		Vector3 patternPosition = patternTransform.MultiplyPoint(Vector3.zero);
-		Vector3 patternVelocity = (0.05f * patternTransform.MultiplyVector(Vector3.forward)); // Just a gentle nudge to indicate a direction
-		
 		Vector3 tileSize = new Vector3(
 			(6.0f * (swarmerCenterToRightWingtip.x * Mathf.Sin(60.0f * Mathf.Deg2Rad))),
 			0.0f,
@@ -375,8 +369,8 @@ public class SwarmSimulator : MonoBehaviour
 					0.0f, 
 					tileRowIndex + (0.5f * (tileColumnIndex % 2))));
 		
-		inoutSwarmerState.Position = (tilePosition + patternPosition);
-		inoutSwarmerState.Velocity = patternVelocity;
+		inoutSwarmerState.Position = (tilePosition + patternTransform.MultiplyPoint(Vector3.zero));
+		inoutSwarmerState.LocalForward = patternTransform.MultiplyVector(Vector3.forward);
 		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
 	}
 
@@ -386,10 +380,12 @@ public class SwarmSimulator : MonoBehaviour
 		inoutSwarmerState.Position = 
 			Vector3.Scale(new Vector3(3.0f, 0.5f, 3.0f), UnityEngine.Random.insideUnitSphere);
 
-		inoutSwarmerState.Velocity = 
-			(0.05f * UnityEngine.Random.onUnitSphere); // Just a gentle nudge to indicate a direction.
+		Vector3 randomForward = UnityEngine.Random.onUnitSphere;
+		Vector3 randomUp = UnityEngine.Random.onUnitSphere;
+		Vector3.OrthoNormalize(ref randomForward, ref randomUp);
 
-		inoutSwarmerState.LocalUp = UnityEngine.Random.onUnitSphere;
+		inoutSwarmerState.LocalForward = randomForward;
+		inoutSwarmerState.LocalUp = randomUp;
 	}
 
 	private void SetSwarmerTransformForTripletTiledFloor(
@@ -446,9 +442,6 @@ public class SwarmSimulator : MonoBehaviour
 				patternTransform);
 		}
 
-		Vector3 patternPosition = patternTransform.MultiplyPoint(Vector3.zero);
-		Vector3 patternVelocity = (0.05f * patternTransform.MultiplyVector(Vector3.forward)); // Just a gentle nudge to indicate a direction
-		
 		Vector3 tileSize = new Vector3(
 			(6.0f * (swarmerCenterToRightWingtip.x * Mathf.Sin(60.0f * Mathf.Deg2Rad))),
 			0.0f,
@@ -461,9 +454,9 @@ public class SwarmSimulator : MonoBehaviour
 					(tileColumnIndex / 2.0f), 
 					0.0f, 
 					tileRowIndex + (0.5f * (tileColumnIndex % 2))));
-		
-		inoutSwarmerState.Position = (tilePosition + patternPosition);
-		inoutSwarmerState.Velocity = patternVelocity;
+
+		inoutSwarmerState.Position = (tilePosition + patternTransform.MultiplyPoint(Vector3.zero));
+		inoutSwarmerState.LocalForward = patternTransform.MultiplyVector(Vector3.forward);
 		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
 	}
 
@@ -510,6 +503,8 @@ public class SwarmSimulator : MonoBehaviour
 					//SetSwarmerTransformForPinwheelTiledFloor(swarmerIndex, ref newSwarmerState);
 					//SetSwarmerTransformForRandomSetup(ref newSwarmerState);
 					//SetSwarmerTransformForTripletTiledFloor(swarmerIndex, ref newSwarmerState);
+
+					newSwarmerState.Speed = SwarmerSpeedIdle;
 
 					initialSwarmers.Add(newSwarmerState);
 				}
