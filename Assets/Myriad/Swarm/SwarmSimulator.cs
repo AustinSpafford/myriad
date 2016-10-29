@@ -321,7 +321,7 @@ public class SwarmSimulator : MonoBehaviour
 		
 		inoutSwarmerState.Position = (tilePosition + patternTransform.MultiplyPoint(Vector3.zero));
 		inoutSwarmerState.LocalForward = patternTransform.MultiplyVector(Vector3.forward);
-		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
+		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(((patternIndex % 2) == 0) ? Vector3.up : Vector3.down);
 	}
 
 	private void SetSwarmerTransformForPinwheelTiledFloor(
