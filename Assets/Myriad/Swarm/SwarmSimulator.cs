@@ -19,9 +19,14 @@ public class SwarmSimulator : MonoBehaviour
 	public float SwarmerNeighborhoodRadius = 0.25f;
 	public int MaxNeighborCount = 100;
 	
-	public float SwarmerSpeedIdle = 0.5f;
-	
-	public float IdealVelocityBlendingRate = 10.0f;
+	public float SwarmerSpeedMin = 0.001f;
+	public float SwarmerSpeedIdle = 0.25f;
+	public float SwarmerSpeedMax = 1.0f;
+	public float SwarmerAcceleration = 10.0f;
+
+	public float SteeringYawRate = 3.0f;
+	public float SteeringPitchRate = 3.0f;
+	public float SteeringRollRate = 3.0f;
 
 	public float NeighborAttractionScalar = 0.1f;
 	public float NeighborCollisionAvoidanceScalar = 10.0f;
@@ -196,9 +201,14 @@ public class SwarmSimulator : MonoBehaviour
 			BehaviorComputeShader.SetFloat("u_neighborhood_radius", SwarmerNeighborhoodRadius);
 			BehaviorComputeShader.SetInt("u_max_neighbor_count", MaxNeighborCount);
 			
+			BehaviorComputeShader.SetFloat("u_swarmer_speed_min", SwarmerSpeedMin);
 			BehaviorComputeShader.SetFloat("u_swarmer_speed_idle", SwarmerSpeedIdle);
+			BehaviorComputeShader.SetFloat("u_swarmer_speed_max", SwarmerSpeedMax);
+			BehaviorComputeShader.SetFloat("u_swarmer_acceleration", SwarmerAcceleration);
 			
-			BehaviorComputeShader.SetFloat("u_ideal_velocity_blending_rate", IdealVelocityBlendingRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_steering_yaw_rate", SteeringYawRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_steering_pitch_rate", SteeringPitchRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_steering_roll_rate", SteeringRollRate);
 
 			BehaviorComputeShader.SetFloat("u_neighbor_attraction_scalar", NeighborAttractionScalar);
 			BehaviorComputeShader.SetFloat("u_neighbor_collision_avoidance_scalar", NeighborCollisionAvoidanceScalar);
@@ -255,7 +265,7 @@ public class SwarmSimulator : MonoBehaviour
 		int tileIndex = (swarmerIndex / swarmersPerTile);
 		int patternIndex = (swarmerIndex % swarmersPerTile);
 		
-		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / swarmersPerTile));
+		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / (float)swarmersPerTile));
 		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
 		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
 
@@ -334,7 +344,7 @@ public class SwarmSimulator : MonoBehaviour
 		int tileIndex = (swarmerIndex / swarmersPerTile);
 		int patternIndex = (swarmerIndex % swarmersPerTile);
 		
-		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / swarmersPerTile));
+		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / (float)swarmersPerTile));
 		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
 		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
 
@@ -398,7 +408,7 @@ public class SwarmSimulator : MonoBehaviour
 		int tileIndex = (swarmerIndex / swarmersPerTile);
 		int patternIndex = (swarmerIndex % swarmersPerTile);
 		
-		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / swarmersPerTile));
+		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / (float)swarmersPerTile));
 		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
 		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
 
