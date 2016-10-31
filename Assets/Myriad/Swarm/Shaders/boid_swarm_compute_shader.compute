@@ -303,41 +303,70 @@ void kernel_advance_swarmer_states(
 					ideal_velocity : // The ideal velocity is front of us, so we're happy with it.
 					(ideal_velocity - (desired_speed * new_swarmer_state.local_forward))); // The ideal velocity is behind us, so we'll project onto the plane that's orthogonal to our current facing.
 
-		float desired_yaw_signed_fraction = dot(ideal_local_forward, new_swarmer_state.cached_local_right);
-		float desired_pitch_signed_fraction = dot(ideal_local_forward, new_swarmer_state.local_up);
-
 		float case_movement_permitted = min(speed_scalar, 1.0f);
 
-		// Apply steering desires.
+		// Steer the swarmer towards the direction of its ideal velocity.
+		// NOTE: We're ignoring the interactions between yaw/pitch/roll because we're
+		// integrating over small enough delta for the side-effects to be trivial.
 		{
-			float steering_yaw_delta = (
-				case_movement_permitted * 
-				desired_yaw_signed_fraction * 
-				(u_delta_time * u_swarmer_steering_yaw_rate));
+			float desired_yaw_signed_fraction = dot(ideal_local_forward, new_swarmer_state.cached_local_right);
+			float desired_pitch_signed_fraction = dot(ideal_local_forward, new_swarmer_state.local_up);
 
-			float steering_pitch_delta = (
-				case_movement_permitted * 
-				desired_pitch_signed_fraction * 
-				(u_delta_time * u_swarmer_steering_pitch_rate));
+			// Roll so that such that we transition from using our yaw to using pitch.
+			// NOTE: This assumes we're being given a higher pitch-rate than yaw-rate (horizontal control-surfaces).
+			float desired_roll_signed_fraction = 
+				(desired_yaw_signed_fraction * sign(desired_pitch_signed_fraction));
 
 			float3 new_local_forward = new_swarmer_state.local_forward;
+			float3 new_local_up = new_swarmer_state.local_up;
 
-			new_local_forward = rotate_vector_about_axis_via_relative_ortho_normals(
-				new_local_forward,
-				steering_yaw_delta,
-				new_swarmer_state.local_forward,
-				new_swarmer_state.cached_local_right);
+			// Apply yaw changes.
+			{
+				float steering_yaw_delta = (
+					case_movement_permitted * 
+					desired_yaw_signed_fraction * 
+					(u_delta_time * u_swarmer_steering_yaw_rate));
 
-			new_local_forward = rotate_vector_about_axis_via_relative_ortho_normals(
-				new_local_forward,
-				steering_pitch_delta,
-				new_swarmer_state.local_forward,
-				new_swarmer_state.local_up);
+				new_local_forward = rotate_vector_about_axis_via_relative_ortho_normals(
+					new_local_forward,
+					steering_yaw_delta,
+					new_swarmer_state.local_forward,
+					new_swarmer_state.cached_local_right);
+			}
 
-			new_swarmer_state.local_forward = normalize(new_local_forward);
+			// Apply pitch changes.
+			{
+				float steering_pitch_delta = (
+					case_movement_permitted * 
+					desired_pitch_signed_fraction * 
+					(u_delta_time * u_swarmer_steering_pitch_rate));
+
+				new_local_forward = rotate_vector_about_axis_via_relative_ortho_normals(
+					new_local_forward,
+					steering_pitch_delta,
+					new_swarmer_state.local_forward,
+					new_swarmer_state.local_up);
+			}
+
+			// Apply roll changes.
+			{
+				float steering_roll_delta = (
+					case_movement_permitted * 
+					desired_roll_signed_fraction * 
+					(u_delta_time * u_swarmer_steering_roll_rate));
+
+				new_local_up = rotate_vector_about_axis_via_relative_ortho_normals(
+					new_local_up,
+					steering_roll_delta,
+					new_swarmer_state.local_up,
+					new_swarmer_state.cached_local_right);
+			}
+
+			new_swarmer_state.local_forward = new_local_forward;
+			new_swarmer_state.local_up = new_local_up;
 
 			ortho_normalize_basis_vectors(
-				new_swarmer_state.local_forward,
+				/*inout*/ new_swarmer_state.local_forward,
 				/*inout*/ new_swarmer_state.local_up,
 				/*out*/ new_swarmer_state.cached_local_right);
 		}

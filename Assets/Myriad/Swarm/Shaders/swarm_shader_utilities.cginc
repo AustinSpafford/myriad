@@ -26,10 +26,12 @@ float4x4 build_transform_from_components(
 }
 
 void ortho_normalize_basis_vectors(
-	float3 local_forward, // NOTE: Assumed to already be normalized.
+	inout float3 local_forward, // NOTE: Assumed to already be normalized.
 	inout float3 inout_local_up,
 	out float3 out_local_right)
 {
+	local_forward = normalize(local_forward);
+
 	out_local_right = normalize(cross(inout_local_up, local_forward));
 
 	inout_local_up = cross(local_forward, out_local_right);
