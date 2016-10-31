@@ -247,7 +247,7 @@ float3 build_flocking_impulse(
 
 			alignment_summation += (
 				case_is_neighbor *
-				(u_readable_swarmers[neighbor_index].speed * u_readable_swarmers[neighbor_index].local_forward));
+				u_readable_swarmers[neighbor_index].local_forward);
 		}
 
 		// Advance to the next candidate-particle.
