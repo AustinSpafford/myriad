@@ -25,7 +25,7 @@ uniform uint u_max_neighbor_count;
 uniform float u_swarmer_speed_min;
 uniform float u_swarmer_speed_idle;
 uniform float u_swarmer_speed_max;
-uniform float u_swarmer_acceleration;
+uniform float u_swarmer_speed_blending_rate;
 
 uniform float u_swarmer_speed_scalar_group0;
 uniform float u_swarmer_speed_scalar_group1;
@@ -372,10 +372,10 @@ void kernel_advance_swarmer_states(
 		}
 
 		new_swarmer_state.speed = 
-			clamp(
+			lerp(
+				new_swarmer_state.speed,
 				desired_speed,
-				max(u_swarmer_speed_min, (new_swarmer_state.speed - (u_delta_time * u_swarmer_acceleration))),
-				min(u_swarmer_speed_max, (new_swarmer_state.speed + (u_delta_time * u_swarmer_acceleration))));
+				(u_delta_time * u_swarmer_speed_blending_rate));
 		
 		// Allow the speed_scalar to halt movement, but prevent it from causing an energy-gain cycle.
 		new_swarmer_state.position += (

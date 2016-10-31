@@ -22,7 +22,7 @@ public class SwarmSimulator : MonoBehaviour
 	public float SwarmerSpeedMin = 0.001f;
 	public float SwarmerSpeedIdle = 0.25f;
 	public float SwarmerSpeedMax = 1.0f;
-	public float SwarmerAcceleration = 10.0f;
+	public float SwarmerSpeedBlendingRate = 1.0f;
 
 	public float SteeringYawRate = 3.0f;
 	public float SteeringPitchRate = 3.0f;
@@ -204,7 +204,7 @@ public class SwarmSimulator : MonoBehaviour
 			BehaviorComputeShader.SetFloat("u_swarmer_speed_min", SwarmerSpeedMin);
 			BehaviorComputeShader.SetFloat("u_swarmer_speed_idle", SwarmerSpeedIdle);
 			BehaviorComputeShader.SetFloat("u_swarmer_speed_max", SwarmerSpeedMax);
-			BehaviorComputeShader.SetFloat("u_swarmer_acceleration", SwarmerAcceleration);
+			BehaviorComputeShader.SetFloat("u_swarmer_speed_blending_rate", SwarmerSpeedBlendingRate);
 			
 			BehaviorComputeShader.SetFloat("u_swarmer_steering_yaw_rate", SteeringYawRate);
 			BehaviorComputeShader.SetFloat("u_swarmer_steering_pitch_rate", SteeringPitchRate);
