@@ -33,6 +33,11 @@ public class SwarmSimulator : MonoBehaviour
 	public float NeighborAlignmentScalar = 0.1f;
 
 	public float SwarmerModelScale = 0.04f;
+	
+	public float SegmentPitchEffectScalar = 1.0f;
+	public float SegmentRollEffectScalar = 1.0f;
+	public float SegmentMaxAngleMagnitude = 45.0f;
+	public float SegmentAngleBlendingRate = 1.0f;
 
 	public float LocalTimeScale = 1.0f;
 
@@ -215,6 +220,16 @@ public class SwarmSimulator : MonoBehaviour
 			BehaviorComputeShader.SetFloat("u_neighbor_alignment_scalar", NeighborAlignmentScalar);
 			
 			BehaviorComputeShader.SetFloat("u_swarmer_model_scale", SwarmerModelScale);
+			
+			BehaviorComputeShader.SetVector("u_swarmer_model_left_segment_pivot_point", swarmerModel.SwarmerLeftSegmentPivotPoint);
+			BehaviorComputeShader.SetVector("u_swarmer_model_left_segment_pivot_axis", swarmerModel.SwarmerLeftSegmentPivotAxis);
+			BehaviorComputeShader.SetVector("u_swarmer_model_right_segment_pivot_point", swarmerModel.SwarmerRightSegmentPivotPoint);
+			BehaviorComputeShader.SetVector("u_swarmer_model_right_segment_pivot_axis", swarmerModel.SwarmerRightSegmentPivotAxis);
+			
+			BehaviorComputeShader.SetFloat("u_swarmer_segment_pitch_effect_scalar", SegmentPitchEffectScalar);
+			BehaviorComputeShader.SetFloat("u_swarmer_segment_roll_effect_scalar", SegmentRollEffectScalar);
+			BehaviorComputeShader.SetFloat("u_swarmer_segment_max_angle_magnitude", (SegmentMaxAngleMagnitude * Mathf.Deg2Rad));
+			BehaviorComputeShader.SetFloat("u_swarmer_segment_angle_blending_rate", SegmentAngleBlendingRate);
 							
 			BehaviorComputeShader.SetFloat("u_delta_time", localDeltaTime);
 		}

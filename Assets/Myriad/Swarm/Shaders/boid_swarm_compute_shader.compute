@@ -41,6 +41,17 @@ uniform float u_neighbor_alignment_scalar;
 
 uniform float u_swarmer_model_scale;
 
+uniform float3 u_swarmer_model_left_segment_pivot_point;
+uniform float3 u_swarmer_model_left_segment_pivot_axis;
+
+uniform float3 u_swarmer_model_right_segment_pivot_point;
+uniform float3 u_swarmer_model_right_segment_pivot_axis;
+
+uniform float u_swarmer_segment_pitch_effect_scalar;
+uniform float u_swarmer_segment_roll_effect_scalar;
+uniform float u_swarmer_segment_max_angle_magnitude;
+uniform float u_swarmer_segment_angle_blending_rate;
+
 uniform float u_delta_time;
 
 float3 build_forcefields_impulse(
@@ -320,12 +331,12 @@ void kernel_advance_swarmer_states(
 			float3 new_local_forward = new_swarmer_state.local_forward;
 			float3 new_local_up = new_swarmer_state.local_up;
 
-			// Apply yaw changes.
+			// Apply yaw changes. (positive-yaw is turning to the right)
 			{
 				float steering_yaw_delta = (
 					case_movement_permitted * 
 					desired_yaw_signed_fraction * 
-					(u_delta_time * u_swarmer_steering_yaw_rate));
+					saturate(u_delta_time * u_swarmer_steering_yaw_rate));
 
 				new_local_forward = rotate_vector_about_axis_via_relative_ortho_normals(
 					new_local_forward,
@@ -334,12 +345,12 @@ void kernel_advance_swarmer_states(
 					new_swarmer_state.cached_local_right);
 			}
 
-			// Apply pitch changes.
+			// Apply pitch changes. (positive-pitch is turning upwards)
 			{
 				float steering_pitch_delta = (
 					case_movement_permitted * 
 					desired_pitch_signed_fraction * 
-					(u_delta_time * u_swarmer_steering_pitch_rate));
+					saturate(u_delta_time * u_swarmer_steering_pitch_rate));
 
 				new_local_forward = rotate_vector_about_axis_via_relative_ortho_normals(
 					new_local_forward,
@@ -348,12 +359,12 @@ void kernel_advance_swarmer_states(
 					new_swarmer_state.local_up);
 			}
 
-			// Apply roll changes.
+			// Apply roll changes. (positive-roll is banking to the right)
 			{
 				float steering_roll_delta = (
 					case_movement_permitted * 
 					desired_roll_signed_fraction * 
-					(u_delta_time * u_swarmer_steering_roll_rate));
+					saturate(u_delta_time * u_swarmer_steering_roll_rate));
 
 				new_local_up = rotate_vector_about_axis_via_relative_ortho_normals(
 					new_local_up,
@@ -369,13 +380,41 @@ void kernel_advance_swarmer_states(
 				/*inout*/ new_swarmer_state.local_forward,
 				/*inout*/ new_swarmer_state.local_up,
 				/*out*/ new_swarmer_state.cached_local_right);
+
+			// Animate the segment-angles so it communicates our steering decisions.
+			{
+				float pitch_effect_signed_fraction = (u_swarmer_segment_pitch_effect_scalar * desired_pitch_signed_fraction);
+				float roll_effect_signed_fraction = (u_swarmer_segment_roll_effect_scalar * desired_roll_signed_fraction);
+
+				float desired_left_segment_angle = (
+					case_movement_permitted * 
+					clamp((pitch_effect_signed_fraction - roll_effect_signed_fraction), -1, 1) *
+					u_swarmer_segment_max_angle_magnitude);
+
+				float desired_right_segment_angle = (
+					case_movement_permitted * 
+					clamp((pitch_effect_signed_fraction + roll_effect_signed_fraction), -1, 1) *
+					u_swarmer_segment_max_angle_magnitude);
+
+				new_swarmer_state.left_segment_bend_angle = 
+					lerp(
+						new_swarmer_state.left_segment_bend_angle,
+						desired_left_segment_angle,
+						saturate(u_delta_time * u_swarmer_segment_angle_blending_rate));
+
+				new_swarmer_state.right_segment_bend_angle = 
+					lerp(
+						new_swarmer_state.right_segment_bend_angle,
+						desired_right_segment_angle,
+						saturate(u_delta_time * u_swarmer_segment_angle_blending_rate));
+			}
 		}
 
 		new_swarmer_state.speed = 
 			lerp(
 				new_swarmer_state.speed,
 				desired_speed,
-				(u_delta_time * u_swarmer_speed_blending_rate));
+				saturate(u_delta_time * u_swarmer_speed_blending_rate));
 		
 		// Allow the speed_scalar to halt movement, but prevent it from causing an energy-gain cycle.
 		new_swarmer_state.position += (
@@ -391,9 +430,21 @@ void kernel_advance_swarmer_states(
 				new_swarmer_state.cached_local_right,
 				u_swarmer_model_scale);
 		
-		// TODO: Animate the left/right segments.
-		new_swarmer_state.cached_model_left_segment_to_swarm_matrix = new_swarmer_state.cached_model_center_segment_to_swarm_matrix;
-		new_swarmer_state.cached_model_right_segment_to_swarm_matrix = new_swarmer_state.cached_model_center_segment_to_swarm_matrix;
+		new_swarmer_state.cached_model_left_segment_to_swarm_matrix = 
+			mul(
+				new_swarmer_state.cached_model_center_segment_to_swarm_matrix,
+				build_transform_for_rotation_about_pivot(
+					new_swarmer_state.left_segment_bend_angle,
+					u_swarmer_model_left_segment_pivot_point,
+					u_swarmer_model_left_segment_pivot_axis));
+
+		new_swarmer_state.cached_model_right_segment_to_swarm_matrix = 
+			mul(
+				new_swarmer_state.cached_model_center_segment_to_swarm_matrix,
+				build_transform_for_rotation_about_pivot(
+					new_swarmer_state.right_segment_bend_angle,
+					u_swarmer_model_right_segment_pivot_point,
+					u_swarmer_model_right_segment_pivot_axis));
 
 		u_out_next_swarmers[swarmer_index] = new_swarmer_state;
 	}

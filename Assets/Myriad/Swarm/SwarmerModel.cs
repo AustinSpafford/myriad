@@ -51,6 +51,28 @@ public class SwarmerModel : MonoBehaviour
 			return result;
 		}
 	}
+	
+	public Vector3 SwarmerLeftSegmentPivotPoint
+	{
+		get { return (SwarmerCenterToRightWingtip.z * Vector3.forward); }
+	}
+	
+	public Vector3 SwarmerLeftSegmentPivotAxis
+	{
+		// Oriented so that positive-rotation raises the segment.
+		get { return (-1.0f * (Quaternion.AngleAxis(-30.0f, Vector3.up) * Vector3.forward)); }
+	}
+	
+	public Vector3 SwarmerRightSegmentPivotPoint
+	{
+		get { return SwarmerLeftSegmentPivotPoint; }
+	}
+	
+	public Vector3 SwarmerRightSegmentPivotAxis
+	{
+		// Oriented so that positive-rotation raises the segment.
+		get { return (-1.0f * Vector3.Reflect(SwarmerLeftSegmentPivotAxis, Vector3.right)); }
+	}
 
 	public void OnEnable()
 	{

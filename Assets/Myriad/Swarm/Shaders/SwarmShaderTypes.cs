@@ -33,13 +33,18 @@ public struct SwarmShaderSwarmerState // Represents: s_swarmer_state.
 	
 	private float Pad0; // See native-representation for padding description.
 
-	public Vector3 LocalForward;	
-
-	public float Speed; // Note that velocity is (LocalForward * Speed).
+	public Vector3 LocalForward;
+	
+	public float Speed; // Note that velocity is (Speed * LocalForward).
 
 	public Vector3 LocalUp; // Resolves the model's roll-orientation.
 	
 	private float Pad1; // See native-representation for padding description.
+
+	public float LeftSegmentBendAngle;
+	public float RightSegmentBendAngle;
+	
+	private Vector2 Pad2; // See native-representation for padding description.
 
 	private Vector3 CachedLocalRight; // Rederived every frame from the the LocalForward and LocalUp.
 	
