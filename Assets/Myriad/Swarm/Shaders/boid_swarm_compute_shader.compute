@@ -34,6 +34,7 @@ uniform float u_swarmer_speed_scalar_group2;
 uniform float u_swarmer_steering_yaw_rate;
 uniform float u_swarmer_steering_pitch_rate;
 uniform float u_swarmer_steering_roll_rate;
+uniform float u_swarmer_steering_roll_uprighting_scalar;
 
 uniform float u_neighbor_attraction_scalar;
 uniform float u_neighbor_collision_avoidance_scalar;
@@ -325,8 +326,9 @@ void kernel_advance_swarmer_states(
 
 			// Roll so that such that we transition from using our yaw to using pitch.
 			// NOTE: This assumes we're being given a higher pitch-rate than yaw-rate (horizontal control-surfaces).
-			float desired_roll_signed_fraction = 
-				(desired_yaw_signed_fraction * sign(desired_pitch_signed_fraction));
+			float desired_roll_signed_fraction = (
+				(desired_yaw_signed_fraction * sign(desired_pitch_signed_fraction)) +
+				(u_swarmer_steering_roll_uprighting_scalar * new_swarmer_state.cached_local_right.y));
 
 			float3 new_local_forward = new_swarmer_state.local_forward;
 			float3 new_local_up = new_swarmer_state.local_up;

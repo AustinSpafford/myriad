@@ -27,6 +27,7 @@ public class SwarmSimulator : MonoBehaviour
 	public float SteeringYawRate = 3.0f;
 	public float SteeringPitchRate = 3.0f;
 	public float SteeringRollRate = 3.0f;
+	public float SteeringRollUprightingScalar = 1.0f;
 
 	public float NeighborAttractionScalar = 0.1f;
 	public float NeighborCollisionAvoidanceScalar = 10.0f;
@@ -214,6 +215,7 @@ public class SwarmSimulator : MonoBehaviour
 			BehaviorComputeShader.SetFloat("u_swarmer_steering_yaw_rate", SteeringYawRate);
 			BehaviorComputeShader.SetFloat("u_swarmer_steering_pitch_rate", SteeringPitchRate);
 			BehaviorComputeShader.SetFloat("u_swarmer_steering_roll_rate", SteeringRollRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_steering_roll_uprighting_scalar", SteeringRollUprightingScalar);
 
 			BehaviorComputeShader.SetFloat("u_neighbor_attraction_scalar", NeighborAttractionScalar);
 			BehaviorComputeShader.SetFloat("u_neighbor_collision_avoidance_scalar", NeighborCollisionAvoidanceScalar);
