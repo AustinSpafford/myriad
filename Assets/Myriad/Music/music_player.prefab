@@ -842,8 +842,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8cbe329820832148b522ce97d6d1390, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IntervalStartTime: 120
-  IntervalDuration: 96
+  IntervalStartTime: 130
+  IntervalDuration: 115.2
   FadeInDuration: 1
   FadeOutDuration: 1
 --- !u!114 &114000011818038330
