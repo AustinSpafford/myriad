@@ -16,6 +16,9 @@ public class SwarmSimulator : MonoBehaviour
 	[System.Serializable]
 	public class SwimAnimationUniforms
 	{
+		public float UpwardsBlendingRate = 20.0f;
+		public float DownwardsBlendingRate = 2.0f;
+
 		public float IdleAmplitude = 0.2f;
 		public float IdleRate = 0.5f;
 
@@ -230,6 +233,8 @@ public class SwarmSimulator : MonoBehaviour
 			BehaviorComputeShader.SetFloat("u_swarmer_steering_roll_rate", SteeringRollRate);
 			BehaviorComputeShader.SetFloat("u_swarmer_steering_roll_uprighting_scalar", SteeringRollUprightingScalar);
 			
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_upwards_blending_rate", SwimAnimation.UpwardsBlendingRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_downwards_blending_rate", SwimAnimation.DownwardsBlendingRate);
 			BehaviorComputeShader.SetFloat("u_swarmer_swim_idle_amplitude", SwimAnimation.IdleAmplitude);
 			BehaviorComputeShader.SetFloat("u_swarmer_swim_idle_rate", SwimAnimation.IdleRate);
 			BehaviorComputeShader.SetFloat("u_swarmer_swim_bursting_max_accel_input", SwimAnimation.BurstingMaxAccelInput);

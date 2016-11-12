@@ -44,6 +44,8 @@ uniform float u_swarmer_swim_min_speed_rate;
 uniform float u_swarmer_swim_max_speed_amplitude;
 uniform float u_swarmer_swim_max_speed_rate;
 
+uniform float u_swarmer_swim_upwards_blending_rate;
+uniform float u_swarmer_swim_downwards_blending_rate;
 uniform float u_swarmer_swim_idle_amplitude;
 uniform float u_swarmer_swim_idle_rate;
 uniform float u_swarmer_swim_bursting_max_accel_input;
@@ -439,17 +441,28 @@ void kernel_advance_swarmer_states(
 
 			// Animate the swim-fraction.
 			{
-				float bursting_fraction = 
+				float desired_bursting_fraction = 
 					smoothstep(
 						0.0, 
 						u_swarmer_swim_bursting_max_accel_input, 
 						acceleration);
 
+				float swim_blending_rate = 
+					(new_swarmer_state.swim_bursting_fraction < desired_bursting_fraction) ?
+						u_swarmer_swim_upwards_blending_rate :
+						u_swarmer_swim_downwards_blending_rate;
+
+				new_swarmer_state.swim_bursting_fraction = 
+					lerp(
+						new_swarmer_state.swim_bursting_fraction,
+						desired_bursting_fraction,
+						saturate(u_delta_time * swim_blending_rate));
+
 				float current_swim_amplitude = 
-					lerp(u_swarmer_swim_idle_amplitude, u_swarmer_swim_bursting_amplitude, bursting_fraction);
+					lerp(u_swarmer_swim_idle_amplitude, u_swarmer_swim_bursting_amplitude, new_swarmer_state.swim_bursting_fraction);
 
 				float current_swim_rate = 
-					lerp(u_swarmer_swim_idle_rate, u_swarmer_swim_bursting_rate, bursting_fraction);
+					lerp(u_swarmer_swim_idle_rate, u_swarmer_swim_bursting_rate, new_swarmer_state.swim_bursting_fraction);
 
 				new_swarmer_state.swim_cycle_fraction = 
 					frac(new_swarmer_state.swim_cycle_fraction + (u_delta_time * current_swim_rate));

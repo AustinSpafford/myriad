@@ -39,8 +39,7 @@ struct s_swarmer_state // Represents: SwarmShaderSwarmerState, which contains an
 	float steering_right_segment_bend_angle;
 
 	float swim_cycle_fraction;
-
-	float pad_2; // For aligning vector-reads to 16-byte cache-boundaries.
+	float swim_bursting_fraction;
 
 	float3 cached_local_right;
 	

@@ -45,8 +45,7 @@ public struct SwarmShaderSwarmerState // Represents: s_swarmer_state.
 	public float SteeringRightSegmentBendAngle;
 	
 	public float SwimCycleFraction;
-
-	private float Pad2; // See native-representation for padding description.
+	public float SwimBurstingFraction;
 
 	private Vector3 CachedLocalRight; // Rederived every frame from the the LocalForward and LocalUp.
 	
