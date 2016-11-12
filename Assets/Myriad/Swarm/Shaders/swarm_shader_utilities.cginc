@@ -84,6 +84,14 @@ float4x4 build_transform_for_rotation_about_pivot(
 			build_transform_for_translation(-1.0f * pivot_point)));
 }
 
+float get_clamped_linear_fraction(
+	float min,
+	float max,
+	float value)
+{
+	return saturate((value - min) / (max - min));
+}
+
 void ortho_normalize_basis_vectors(
 	inout float3 local_forward,
 	inout float3 inout_local_up,

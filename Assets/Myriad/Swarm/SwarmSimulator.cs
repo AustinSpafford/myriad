@@ -13,6 +13,17 @@ using UnityEditor;
 [RequireComponent(typeof(SwarmerModel))]
 public class SwarmSimulator : MonoBehaviour
 {
+	[System.Serializable]
+	public class SwimAnimationUniforms
+	{
+		public float IdleAmplitude = 0.2f;
+		public float IdleRate = 0.5f;
+
+		public float BurstingMaxAccelInput = 1.0f;
+		public float BurstingAmplitude = 2.0f;
+		public float BurstingRate = 5.0f;
+	}
+
 	public int SwarmerCount = 1000;
 	public int MaxForcefieldCount = 16;
 
@@ -28,6 +39,8 @@ public class SwarmSimulator : MonoBehaviour
 	public float SteeringPitchRate = 3.0f;
 	public float SteeringRollRate = 3.0f;
 	public float SteeringRollUprightingScalar = 1.0f;
+
+	public SwimAnimationUniforms SwimAnimation = null;
 
 	public float NeighborAttractionScalar = 0.1f;
 	public float NeighborCollisionAvoidanceScalar = 10.0f;
@@ -216,6 +229,12 @@ public class SwarmSimulator : MonoBehaviour
 			BehaviorComputeShader.SetFloat("u_swarmer_steering_pitch_rate", SteeringPitchRate);
 			BehaviorComputeShader.SetFloat("u_swarmer_steering_roll_rate", SteeringRollRate);
 			BehaviorComputeShader.SetFloat("u_swarmer_steering_roll_uprighting_scalar", SteeringRollUprightingScalar);
+			
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_idle_amplitude", SwimAnimation.IdleAmplitude);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_idle_rate", SwimAnimation.IdleRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_bursting_max_accel_input", SwimAnimation.BurstingMaxAccelInput);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_bursting_amplitude", SwimAnimation.BurstingAmplitude);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_bursting_rate", SwimAnimation.BurstingRate);
 
 			BehaviorComputeShader.SetFloat("u_neighbor_attraction_scalar", NeighborAttractionScalar);
 			BehaviorComputeShader.SetFloat("u_neighbor_collision_avoidance_scalar", NeighborCollisionAvoidanceScalar);

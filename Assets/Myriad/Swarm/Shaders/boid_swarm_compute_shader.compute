@@ -6,6 +6,9 @@
 #include "..\..\Spatializer\Shaders\spatializer_shader_types.cginc"
 #include "..\..\Spatializer\Shaders\spatializer_shader_utilities.cginc"
 
+static const float k_pi = 3.14159265f;
+static const float k_tau = 6.28318530f;
+
 uniform uint u_swarmer_count;
 uniform StructuredBuffer<s_swarmer_state> u_readable_swarmers;
 uniform RWStructuredBuffer<s_swarmer_state> u_out_next_swarmers;
@@ -35,6 +38,17 @@ uniform float u_swarmer_steering_yaw_rate;
 uniform float u_swarmer_steering_pitch_rate;
 uniform float u_swarmer_steering_roll_rate;
 uniform float u_swarmer_steering_roll_uprighting_scalar;
+
+uniform float u_swarmer_swim_min_speed_amplitude;
+uniform float u_swarmer_swim_min_speed_rate;
+uniform float u_swarmer_swim_max_speed_amplitude;
+uniform float u_swarmer_swim_max_speed_rate;
+
+uniform float u_swarmer_swim_idle_amplitude;
+uniform float u_swarmer_swim_idle_rate;
+uniform float u_swarmer_swim_bursting_max_accel_input;
+uniform float u_swarmer_swim_bursting_amplitude;
+uniform float u_swarmer_swim_bursting_rate;
 
 uniform float u_neighbor_attraction_scalar;
 uniform float u_neighbor_collision_avoidance_scalar;
@@ -317,9 +331,21 @@ void kernel_advance_swarmer_states(
 
 		float case_movement_permitted = min(speed_scalar, 1.0f);
 
+		float old_speed = new_swarmer_state.speed;
+
+		new_swarmer_state.speed = 
+			lerp(
+				new_swarmer_state.speed,
+				clamp(desired_speed, u_swarmer_speed_min, u_swarmer_speed_max),
+				(case_movement_permitted * saturate(u_delta_time * u_swarmer_speed_blending_rate)));
+
+		float acceleration = ((new_swarmer_state.speed - old_speed) / u_delta_time);
+
 		// Steer the swarmer towards the direction of its ideal velocity.
 		// NOTE: We're ignoring the interactions between yaw/pitch/roll because we're
 		// integrating over small enough delta for the side-effects to be trivial.
+		float active_left_segment_bend_angle;
+		float active_right_segment_bend_angle;
 		{
 			float desired_yaw_signed_fraction = dot(ideal_local_forward, new_swarmer_state.cached_local_right);
 			float desired_pitch_signed_fraction = dot(ideal_local_forward, new_swarmer_state.local_up);
@@ -383,7 +409,7 @@ void kernel_advance_swarmer_states(
 				/*inout*/ new_swarmer_state.local_up,
 				/*out*/ new_swarmer_state.cached_local_right);
 
-			// Animate the segment-angles so it communicates our steering decisions.
+			// Animate the steering segment-angles so it communicates our steering decisions.
 			{
 				float pitch_effect_signed_fraction = (u_swarmer_segment_pitch_effect_scalar * desired_pitch_signed_fraction);
 				float roll_effect_signed_fraction = (u_swarmer_segment_roll_effect_scalar * desired_roll_signed_fraction);
@@ -398,25 +424,53 @@ void kernel_advance_swarmer_states(
 					clamp((pitch_effect_signed_fraction + roll_effect_signed_fraction), -1, 1) *
 					u_swarmer_segment_max_angle_magnitude);
 
-				new_swarmer_state.left_segment_bend_angle = 
+				new_swarmer_state.steering_left_segment_bend_angle = 
 					lerp(
-						new_swarmer_state.left_segment_bend_angle,
+						new_swarmer_state.steering_left_segment_bend_angle,
 						desired_left_segment_angle,
 						saturate(u_delta_time * u_swarmer_segment_angle_blending_rate));
 
-				new_swarmer_state.right_segment_bend_angle = 
+				new_swarmer_state.steering_right_segment_bend_angle = 
 					lerp(
-						new_swarmer_state.right_segment_bend_angle,
+						new_swarmer_state.steering_right_segment_bend_angle,
 						desired_right_segment_angle,
 						saturate(u_delta_time * u_swarmer_segment_angle_blending_rate));
 			}
-		}
 
-		new_swarmer_state.speed = 
-			lerp(
-				new_swarmer_state.speed,
-				desired_speed,
-				saturate(u_delta_time * u_swarmer_speed_blending_rate));
+			// Animate the swim-fraction.
+			{
+				float bursting_fraction = 
+					smoothstep(
+						0.0, 
+						u_swarmer_swim_bursting_max_accel_input, 
+						acceleration);
+
+				float current_swim_amplitude = 
+					lerp(u_swarmer_swim_idle_amplitude, u_swarmer_swim_bursting_amplitude, bursting_fraction);
+
+				float current_swim_rate = 
+					lerp(u_swarmer_swim_idle_rate, u_swarmer_swim_bursting_rate, bursting_fraction);
+
+				new_swarmer_state.swim_cycle_fraction = 
+					frac(new_swarmer_state.swim_cycle_fraction + (u_delta_time * current_swim_rate));
+
+				float current_swim_signed_fraction = (
+					current_swim_amplitude *
+					sin(k_tau * new_swarmer_state.swim_cycle_fraction));
+
+				active_left_segment_bend_angle = 
+					clamp(
+						(new_swarmer_state.steering_left_segment_bend_angle + current_swim_signed_fraction),
+						(-1 * u_swarmer_segment_max_angle_magnitude), 
+						u_swarmer_segment_max_angle_magnitude);
+
+				active_right_segment_bend_angle = 
+					clamp(
+						(new_swarmer_state.steering_right_segment_bend_angle + current_swim_signed_fraction),
+						(-1 * u_swarmer_segment_max_angle_magnitude), 
+						u_swarmer_segment_max_angle_magnitude);
+			}
+		}
 		
 		// Allow the speed_scalar to halt movement, but prevent it from causing an energy-gain cycle.
 		new_swarmer_state.position += (
@@ -436,7 +490,7 @@ void kernel_advance_swarmer_states(
 			mul(
 				new_swarmer_state.cached_model_center_segment_to_swarm_matrix,
 				build_transform_for_rotation_about_pivot(
-					new_swarmer_state.left_segment_bend_angle,
+					active_left_segment_bend_angle,
 					u_swarmer_model_left_segment_pivot_point,
 					u_swarmer_model_left_segment_pivot_axis));
 
@@ -444,7 +498,7 @@ void kernel_advance_swarmer_states(
 			mul(
 				new_swarmer_state.cached_model_center_segment_to_swarm_matrix,
 				build_transform_for_rotation_about_pivot(
-					new_swarmer_state.right_segment_bend_angle,
+					active_right_segment_bend_angle,
 					u_swarmer_model_right_segment_pivot_point,
 					u_swarmer_model_right_segment_pivot_axis));
 
