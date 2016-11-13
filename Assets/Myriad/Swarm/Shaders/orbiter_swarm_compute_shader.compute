@@ -5,7 +5,8 @@
 #include "swarm_shader_utilities.cginc"
 
 uniform int u_swarmer_count;
-uniform RWStructuredBuffer<s_swarmer_state> u_inout_swarmers;
+uniform StructuredBuffer<s_swarmer_state> u_readable_swarmers;
+uniform RWStructuredBuffer<s_swarmer_state> u_out_next_swarmers;
 
 uniform int u_forcefield_count;
 uniform StructuredBuffer<s_forcefield_state> u_forcefields;
@@ -22,6 +23,8 @@ void kernel_advance_swarmer_states(
 
 	if (swarmer_index < u_swarmer_count)
 	{
+		s_swarmer_state new_swarmer_state = u_readable_swarmers[swarmer_index];
+
 		float3 summedAcceleration = float3(0.0f, 0.0f, 0.0f);
 
 		for (int forcefield_index = 0; forcefield_index < u_forcefield_count; ++forcefield_index)
@@ -31,7 +34,7 @@ void kernel_advance_swarmer_states(
 				mul(u_forcefields[forcefield_index].forcefield_to_simulation_matrix, float4(0, 0, 0, 1)).xyz;
 
 			float3 swarmer_to_forcefield =
-				(forcefield_position - u_inout_swarmers[swarmer_index].position);
+				(forcefield_position - u_readable_swarmers[swarmer_index].position);
 
 			float attraction_scalar = (-1.0f * u_forcefields[forcefield_index].force_scalar);
 
@@ -48,25 +51,40 @@ void kernel_advance_swarmer_states(
 
 			summedAcceleration += (force * normalize(swarmer_to_forcefield));
 		}
-
-		u_inout_swarmers[swarmer_index].velocity += (u_delta_time * summedAcceleration);
+		
+		float3 new_velocity = (
+			(new_swarmer_state.speed * new_swarmer_state.local_forward) +
+			(u_delta_time * summedAcceleration));
 
 		// HAX!
-		u_inout_swarmers[swarmer_index].velocity *= lerp(1.0f, 0.9f, smoothstep(0.5f, 1.0f, length(u_inout_swarmers[swarmer_index].velocity)));
+		new_velocity *= lerp(1.0f, 0.9f, smoothstep(0.5f, 1.0f, length(new_velocity)));
+		
+		new_swarmer_state.speed = length(new_velocity);
+		new_swarmer_state.local_forward = (new_velocity / new_swarmer_state.speed);
 
-		u_inout_swarmers[swarmer_index].position +=
-			(u_delta_time * u_inout_swarmers[swarmer_index].velocity);
+		new_swarmer_state.position += (u_delta_time * new_velocity);
 
-		u_inout_swarmers[swarmer_index].local_up =
+		new_swarmer_state.local_up =
 			any(summedAcceleration) ?
-			normalize(summedAcceleration) :
-			float3(0.0f, 1.0f, 0.0f);
+				normalize(summedAcceleration) :
+				float3(0.0f, 1.0f, 0.0f);
+		
+		ortho_normalize_basis_vectors(
+			new_swarmer_state.local_forward,
+			/*inout*/ new_swarmer_state.local_up,
+			/*out*/ new_swarmer_state.cached_local_right);
 
-		u_inout_swarmers[swarmer_index].cached_model_to_swarm_matrix =
-			build_swarmer_model_to_swarm_matrix(
-				u_inout_swarmers[swarmer_index].position,
-				u_inout_swarmers[swarmer_index].velocity,
-				u_inout_swarmers[swarmer_index].local_up,
+		new_swarmer_state.cached_model_center_segment_to_swarm_matrix =
+			build_transform_from_components(
+				new_swarmer_state.position,
+				new_swarmer_state.local_forward,
+				new_swarmer_state.local_up,
+				new_swarmer_state.cached_local_right,
 				k_swarmer_model_scale);
+
+		new_swarmer_state.cached_model_left_segment_to_swarm_matrix = new_swarmer_state.cached_model_center_segment_to_swarm_matrix;
+		new_swarmer_state.cached_model_right_segment_to_swarm_matrix = new_swarmer_state.cached_model_center_segment_to_swarm_matrix;
+
+		u_out_next_swarmers[swarmer_index] = new_swarmer_state;
 	}
 }

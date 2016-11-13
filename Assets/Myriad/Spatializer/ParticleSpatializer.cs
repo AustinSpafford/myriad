@@ -21,7 +21,7 @@ public class ParticleSpatializer : MonoBehaviour
 	public ComputeShader SpatializerComputeShader;
 
 	public bool DebugCaptureSingleFrame = false;
-	public bool DebugMessagesEnabled = false;
+	public bool DebugLoggingEnabled = false;
 	
 	public int MaxParticleCount { get; private set; }
 	public int WastedParticleCount { get; private set; }
@@ -230,7 +230,7 @@ public class ParticleSpatializer : MonoBehaviour
 		}
 		else if (MaxParticleCount <= 0)
 		{
-			if (DebugMessagesEnabled)
+			if (DebugLoggingEnabled)
 			{
 				Debug.LogFormat("Buffer-allocation silently aborted because we haven't yet been given a maximum particle count.");
 			}
@@ -277,7 +277,7 @@ public class ParticleSpatializer : MonoBehaviour
 			}
 		}
 
-		if (DebugMessagesEnabled)
+		if (DebugLoggingEnabled)
 		{
 			Debug.LogFormat("Compute buffer allocation attempted. [Success={0}]", result);
 		}
@@ -307,7 +307,7 @@ public class ParticleSpatializer : MonoBehaviour
 
 		voxelParticlePairBuffers.ReleaseBuffers();
 
-		if (DebugMessagesEnabled)
+		if (DebugLoggingEnabled)
 		{
 			Debug.LogFormat("Compute buffers released.");
 		}

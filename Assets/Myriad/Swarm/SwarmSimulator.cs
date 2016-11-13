@@ -7,26 +7,54 @@ using System.Collections.Generic;
 using UnityEditor;
 #endif // UNITY_EDITOR
 
-[RequireComponent(typeof(ParticleSpatializer))]
 [RequireComponent(typeof(AudioShaderUniformCollector))]
+[RequireComponent(typeof(ParticleSpatializer))]
 [RequireComponent(typeof(SwarmForcefieldCollector))]
+[RequireComponent(typeof(SwarmerModel))]
 public class SwarmSimulator : MonoBehaviour
 {
+	[System.Serializable]
+	public class SwimAnimationUniforms
+	{
+		public float UpwardsBlendingRate = 20.0f;
+		public float DownwardsBlendingRate = 2.0f;
+
+		public float IdleAmplitude = 0.2f;
+		public float IdleRate = 0.5f;
+
+		public float BurstingMaxAccelInput = 1.0f;
+		public float BurstingAmplitude = 2.0f;
+		public float BurstingRate = 5.0f;
+	}
+
 	public int SwarmerCount = 1000;
 	public int MaxForcefieldCount = 16;
 
 	public float SwarmerNeighborhoodRadius = 0.25f;
 	public int MaxNeighborCount = 100;
 	
-	public float SwarmerSpeedIdle = 0.5f;
-	
-	public float IdealVelocityBlendingRate = 10.0f;
+	public float SwarmerSpeedMin = 0.001f;
+	public float SwarmerSpeedIdle = 0.25f;
+	public float SwarmerSpeedMax = 1.0f;
+	public float SwarmerSpeedBlendingRate = 1.0f;
+
+	public float SteeringYawRate = 3.0f;
+	public float SteeringPitchRate = 3.0f;
+	public float SteeringRollRate = 3.0f;
+	public float SteeringRollUprightingScalar = 1.0f;
+
+	public SwimAnimationUniforms SwimAnimation = null;
 
 	public float NeighborAttractionScalar = 0.1f;
 	public float NeighborCollisionAvoidanceScalar = 10.0f;
 	public float NeighborAlignmentScalar = 0.1f;
 
 	public float SwarmerModelScale = 0.04f;
+	
+	public float SegmentPitchEffectScalar = 1.0f;
+	public float SegmentRollEffectScalar = 1.0f;
+	public float SegmentMaxAngleMagnitude = 45.0f;
+	public float SegmentAngleBlendingRate = 1.0f;
 
 	public float LocalTimeScale = 1.0f;
 
@@ -38,8 +66,9 @@ public class SwarmSimulator : MonoBehaviour
 	public void Awake()
 	{
 		audioShaderUniformCollector = GetComponent<AudioShaderUniformCollector>();
-		forcefieldCollector = GetComponent<SwarmForcefieldCollector>();
 		particleSpatializer = GetComponent<ParticleSpatializer>();
+		swarmForcefieldCollector = GetComponent<SwarmForcefieldCollector>();
+		swarmerModel = GetComponent<SwarmerModel>();
 	}
 
 	public void Start()
@@ -102,8 +131,9 @@ public class SwarmSimulator : MonoBehaviour
 	private const int ForcefieldsComputeBufferCount = (2 * 2); // Double-buffered for each eye, to help avoid having SetData() cause a pipeline-stall if the data's still being read by the GPU.
 	
 	private AudioShaderUniformCollector audioShaderUniformCollector = null;
-	private SwarmForcefieldCollector forcefieldCollector = null;
 	private ParticleSpatializer particleSpatializer = null;
+	private SwarmForcefieldCollector swarmForcefieldCollector = null;
+	private SwarmerModel swarmerModel = null;
 
 	private Queue<TypedComputeBuffer<SwarmShaderForcefieldState> > forcefieldsBufferQueue = null;
 	private PingPongComputeBuffers<SwarmShaderSwarmerState> swarmerStateBuffers = new PingPongComputeBuffers<SwarmShaderSwarmerState>();
@@ -193,15 +223,39 @@ public class SwarmSimulator : MonoBehaviour
 			BehaviorComputeShader.SetFloat("u_neighborhood_radius", SwarmerNeighborhoodRadius);
 			BehaviorComputeShader.SetInt("u_max_neighbor_count", MaxNeighborCount);
 			
+			BehaviorComputeShader.SetFloat("u_swarmer_speed_min", SwarmerSpeedMin);
 			BehaviorComputeShader.SetFloat("u_swarmer_speed_idle", SwarmerSpeedIdle);
+			BehaviorComputeShader.SetFloat("u_swarmer_speed_max", SwarmerSpeedMax);
+			BehaviorComputeShader.SetFloat("u_swarmer_speed_blending_rate", SwarmerSpeedBlendingRate);
 			
-			BehaviorComputeShader.SetFloat("u_ideal_velocity_blending_rate", IdealVelocityBlendingRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_steering_yaw_rate", SteeringYawRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_steering_pitch_rate", SteeringPitchRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_steering_roll_rate", SteeringRollRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_steering_roll_uprighting_scalar", SteeringRollUprightingScalar);
+			
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_upwards_blending_rate", SwimAnimation.UpwardsBlendingRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_downwards_blending_rate", SwimAnimation.DownwardsBlendingRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_idle_amplitude", SwimAnimation.IdleAmplitude);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_idle_rate", SwimAnimation.IdleRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_bursting_max_accel_input", SwimAnimation.BurstingMaxAccelInput);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_bursting_amplitude", SwimAnimation.BurstingAmplitude);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_bursting_rate", SwimAnimation.BurstingRate);
 
 			BehaviorComputeShader.SetFloat("u_neighbor_attraction_scalar", NeighborAttractionScalar);
 			BehaviorComputeShader.SetFloat("u_neighbor_collision_avoidance_scalar", NeighborCollisionAvoidanceScalar);
 			BehaviorComputeShader.SetFloat("u_neighbor_alignment_scalar", NeighborAlignmentScalar);
 			
 			BehaviorComputeShader.SetFloat("u_swarmer_model_scale", SwarmerModelScale);
+			
+			BehaviorComputeShader.SetVector("u_swarmer_model_left_segment_pivot_point", swarmerModel.SwarmerLeftSegmentPivotPoint);
+			BehaviorComputeShader.SetVector("u_swarmer_model_left_segment_pivot_axis", swarmerModel.SwarmerLeftSegmentPivotAxis);
+			BehaviorComputeShader.SetVector("u_swarmer_model_right_segment_pivot_point", swarmerModel.SwarmerRightSegmentPivotPoint);
+			BehaviorComputeShader.SetVector("u_swarmer_model_right_segment_pivot_axis", swarmerModel.SwarmerRightSegmentPivotAxis);
+			
+			BehaviorComputeShader.SetFloat("u_swarmer_segment_pitch_effect_scalar", SegmentPitchEffectScalar);
+			BehaviorComputeShader.SetFloat("u_swarmer_segment_roll_effect_scalar", SegmentRollEffectScalar);
+			BehaviorComputeShader.SetFloat("u_swarmer_segment_max_angle_magnitude", (SegmentMaxAngleMagnitude * Mathf.Deg2Rad));
+			BehaviorComputeShader.SetFloat("u_swarmer_segment_angle_blending_rate", SegmentAngleBlendingRate);
 							
 			BehaviorComputeShader.SetFloat("u_delta_time", localDeltaTime);
 		}
@@ -220,7 +274,7 @@ public class SwarmSimulator : MonoBehaviour
 		TypedComputeBuffer<SwarmShaderForcefieldState> targetForcefieldsBuffer = forcefieldsBufferQueue.Dequeue();
 		forcefieldsBufferQueue.Enqueue(targetForcefieldsBuffer);	
 
-		forcefieldCollector.CollectForcefields(
+		swarmForcefieldCollector.CollectForcefields(
 			transform.localToWorldMatrix,
 			ref scratchForcefieldStateList);
 
@@ -252,16 +306,11 @@ public class SwarmSimulator : MonoBehaviour
 		int tileIndex = (swarmerIndex / swarmersPerTile);
 		int patternIndex = (swarmerIndex % swarmersPerTile);
 		
-		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / swarmersPerTile));
+		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / (float)swarmersPerTile));
 		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
 		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
 
-		Vector3 swarmerCenterToRightWingtip = (
-			SwarmerModelScale *
-			new Vector3(
-				(2.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)),
-				0.0f,
-				(-1.0f * Mathf.Sin(30.0f * Mathf.Deg2Rad))));
+		Vector3 swarmerCenterToRightWingtip = (SwarmerModelScale * swarmerModel.SwarmerCenterToRightWingtip);
 
 		Matrix4x4 patternTransform = Matrix4x4.identity;
 
@@ -307,9 +356,6 @@ public class SwarmSimulator : MonoBehaviour
 					Vector3.one) * 
 				patternTransform);
 		}
-
-		Vector3 patternPosition = patternTransform.MultiplyPoint(Vector3.zero);
-		Vector3 patternVelocity = (0.05f * patternTransform.MultiplyVector(Vector3.forward)); // Just a gentle nudge to indicate a direction
 		
 		Vector3 tileSize = new Vector3(
 			(6.0f * swarmerCenterToRightWingtip.x),
@@ -324,9 +370,9 @@ public class SwarmSimulator : MonoBehaviour
 					0.0f, 
 					tileRowIndex + (0.5f * (tileColumnIndex % 2))));
 		
-		inoutSwarmerState.Position = (tilePosition + patternPosition);
-		inoutSwarmerState.Velocity = patternVelocity;
-		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
+		inoutSwarmerState.Position = (tilePosition + patternTransform.MultiplyPoint(Vector3.zero));
+		inoutSwarmerState.LocalForward = patternTransform.MultiplyVector(Vector3.forward);
+		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(((patternIndex % 2) == 0) ? Vector3.up : Vector3.down);
 	}
 
 	private void SetSwarmerTransformForPinwheelTiledFloor(
@@ -339,16 +385,11 @@ public class SwarmSimulator : MonoBehaviour
 		int tileIndex = (swarmerIndex / swarmersPerTile);
 		int patternIndex = (swarmerIndex % swarmersPerTile);
 		
-		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / swarmersPerTile));
+		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / (float)swarmersPerTile));
 		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
 		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
 
-		Vector3 swarmerCenterToRightWingtip = (
-			SwarmerModelScale *
-			new Vector3(
-				(2.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)),
-				0.0f,
-				(-1.0f * Mathf.Sin(30.0f * Mathf.Deg2Rad))));
+		Vector3 swarmerCenterToRightWingtip = (SwarmerModelScale * swarmerModel.SwarmerCenterToRightWingtip);
 
 		Matrix4x4 patternTransform = Matrix4x4.identity;
 
@@ -366,9 +407,6 @@ public class SwarmSimulator : MonoBehaviour
 				Vector3.one) * 
 			patternTransform);
 
-		Vector3 patternPosition = patternTransform.MultiplyPoint(Vector3.zero);
-		Vector3 patternVelocity = (0.05f * patternTransform.MultiplyVector(Vector3.forward)); // Just a gentle nudge to indicate a direction
-		
 		Vector3 tileSize = new Vector3(
 			(6.0f * (swarmerCenterToRightWingtip.x * Mathf.Sin(60.0f * Mathf.Deg2Rad))),
 			0.0f,
@@ -382,8 +420,8 @@ public class SwarmSimulator : MonoBehaviour
 					0.0f, 
 					tileRowIndex + (0.5f * (tileColumnIndex % 2))));
 		
-		inoutSwarmerState.Position = (tilePosition + patternPosition);
-		inoutSwarmerState.Velocity = patternVelocity;
+		inoutSwarmerState.Position = (tilePosition + patternTransform.MultiplyPoint(Vector3.zero));
+		inoutSwarmerState.LocalForward = patternTransform.MultiplyVector(Vector3.forward);
 		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
 	}
 
@@ -393,10 +431,12 @@ public class SwarmSimulator : MonoBehaviour
 		inoutSwarmerState.Position = 
 			Vector3.Scale(new Vector3(3.0f, 0.5f, 3.0f), UnityEngine.Random.insideUnitSphere);
 
-		inoutSwarmerState.Velocity = 
-			(0.05f * UnityEngine.Random.onUnitSphere); // Just a gentle nudge to indicate a direction.
+		Vector3 randomForward = UnityEngine.Random.onUnitSphere;
+		Vector3 randomUp = UnityEngine.Random.onUnitSphere;
+		Vector3.OrthoNormalize(ref randomForward, ref randomUp);
 
-		inoutSwarmerState.LocalUp = UnityEngine.Random.onUnitSphere;
+		inoutSwarmerState.LocalForward = randomForward;
+		inoutSwarmerState.LocalUp = randomUp;
 	}
 
 	private void SetSwarmerTransformForTripletTiledFloor(
@@ -409,16 +449,11 @@ public class SwarmSimulator : MonoBehaviour
 		int tileIndex = (swarmerIndex / swarmersPerTile);
 		int patternIndex = (swarmerIndex % swarmersPerTile);
 		
-		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / swarmersPerTile));
+		int tilingStride = Mathf.CeilToInt(Mathf.Sqrt(SwarmerCount / (float)swarmersPerTile));
 		int tileRowIndex = ((tileIndex / tilingStride) - (tilingStride / 2));
 		int tileColumnIndex = ((tileIndex % tilingStride) - (tilingStride / 2));
 
-		Vector3 swarmerCenterToRightWingtip = (
-			SwarmerModelScale *
-			new Vector3(
-				(2.0f * Mathf.Cos(30.0f * Mathf.Deg2Rad)),
-				0.0f,
-				(-1.0f * Mathf.Sin(30.0f * Mathf.Deg2Rad))));
+		Vector3 swarmerCenterToRightWingtip = (SwarmerModelScale * swarmerModel.SwarmerCenterToRightWingtip);
 
 		Matrix4x4 patternTransform = Matrix4x4.identity;
 
@@ -458,9 +493,6 @@ public class SwarmSimulator : MonoBehaviour
 				patternTransform);
 		}
 
-		Vector3 patternPosition = patternTransform.MultiplyPoint(Vector3.zero);
-		Vector3 patternVelocity = (0.05f * patternTransform.MultiplyVector(Vector3.forward)); // Just a gentle nudge to indicate a direction
-		
 		Vector3 tileSize = new Vector3(
 			(6.0f * (swarmerCenterToRightWingtip.x * Mathf.Sin(60.0f * Mathf.Deg2Rad))),
 			0.0f,
@@ -473,9 +505,9 @@ public class SwarmSimulator : MonoBehaviour
 					(tileColumnIndex / 2.0f), 
 					0.0f, 
 					tileRowIndex + (0.5f * (tileColumnIndex % 2))));
-		
-		inoutSwarmerState.Position = (tilePosition + patternPosition);
-		inoutSwarmerState.Velocity = patternVelocity;
+
+		inoutSwarmerState.Position = (tilePosition + patternTransform.MultiplyPoint(Vector3.zero));
+		inoutSwarmerState.LocalForward = patternTransform.MultiplyVector(Vector3.forward);
 		inoutSwarmerState.LocalUp = patternTransform.MultiplyVector(Vector3.up);
 	}
 
@@ -522,6 +554,8 @@ public class SwarmSimulator : MonoBehaviour
 					//SetSwarmerTransformForPinwheelTiledFloor(swarmerIndex, ref newSwarmerState);
 					//SetSwarmerTransformForRandomSetup(ref newSwarmerState);
 					//SetSwarmerTransformForTripletTiledFloor(swarmerIndex, ref newSwarmerState);
+
+					newSwarmerState.Speed = SwarmerSpeedIdle;
 
 					initialSwarmers.Add(newSwarmerState);
 				}

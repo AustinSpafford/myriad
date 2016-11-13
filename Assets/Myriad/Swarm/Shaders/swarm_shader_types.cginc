@@ -27,15 +27,27 @@ struct s_swarmer_state // Represents: SwarmShaderSwarmerState, which contains an
 
 	float pad_0; // For aligning vector-reads to 16-byte cache-boundaries.
 
-	float3 velocity;
+	float3 local_forward;
+
+	float speed;
+
+	float3 local_up;
 
 	float pad_1; // For aligning vector-reads to 16-byte cache-boundaries.
 
-	float3 local_up;
-	
-	float debug_accepted_candidates_fraction;
+	float steering_left_segment_bend_angle;
+	float steering_right_segment_bend_angle;
 
-	float4x4 cached_model_to_swarm_matrix;
+	float swim_cycle_fraction;
+	float swim_bursting_fraction;
+
+	float3 cached_local_right;
+	
+	float cached_debug_accepted_candidates_fraction;
+
+	float4x4 cached_model_left_segment_to_swarm_matrix;
+	float4x4 cached_model_center_segment_to_swarm_matrix;
+	float4x4 cached_model_right_segment_to_swarm_matrix;
 };
 
 struct s_swarmer_model_vertex // Represents: SwarmShaderSwarmerModelVertex, which contains any usage documentation.

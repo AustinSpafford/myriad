@@ -7,5 +7,7 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 0
     path: Assets/Myriad/Scenes/solar_system.unity
-  - enabled: 1
+  - enabled: 0
     path: Assets/Myriad/Scenes/myriad.unity
+  - enabled: 1
+    path: Assets/Myriad/Scenes/swarmer_steering_test.unity
