@@ -25,6 +25,10 @@ public class SwarmSimulator : MonoBehaviour
 		public float BurstingMaxAccelInput = 1.0f;
 		public float BurstingAmplitude = 2.0f;
 		public float BurstingRate = 5.0f;
+		
+		public float CenterCounterRotationAmplitudeFraction = 0.5f;
+		public Vector3 CenterCounterRotationPivotPoint = Vector3.zero;
+		public Vector3 CenterCounterRotationPivotAxis = Vector3.right;
 	}
 
 	public int SwarmerCount = 1000;
@@ -240,6 +244,9 @@ public class SwarmSimulator : MonoBehaviour
 			BehaviorComputeShader.SetFloat("u_swarmer_swim_bursting_max_accel_input", SwimAnimation.BurstingMaxAccelInput);
 			BehaviorComputeShader.SetFloat("u_swarmer_swim_bursting_amplitude", SwimAnimation.BurstingAmplitude);
 			BehaviorComputeShader.SetFloat("u_swarmer_swim_bursting_rate", SwimAnimation.BurstingRate);
+			BehaviorComputeShader.SetFloat("u_swarmer_swim_center_counter_rotation_amplitude_fraction", SwimAnimation.CenterCounterRotationAmplitudeFraction);
+			BehaviorComputeShader.SetVector("u_swarmer_swim_center_counter_rotation_pivot_point", SwimAnimation.CenterCounterRotationPivotPoint);			
+			BehaviorComputeShader.SetVector("u_swarmer_swim_center_counter_rotation_pivot_axis", SwimAnimation.CenterCounterRotationPivotAxis);
 
 			BehaviorComputeShader.SetFloat("u_neighbor_attraction_scalar", NeighborAttractionScalar);
 			BehaviorComputeShader.SetFloat("u_neighbor_collision_avoidance_scalar", NeighborCollisionAvoidanceScalar);

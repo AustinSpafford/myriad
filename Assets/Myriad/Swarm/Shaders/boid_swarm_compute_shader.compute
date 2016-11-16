@@ -51,6 +51,9 @@ uniform float u_swarmer_swim_idle_rate;
 uniform float u_swarmer_swim_bursting_max_accel_input;
 uniform float u_swarmer_swim_bursting_amplitude;
 uniform float u_swarmer_swim_bursting_rate;
+uniform float u_swarmer_swim_center_counter_rotation_amplitude_fraction;
+uniform float3 u_swarmer_swim_center_counter_rotation_pivot_point;
+uniform float3 u_swarmer_swim_center_counter_rotation_pivot_axis;
 
 uniform float u_neighbor_attraction_scalar;
 uniform float u_neighbor_collision_avoidance_scalar;
@@ -491,13 +494,24 @@ void kernel_advance_swarmer_states(
 			u_delta_time * 
 			(new_swarmer_state.speed * new_swarmer_state.local_forward));
 
+		float averageSideSegmentsBendAngle =
+			lerp(active_left_segment_bend_angle, active_right_segment_bend_angle, 0.5f);
+
+		float4x4 centerBendTransform =
+			build_transform_for_rotation_about_pivot(
+				(-1.0 * (u_swarmer_swim_center_counter_rotation_amplitude_fraction * averageSideSegmentsBendAngle)),
+				u_swarmer_swim_center_counter_rotation_pivot_point,
+				u_swarmer_swim_center_counter_rotation_pivot_axis);
+
 		new_swarmer_state.cached_model_center_segment_to_swarm_matrix =
-			build_transform_from_components(
-				new_swarmer_state.position,
-				new_swarmer_state.local_forward,
-				new_swarmer_state.local_up,
-				new_swarmer_state.cached_local_right,
-				u_swarmer_model_scale);
+			mul(
+				build_transform_from_components(
+					new_swarmer_state.position,
+					new_swarmer_state.local_forward,
+					new_swarmer_state.local_up,
+					new_swarmer_state.cached_local_right,
+					u_swarmer_model_scale),
+				centerBendTransform);
 		
 		new_swarmer_state.cached_model_left_segment_to_swarm_matrix = 
 			mul(
