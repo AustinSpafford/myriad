@@ -35,9 +35,10 @@
 		{
 			CGPROGRAM
 
-			// TODO: Try targetting just "4.5", since that seems that it might be the actual minimum needed.
 			// https://docs.unity3d.com/Manual/SL-ShaderCompileTargets.html
-			#pragma target 5.0
+			// 3.5+ needed for integer-support.
+			// 4.0+ apparently needed to function on Android. 
+			#pragma target 4.0
 
 			// Identify the entry-point functions.
 			#pragma vertex vertex_shader
