@@ -118,7 +118,7 @@ abstract public class AudioShaderColorAnimationBase : MonoBehaviour
 
 				if (DebugEnabled)
 				{
-					Debug.LogFormat("Setting [{0}] to [{1}],", ShaderUniformName, valueTargetName);
+					Debug.LogFormat("Setting [{0}] to [{1}].", ShaderUniformName, valueTargetName);
 				}
 
 				SetUniformValueTarget(valueTargetName);
@@ -148,9 +148,26 @@ abstract public class AudioShaderColorAnimationBase : MonoBehaviour
 	{
 		if (labelToValueTargetMappings.Any())
 		{
-			SetUniformValueTarget(labelToValueTargetMappings.Last().AfterLabelValueTargetName);
+			var chronologicalValueTargetNames =
+				labelToValueTargetMappings
+					.Select(elem => ((string.IsNullOrEmpty(elem.AfterLabelValueTargetName) == false) ? 
+						elem.AfterLabelValueTargetName : // Prefer the after-label value since it's used after the during-label value.
+						elem.DuringLabelValueTargetName))
+					.Where(elem => (string.IsNullOrEmpty(elem) == false));
+			
+			if (chronologicalValueTargetNames.Any())
+			{
+				string valueTargetName = chronologicalValueTargetNames.Last();
 
-			SnapCurrentValueToTarget();
+				if (DebugEnabled)
+				{
+					Debug.LogFormat("Resetting [{0}] to [{1}].", ShaderUniformName, valueTargetName);
+				}
+
+				SetUniformValueTarget(valueTargetName);
+				
+				SnapCurrentValueToTarget();
+			}
 		}
 	}
 }
