@@ -2,173 +2,72 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class AudioShaderColorAnimation : MonoBehaviour
+[RequireComponent(typeof(AudioShaderColorTargets))]
+public class AudioShaderColorAnimation : AudioShaderColorAnimationBase
 {
-	[System.Serializable]
-	public class AudioColorEvent
+	public void Awake()
 	{
-		public string ShaderUniformName;
-		
-		public string AudioLabelName;
-
-		public Color LabelStartColor;
-		public float LabelStartBlendTime;
-
-		public Color LabelEndColor;
-		public float LabelEndBlendTime;
+		audioShaderColorTargets = GetComponent<AudioShaderColorTargets>();
 	}
-
-	public bool DebugEnabled = false;
-
-	public void OnStart()
-	{
-		ResetColorStates();
-	}
-
-	public void OnEnable()
-	{
-		AudioLabelBroadcaster.AudioLabelEventTriggered += OnAudioLabelEvent;
-		AudioLabelBroadcaster.AudioLabelStreamRestarting += OnAudioLabelStreamRestarting;
-		AudioShaderUniformCollector.CollectingShaderUniforms += OnCollectingShaderUniforms;
-	}
-
-	public void OnDisable()
-	{
-		AudioLabelBroadcaster.AudioLabelEventTriggered -= OnAudioLabelEvent;
-		AudioLabelBroadcaster.AudioLabelStreamRestarting -= OnAudioLabelStreamRestarting;
-		AudioShaderUniformCollector.CollectingShaderUniforms -= OnCollectingShaderUniforms;
-	}
-
+	
 	public void Update()
 	{
-		foreach (AudioColorState colorState in audioColorStates.Values)
-		{
-			colorState.BlendFraction = 
-				Mathf.SmoothDamp(
-					colorState.BlendFraction,
-					1.0f,
-					ref colorState.BlendVelocity,
-					colorState.BlendTime);
-		}
+		BlendFraction = 
+			Mathf.SmoothDamp(
+				BlendFraction,
+				1.0f, // target
+				ref BlendVelocity,
+				BlendTime);
 	}
 	
-	private void OnAudioLabelEvent(
-		object sender,
-		AudioLabelEventArgs eventArgs)
+	override protected void CollectShaderUniformValue(
+		IAudioShaderUniformAccessor uniformAccessor)
 	{
-		foreach (AudioColorEvent colorEvent in audioColorEvents)
-		{
-			if (colorEvent.AudioLabelName == eventArgs.LabelName)
-			{
-				AudioColorState colorState = GetOrCreateAudioColorState(colorEvent.ShaderUniformName);
-
-				switch (eventArgs.EventType)
-				{
-					case AudioLabelEventType.Immediate:
-						colorState.StartColor = colorEvent.LabelStartColor;
-						colorState.EndColor = colorEvent.LabelEndColor;
-						colorState.BlendTime = colorEvent.LabelEndBlendTime;
-						colorState.BlendFraction = 0.0f;
-						colorState.BlendVelocity = 0.0f;
-						break;
-						
-					case AudioLabelEventType.IntervalStarting:
-						colorState.StartColor = GetCurrentAudioColor(colorState);
-						colorState.EndColor = colorEvent.LabelStartColor;
-						colorState.BlendTime = colorEvent.LabelStartBlendTime;
-						colorState.BlendFraction = 0.0f;
-						colorState.BlendVelocity = 0.0f;
-						break;
-						
-					case AudioLabelEventType.IntervalEnding:
-						colorState.StartColor = GetCurrentAudioColor(colorState);
-						colorState.EndColor = colorEvent.LabelEndColor;
-						colorState.BlendTime = colorEvent.LabelEndBlendTime;
-						colorState.BlendFraction = 0.0f;
-						colorState.BlendVelocity = 0.0f;
-						break;
-
-					default:
-						throw new System.ComponentModel.InvalidEnumArgumentException();
-				}
-
-				if (DebugEnabled)
-				{
-					Debug.LogFormat(
-						"[{0}] blending from [{1}] to [{2}] over [{3}]",
-						colorState.ShaderUniformName,
-						colorState.StartColor,
-						colorState.EndColor,
-						colorState.BlendTime);
-				}
-			}
-		}
+		uniformAccessor.SetColor(
+			ShaderUniformName,
+			GetCurrentAudioColor());
 	}
-	
-	private void OnAudioLabelStreamRestarting(
-		object sender,
-		AudioLabelStreamRestartingEventArgs eventArgs)
+
+	override protected void SetUniformValueTarget(
+		string valueTargetName)
 	{
-		ResetColorStates();
+		AudioShaderColorTargets.ColorValueTarget valueTarget =
+			audioShaderColorTargets.GetColorValueTarget(valueTargetName);
+		
+		StartColor = GetCurrentAudioColor();
+
+		EndColor = valueTarget.TargetColor;
+
+		BlendTime = valueTarget.BlendTime;
+		BlendFraction = 0.0f;
+
+		// NOTE: We intentionally maintain our existing BlendVelocity.
 	}
-	
-	private void OnCollectingShaderUniforms(
-		object sender,
-		CollectingAudioShaderUniformsEventArgs eventArgs)
+
+	override protected void SnapCurrentValueToTarget()
 	{
-		foreach (AudioColorState colorState in audioColorStates.Values)
-		{
-			eventArgs.UniformAccessor.SetColor(
-				colorState.ShaderUniformName,
-				GetCurrentAudioColor(colorState));
-		}
-	}
-	
-	private class AudioColorState
-	{
-		public string ShaderUniformName;
-
-		public Color StartColor;
-		public Color EndColor;
-
-		public float BlendTime;
-		public float BlendFraction;
-		public float BlendVelocity;
+		BlendFraction = 1.0f;
+		BlendVelocity = 0.0f;
 	}
 
-	[SerializeField]
-	private List<AudioColorEvent> audioColorEvents = new List<AudioColorEvent>();
+	private AudioShaderColorTargets audioShaderColorTargets = null;
 	
-	private Dictionary<string, AudioColorState> audioColorStates = new Dictionary<string, AudioColorState>();	
+	private Color StartColor;
+	private Color EndColor;
 
-	private Color GetCurrentAudioColor(
-		AudioColorState colorState)
+	private float BlendTime;
+	private float BlendFraction;
+	private float BlendVelocity;
+
+	private Color GetCurrentAudioColor()
 	{
 		return LogrithmicColorLerp(
-			colorState.StartColor, 
-			colorState.EndColor, 
-			colorState.BlendFraction);
+			StartColor, 
+			EndColor, 
+			BlendFraction);
 	}
 
-	private AudioColorState GetOrCreateAudioColorState(
-		string shaderUniformName)
-	{
-		AudioColorState result = null;
-
-		if (audioColorStates.TryGetValue(shaderUniformName, out result) == false)
-		{
-			result = new AudioColorState()
-			{
-				ShaderUniformName = shaderUniformName,
-			};
-
-			audioColorStates.Add(shaderUniformName, result);
-		}
-
-		return result;
-	}
-
-	private Color LogrithmicColorLerp(
+	private static Color LogrithmicColorLerp(
 		Color startColor,
 		Color endColor,
 		float lerpFraction)
@@ -187,20 +86,5 @@ public class AudioShaderColorAnimation : MonoBehaviour
 			Mathf.Sqrt(resultEnergy.b));
 
 		return result;
-	}
-
-	private void ResetColorStates()
-	{
-		foreach (AudioColorEvent colorEvent in audioColorEvents)
-		{
-			AudioColorState colorState = GetOrCreateAudioColorState(colorEvent.ShaderUniformName);
-
-			colorState.StartColor = colorEvent.LabelStartColor;
-			colorState.EndColor = colorEvent.LabelEndColor;
-			colorState.BlendTime = colorEvent.LabelEndBlendTime;
-
-			colorState.BlendFraction = 1.0f;
-			colorState.BlendVelocity = 0.0f;
-		} 
 	}
 }
