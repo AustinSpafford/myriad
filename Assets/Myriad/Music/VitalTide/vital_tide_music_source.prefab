@@ -1,0 +1,661 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1000012448898386}
+  m_IsPrefabParent: 1
+--- !u!1 &1000010621094428
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000010696149906}
+  - 114: {fileID: 114000013567398406}
+  m_Layer: 0
+  m_Name: song_structure
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000010731992550
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000010038363298}
+  - 114: {fileID: 114000010424085572}
+  - 114: {fileID: 114000011331284822}
+  m_Layer: 0
+  m_Name: piano_to_facet_blinks
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000010968173094
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013944045960}
+  m_Layer: 0
+  m_Name: swarmer_movement
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000012448898386
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000014134309414}
+  - 114: {fileID: 114000010351716876}
+  - 114: {fileID: 114000011843407316}
+  - 82: {fileID: 82000011072670444}
+  - 114: {fileID: 114000010094351448}
+  m_Layer: 0
+  m_Name: vital_tide_music_source
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000012742628604
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013161323164}
+  - 114: {fileID: 114000012880445978}
+  - 114: {fileID: 114000011456804712}
+  m_Layer: 0
+  m_Name: ambient_to_ground_glow
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000012949059816
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000012993257760}
+  - 114: {fileID: 114000010066920814}
+  - 114: {fileID: 114000010531212440}
+  m_Layer: 0
+  m_Name: three_boost_groups
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!1 &1000013360395876
+GameObject:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000014262163194}
+  - 114: {fileID: 114000014213470216}
+  - 114: {fileID: 114000014290010442}
+  m_Layer: 0
+  m_Name: unified_boost_on_downbeat
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4000010038363298
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010731992550}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000014134309414}
+  m_RootOrder: 1
+--- !u!4 &4000010696149906
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010621094428}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000014134309414}
+  m_RootOrder: 0
+--- !u!4 &4000012993257760
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012949059816}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000013944045960}
+  m_RootOrder: 1
+--- !u!4 &4000013161323164
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012742628604}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000014134309414}
+  m_RootOrder: 2
+--- !u!4 &4000013944045960
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010968173094}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children:
+  - {fileID: 4000014262163194}
+  - {fileID: 4000012993257760}
+  m_Father: {fileID: 4000014134309414}
+  m_RootOrder: 3
+--- !u!4 &4000014134309414
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012448898386}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children:
+  - {fileID: 4000010696149906}
+  - {fileID: 4000010038363298}
+  - {fileID: 4000013161323164}
+  - {fileID: 4000013944045960}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+--- !u!4 &4000014262163194
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013360395876}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000013944045960}
+  m_RootOrder: 0
+--- !u!82 &82000011072670444
+AudioSource:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012448898386}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 4ac94cf321b02d54b8b8b0a0eaa221d5, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+--- !u!114 &114000010066920814
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012949059816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: movement_boost_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: movement_boost_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: movement_boost_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: movement_boost_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: movement_boost_group2
+--- !u!114 &114000010094351448
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012448898386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8b0da6954ad2ac4383f097228561ce6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LabelsFile: {fileID: 4900000, guid: e50fc8d8c89ef8b43b042063328e5aac, type: 3}
+  IgnoredLabelPrefixes:
+  - Eighth
+  - Beat
+  - Bar
+  OnlyBroadcastRemappedLabels: 1
+  MaxLoadMillisecondsPerFrame: 2
+  DebugEnabled: 0
+--- !u!114 &114000010351716876
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012448898386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: facfe0f0d272cb74689fefc6c70f8b03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CopiedTransform: {fileID: 0}
+--- !u!114 &114000010424085572
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010731992550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: LPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_top_left
+  - OriginalLabelTrack: LPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: pulse_facet_top_center
+  - OriginalLabelTrack: LPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: pulse_facet_top_right
+--- !u!114 &114000010531212440
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012949059816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_left_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_right_group0
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_rear_left_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_rear_right_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: pulse_facet_rear_left_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: pulse_facet_rear_right_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: pulse_facet_rear_left_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: pulse_facet_rear_right_group1
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: pulse_facet_rear_left_group2
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: pulse_facet_rear_right_group2
+--- !u!114 &114000011331284822
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010731992550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: BPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_front_left
+  - OriginalLabelTrack: BPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_front_right
+  - OriginalLabelTrack: BPiano
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: pulse_facet_front_center
+--- !u!114 &114000011456804712
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012742628604}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: SFuzz
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: ground_glow_level1
+  - OriginalLabelTrack: SFuzz
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: ground_glow_level2
+  - OriginalLabelTrack: SFuzz
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: ground_glow_level3
+  - OriginalLabelTrack: SFuzz
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: ground_glow_level4
+--- !u!114 &114000011843407316
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012448898386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8cbe329820832148b522ce97d6d1390, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  IntervalStartTime: 130
+  IntervalDuration: 115.2
+  FadeInDuration: 1
+  FadeOutDuration: 1
+--- !u!114 &114000012880445978
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012742628604}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: Fuzz
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: ground_glow_level1
+  - OriginalLabelTrack: Fuzz
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: ground_glow_level2
+  - OriginalLabelTrack: Fuzz
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: ground_glow_level3
+  - OriginalLabelTrack: Fuzz
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: ground_glow_level4
+--- !u!114 &114000013567398406
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010621094428}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: SongIntro
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_dormant
+  - OriginalLabelTrack: SongVerse
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_dormant
+  - OriginalLabelTrack: SongRiser
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_dormant
+  - OriginalLabelTrack: SongChorus
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_churning
+  - OriginalLabelTrack: SongSolo
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_tiring
+  - OriginalLabelTrack: SongOutro
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: behavior_dormant
+--- !u!114 &114000014213470216
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013360395876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: movement_boost_allgroups
+--- !u!114 &114000014290010442
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013360395876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_rear_allsides_allgroups
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 2
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_rear_right_allgroups
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 3
+    OriginalLabelRangeLast: 3
+    RemappedLabelName: pulse_facet_rear_left_allgroups
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 4
+    OriginalLabelRangeLast: 4
+    RemappedLabelName: pulse_facet_rear_right_allgroups
+  - OriginalLabelTrack: Thumper
+    OriginalLabelRangeIsEnabled: 1
+    OriginalLabelRangeFirst: 5
+    OriginalLabelRangeLast: 5
+    RemappedLabelName: pulse_facet_rear_left_allgroups

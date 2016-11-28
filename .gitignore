@@ -9,6 +9,7 @@ Output/
 # Excluded for Rights Reaons #
 # ========================== #
 *.without_rights.*
+*.WithoutRights.*
 
 # ================================= #
 # Audacity's Pseudo-Version-Control #
