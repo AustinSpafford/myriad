@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-abstract public class AudioShaderColorAnimationBase : MonoBehaviour
+abstract public class AudioShaderUniformAnimationBase : MonoBehaviour
 {
 	[System.Serializable]
 	public class LabelToValueTargetMapping

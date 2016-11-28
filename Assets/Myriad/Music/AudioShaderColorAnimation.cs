@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 
 [RequireComponent(typeof(AudioShaderColorTargets))]
-public class AudioShaderColorAnimation : AudioShaderColorAnimationBase
+public class AudioShaderColorAnimation : AudioShaderUniformAnimationBase
 {
 	public void Awake()
 	{
-		audioShaderColorTargets = GetComponent<AudioShaderColorTargets>();
+		colorTargets = GetComponent<AudioShaderColorTargets>();
 	}
 	
 	public void Update()
@@ -25,20 +25,20 @@ public class AudioShaderColorAnimation : AudioShaderColorAnimationBase
 	{
 		uniformAccessor.SetColor(
 			ShaderUniformName,
-			GetCurrentAudioColor());
+			GetCurrentUniformValue());
 	}
 
 	override protected void SetUniformValueTarget(
 		string valueTargetName)
 	{
-		AudioShaderColorTargets.ColorValueTarget valueTarget =
-			audioShaderColorTargets.GetColorValueTarget(valueTargetName);
+		AudioShaderColorTargets.ColorValueTarget target =
+			colorTargets.GetColorValueTarget(valueTargetName);
 		
-		StartColor = GetCurrentAudioColor();
+		StartColor = GetCurrentUniformValue();
 
-		EndColor = valueTarget.TargetColor;
+		EndColor = target.TargetColor;
 
-		BlendTime = valueTarget.BlendTime;
+		BlendTime = target.BlendTime;
 		BlendFraction = 0.0f;
 
 		// NOTE: We intentionally maintain our existing BlendVelocity.
@@ -50,7 +50,7 @@ public class AudioShaderColorAnimation : AudioShaderColorAnimationBase
 		BlendVelocity = 0.0f;
 	}
 
-	private AudioShaderColorTargets audioShaderColorTargets = null;
+	private AudioShaderColorTargets colorTargets = null;
 	
 	private Color StartColor;
 	private Color EndColor;
@@ -59,7 +59,7 @@ public class AudioShaderColorAnimation : AudioShaderColorAnimationBase
 	private float BlendFraction;
 	private float BlendVelocity;
 
-	private Color GetCurrentAudioColor()
+	private Color GetCurrentUniformValue()
 	{
 		return LogrithmicColorLerp(
 			StartColor, 
