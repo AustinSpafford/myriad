@@ -51,13 +51,17 @@ abstract public class AudioShaderUniformAnimationBase : MonoBehaviour
 		{
 			case AudioLabelEventType.Immediate:
 			{
-				TryTriggerValueTargetMapping(
-					eventArgs.LabelName,
-					(elem => elem.DuringLabelValueTargetName),
-					eventArgs.EventType);
+				bool triggeredDuringLabelEffect =
+					TryTriggerValueTargetMapping(
+						eventArgs.LabelName,
+						(elem => elem.DuringLabelValueTargetName),
+						eventArgs.EventType);
 				
-				SnapCurrentValueToTarget();
-					
+				if (triggeredDuringLabelEffect)
+				{
+					SnapCurrentValueToTarget();
+				}
+
 				TryTriggerValueTargetMapping(
 					eventArgs.LabelName,
 					(elem => elem.AfterLabelValueTargetName),
@@ -82,6 +86,47 @@ abstract public class AudioShaderUniformAnimationBase : MonoBehaviour
 
 			default:
 				throw new System.InvalidOperationException();
+		}
+	}
+	
+	private void OnAudioLabelStreamRestarting(
+		object sender,
+		AudioLabelStreamRestartingEventArgs eventArgs)
+	{
+		ResetUniformState();
+	}
+	
+	private void OnCollectingShaderUniforms(
+		object sender,
+		CollectingAudioShaderUniformsEventArgs eventArgs)
+	{
+		CollectShaderUniformValue(eventArgs.UniformAccessor);
+	}
+	
+	private void ResetUniformState()
+	{
+		if (labelToValueTargetMappings.Any())
+		{
+			var chronologicalValueTargetNames =
+				labelToValueTargetMappings
+					.Select(elem => ((string.IsNullOrEmpty(elem.AfterLabelValueTargetName) == false) ? 
+						elem.AfterLabelValueTargetName : // Prefer the after-label value since it's used after the during-label value.
+						elem.DuringLabelValueTargetName))
+					.Where(elem => (string.IsNullOrEmpty(elem) == false));
+			
+			if (chronologicalValueTargetNames.Any())
+			{
+				string valueTargetName = chronologicalValueTargetNames.Last();
+
+				if (DebugEnabled)
+				{
+					Debug.LogFormat("Resetting [{0}] to [{1}].", ShaderUniformName, valueTargetName);
+				}
+
+				SetUniformValueTarget(valueTargetName);
+				
+				SnapCurrentValueToTarget();
+			}
 		}
 	}
 
@@ -128,46 +173,5 @@ abstract public class AudioShaderUniformAnimationBase : MonoBehaviour
 		}
 
 		return result;
-	}
-	
-	private void OnAudioLabelStreamRestarting(
-		object sender,
-		AudioLabelStreamRestartingEventArgs eventArgs)
-	{
-		ResetUniformState();
-	}
-	
-	private void OnCollectingShaderUniforms(
-		object sender,
-		CollectingAudioShaderUniformsEventArgs eventArgs)
-	{
-		CollectShaderUniformValue(eventArgs.UniformAccessor);
-	}
-	
-	private void ResetUniformState()
-	{
-		if (labelToValueTargetMappings.Any())
-		{
-			var chronologicalValueTargetNames =
-				labelToValueTargetMappings
-					.Select(elem => ((string.IsNullOrEmpty(elem.AfterLabelValueTargetName) == false) ? 
-						elem.AfterLabelValueTargetName : // Prefer the after-label value since it's used after the during-label value.
-						elem.DuringLabelValueTargetName))
-					.Where(elem => (string.IsNullOrEmpty(elem) == false));
-			
-			if (chronologicalValueTargetNames.Any())
-			{
-				string valueTargetName = chronologicalValueTargetNames.Last();
-
-				if (DebugEnabled)
-				{
-					Debug.LogFormat("Resetting [{0}] to [{1}].", ShaderUniformName, valueTargetName);
-				}
-
-				SetUniformValueTarget(valueTargetName);
-				
-				SnapCurrentValueToTarget();
-			}
-		}
 	}
 }
