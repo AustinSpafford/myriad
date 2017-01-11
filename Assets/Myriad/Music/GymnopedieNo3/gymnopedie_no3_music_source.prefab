@@ -70,9 +70,8 @@ GameObject:
   m_Component:
   - 4: {fileID: 4000010321669134}
   - 114: {fileID: 114000012086452208}
-  - 114: {fileID: 114000011055071326}
   m_Layer: 0
-  m_Name: bass_piano_to_facet_blinks
+  m_Name: alt_bass_piano_to_ground_color
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -94,19 +93,36 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &1000013420279886
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013661391960}
+  - 114: {fileID: 114000014011896152}
+  - 114: {fileID: 114000011055071326}
+  m_Layer: 0
+  m_Name: bass_piano_to_facet_blinks
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!4 &4000010321669134
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012037594170}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000011460021220}
-  m_RootOrder: 0
+  m_RootOrder: 4
 --- !u!4 &4000010427744346
 Transform:
   m_ObjectHideFlags: 1
@@ -144,10 +160,11 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
-  - {fileID: 4000010321669134}
+  - {fileID: 4000013661391960}
   - {fileID: 4000012275510338}
   - {fileID: 4000010547945764}
   - {fileID: 4000010427744346}
+  - {fileID: 4000010321669134}
   m_Father: {fileID: 0}
   m_RootOrder: 0
 --- !u!4 &4000012275510338
@@ -163,6 +180,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4000011460021220}
   m_RootOrder: 1
+--- !u!4 &4000013661391960
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013420279886}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000011460021220}
+  m_RootOrder: 0
 --- !u!82 &82000012611379820
 AudioSource:
   m_ObjectHideFlags: 1
@@ -282,7 +312,7 @@ MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000012037594170}
+  m_GameObject: {fileID: 1000013420279886}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
@@ -306,11 +336,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   labelRemappings:
-  - OriginalLabelTrack: DownBeat
+  - OriginalLabelTrack: DownBeatLow
     OriginalLabelRangeIsEnabled: 0
     OriginalLabelRangeFirst: 1
     OriginalLabelRangeLast: 1
-    RemappedLabelName: pulse_facet_front_allsides_slow
+    RemappedLabelName: ground_glow_level1
+  - OriginalLabelTrack: DownBeatHigh
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: ground_glow_level2
+  - OriginalLabelTrack: UpBeatLow
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: ground_glow_level3
+  - OriginalLabelTrack: UpBeatHigh
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: ground_glow_level4
 --- !u!114 &114000012192273578
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -365,3 +410,20 @@ MonoBehaviour:
   IntervalDuration: 20
   FadeInDuration: 1
   FadeOutDuration: 1
+--- !u!114 &114000014011896152
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013420279886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: DownBeat
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_front_allsides_slow
