@@ -128,6 +128,12 @@ Material:
         name: u_pit_edge_length_fraction
       second: 0.9
     - first:
+        name: u_pit_specular_intensity
+      second: 0.05
+    - first:
+        name: u_pit_specular_power
+      second: 5
+    - first:
         name: u_tile_edge_length
       second: 0.00693
     m_Colors:
@@ -149,6 +155,9 @@ Material:
     - first:
         name: u_pit_side_color
       second: {r: 0.5, g: 1, b: 1, a: 1}
+    - first:
+        name: u_pit_specular_color
+      second: {r: 1, g: 1, b: 1, a: 1}
     - first:
         name: u_surface_color
       second: {r: 0.7474048, g: 0.7593246, b: 0.7941176, a: 1}

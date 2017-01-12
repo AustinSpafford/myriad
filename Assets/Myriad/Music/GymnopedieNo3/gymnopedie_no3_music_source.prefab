@@ -1,0 +1,429 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications: []
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 1000010348550540}
+  m_IsPrefabParent: 1
+--- !u!1 &1000010339190394
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000010427744346}
+  - 114: {fileID: 114000012192273578}
+  m_Layer: 0
+  m_Name: lead_piano_to_facet_blinks
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000010348550540
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000011460021220}
+  - 114: {fileID: 114000013867109556}
+  - 82: {fileID: 82000012611379820}
+  - 114: {fileID: 114000010770503164}
+  m_Layer: 0
+  m_Name: gymnopedie_no3_music_source
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000010731038902
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000012275510338}
+  - 114: {fileID: 114000013499262354}
+  m_Layer: 0
+  m_Name: bass_piano_to_movement_speed
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000012037594170
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000010321669134}
+  - 114: {fileID: 114000012086452208}
+  m_Layer: 0
+  m_Name: alt_bass_piano_to_ground_color
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000012700282870
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000010547945764}
+  - 114: {fileID: 114000010937363100}
+  m_Layer: 0
+  m_Name: bass_piano_to_gravity
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1000013420279886
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 4000013661391960}
+  - 114: {fileID: 114000014011896152}
+  - 114: {fileID: 114000011055071326}
+  m_Layer: 0
+  m_Name: bass_piano_to_facet_blinks
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4000010321669134
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012037594170}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000011460021220}
+  m_RootOrder: 4
+--- !u!4 &4000010427744346
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010339190394}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000011460021220}
+  m_RootOrder: 3
+--- !u!4 &4000010547945764
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012700282870}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000011460021220}
+  m_RootOrder: 2
+--- !u!4 &4000011460021220
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010348550540}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children:
+  - {fileID: 4000013661391960}
+  - {fileID: 4000012275510338}
+  - {fileID: 4000010547945764}
+  - {fileID: 4000010427744346}
+  - {fileID: 4000010321669134}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+--- !u!4 &4000012275510338
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010731038902}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000011460021220}
+  m_RootOrder: 1
+--- !u!4 &4000013661391960
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013420279886}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Children: []
+  m_Father: {fileID: 4000011460021220}
+  m_RootOrder: 0
+--- !u!82 &82000012611379820
+AudioSource:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010348550540}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 8f62322f0359f8f42acbc282fbbede38, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+--- !u!114 &114000010770503164
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010348550540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8b0da6954ad2ac4383f097228561ce6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LabelsFile: {fileID: 4900000, guid: 09185f7c16b0205438a275938b2d2786, type: 3}
+  IgnoredLabelPrefixes:
+  - Beat
+  - Bar
+  OnlyBroadcastRemappedLabels: 1
+  MaxLoadMillisecondsPerFrame: 2
+  DebugEnabled: 0
+--- !u!114 &114000010937363100
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012700282870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: DownBeat
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: gravity_downward
+  - OriginalLabelTrack: UpBeat
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: gravity_upward
+--- !u!114 &114000011055071326
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013420279886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: UpBeat
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 2
+    RemappedLabelName: pulse_facet_rear_allsides_allgroups_slow
+--- !u!114 &114000012086452208
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012037594170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: DownBeatLow
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: ground_glow_level1
+  - OriginalLabelTrack: DownBeatHigh
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: ground_glow_level2
+  - OriginalLabelTrack: UpBeatLow
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: ground_glow_level3
+  - OriginalLabelTrack: UpBeatHigh
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: ground_glow_level4
+--- !u!114 &114000012192273578
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010339190394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: LeadPiano
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 0
+    OriginalLabelRangeLast: 0
+    RemappedLabelName: pulse_facet_top_allsides_slow
+--- !u!114 &114000013499262354
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010731038902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: DownBeat
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: movement_dampen_allgroups
+  - OriginalLabelTrack: UpBeat
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: movement_boost_allgroups
+--- !u!114 &114000013867109556
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010348550540}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8cbe329820832148b522ce97d6d1390, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  IntervalStartTime: 20
+  IntervalDuration: 20
+  FadeInDuration: 1
+  FadeOutDuration: 1
+--- !u!114 &114000014011896152
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013420279886}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d7c542e37e1034285645942de4aeb8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  labelRemappings:
+  - OriginalLabelTrack: DownBeat
+    OriginalLabelRangeIsEnabled: 0
+    OriginalLabelRangeFirst: 1
+    OriginalLabelRangeLast: 1
+    RemappedLabelName: pulse_facet_front_allsides_slow

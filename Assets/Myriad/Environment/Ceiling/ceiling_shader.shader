@@ -64,9 +64,9 @@
 				float3 binormal = cross(normal, tangent);
 
 				result.projected_position = mul(UNITY_MATRIX_MVP, position);
-				result.world_normal = normalize(mul(unity_ObjectToWorld, normal).xyz);
-				result.world_tangent = normalize(mul(unity_ObjectToWorld, tangent).xyz);
-				result.world_binormal = normalize(mul(unity_ObjectToWorld, binormal).xyz);
+				result.world_normal = normalize((float4)mul(unity_ObjectToWorld, normal));
+				result.world_tangent = normalize((float4)mul(unity_ObjectToWorld, tangent));
+				result.world_binormal = normalize((float4)mul(unity_ObjectToWorld, binormal));
 				result.world_position_to_camera = (_WorldSpaceCameraPos.xyz - mul(unity_ObjectToWorld, position).xyz);
 				result.texture_coord = ((texture_coord - 0.5f) / u_tile_edge_length);
 				
