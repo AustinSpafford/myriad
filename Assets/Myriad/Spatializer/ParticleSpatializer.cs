@@ -138,7 +138,7 @@ public class ParticleSpatializer : MonoBehaviour
 		{
 			DebugCaptureSingleFrame = false;
 			
-#pragma warning disable 0168 // Warning that variable is assigned but never referenced (these variables are for inspection in the debugger).
+#pragma warning disable 0219 // Warning that variable is assigned but never referenced (these variables are for inspection in the debugger).
 			var allPerParticleValues = 
 				DebugParticleBufferCombinedEnumeration.ZipParticleBuffers(
 					debugParticlePositions,
@@ -146,7 +146,7 @@ public class ParticleSpatializer : MonoBehaviour
 					debugNeighborhoods).ToArray();
 
 			var sortStepsDebug = DebugSortStepKeys(debugVoxelParticlePairsPerSortStep).ToArray();
-#pragma warning restore 0168
+#pragma warning restore 0219
 
 			Debug.Assert(DebugSortedVoxelParticlePairsAreValid(
 				particleCount, 

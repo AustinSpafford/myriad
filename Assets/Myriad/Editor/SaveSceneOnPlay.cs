@@ -18,7 +18,7 @@ public class SaveSceneOnPlay
 		{
 			EditorSceneManager.SaveOpenScenes();
 
-			EditorApplication.SaveAssets();
+			AssetDatabase.SaveAssets();
 		}
 	}
 }

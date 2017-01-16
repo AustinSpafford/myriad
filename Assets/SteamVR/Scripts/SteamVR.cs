@@ -4,6 +4,11 @@
 //
 //=============================================================================
 
+// The linux build was failing to include VRSettings, hence the workaround.
+#if !UNITY_STANDALONE_LINUX
+#define VR_SETTINGS_AVAILABLE
+#endif
+
 using UnityEngine;
 using Valve.VR;
 
@@ -19,7 +24,9 @@ public class SteamVR : System.IDisposable
 	{
 		get
 		{
+#if VR_SETTINGS_AVAILABLE
 			if (!UnityEngine.VR.VRSettings.enabled)
+#endif // VR_SETTINGS_AVAILABLE
 				enabled = false;
 			return _enabled;
 		}
@@ -58,7 +65,11 @@ public class SteamVR : System.IDisposable
 
 	public static bool usingNativeSupport
 	{
+#if VR_SETTINGS_AVAILABLE
 		get { return UnityEngine.VR.VRDevice.GetNativePtr() != System.IntPtr.Zero; }
+#else
+		get { return false; }
+#endif // VR_SETTINGS_AVAILABLE
 	}
 
 	static SteamVR CreateInstance()
@@ -180,7 +191,7 @@ public class SteamVR : System.IDisposable
 		return hmd.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, prop, ref error);
 	}
 
-	#region Event callbacks
+#region Event callbacks
 
 	private void OnInitializing(bool initializing)
 	{
@@ -245,7 +256,7 @@ public class SteamVR : System.IDisposable
 		}
 	}
 
-	#endregion
+#endregion
 
 	private SteamVR()
 	{
