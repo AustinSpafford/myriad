@@ -355,7 +355,7 @@ void kernel_advance_swarmer_states(
 			float desired_yaw_signed_fraction = dot(ideal_local_forward, new_swarmer_state.cached_local_right);
 			float desired_pitch_signed_fraction = dot(ideal_local_forward, new_swarmer_state.local_up);
 
-			// Roll so that such that we transition from using our yaw to using pitch.
+			// Roll such that we transition from using our yaw to using pitch.
 			// NOTE: This assumes we're being given a higher pitch-rate than yaw-rate (horizontal control-surfaces).
 			float desired_roll_signed_fraction = (
 				(desired_yaw_signed_fraction * sign(desired_pitch_signed_fraction)) +
