@@ -63,7 +63,7 @@
 
 				float3 binormal = cross(normal, tangent);
 
-				result.projected_position = mul(UNITY_MATRIX_MVP, position);
+				result.projected_position = UnityObjectToClipPos(position);
 				result.world_normal = normalize((float4)mul(unity_ObjectToWorld, normal));
 				result.world_tangent = normalize((float4)mul(unity_ObjectToWorld, tangent));
 				result.world_binormal = normalize((float4)mul(unity_ObjectToWorld, binormal));

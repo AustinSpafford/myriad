@@ -33,7 +33,7 @@
 			{
 				s_rasterization_vertex result;
 
-				result.projected_position = mul(UNITY_MATRIX_MVP, float4(position, 1));
+				result.projected_position = UnityObjectToClipPos(float4(position, 1));
 				
 				return result;
 			}

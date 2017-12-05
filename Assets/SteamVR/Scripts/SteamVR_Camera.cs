@@ -4,11 +4,6 @@
 //
 //=============================================================================
 
-// The linux build was failing to include VRSettings, hence the workaround.
-#if !UNITY_STANDALONE_LINUX
-#define VR_SETTINGS_AVAILABLE
-#endif
-
 using UnityEngine;
 using System.Collections;
 using System.Reflection;
@@ -38,16 +33,11 @@ public class SteamVR_Camera : MonoBehaviour
 
 	static public float sceneResolutionScale
 	{
-#if VR_SETTINGS_AVAILABLE
-		get { return UnityEngine.VR.VRSettings.renderScale; }
-		set { UnityEngine.VR.VRSettings.renderScale = value; }
-#else
-		get { return 1.0f; }
-		set { ; }
-#endif // VR_SETTINGS_AVAILABLE
+		get { return UnityEngine.XR.XRSettings.eyeTextureResolutionScale; }
+		set { UnityEngine.XR.XRSettings.eyeTextureResolutionScale = value; }
 	}
 
-#region Enable / Disable
+	#region Enable / Disable
 
 	void OnDisable()
 	{
@@ -104,9 +94,9 @@ public class SteamVR_Camera : MonoBehaviour
 		SteamVR_Render.Add(this);
 	}
 
-#endregion
+	#endregion
 
-#region Functionality to ensure SteamVR_Camera component is always the last component on an object
+	#region Functionality to ensure SteamVR_Camera component is always the last component on an object
 
 	void Awake()
 	{
@@ -161,9 +151,9 @@ public class SteamVR_Camera : MonoBehaviour
 		}
 	}
 
-#endregion
+	#endregion
 
-#region Expand / Collapse object hierarchy
+	#region Expand / Collapse object hierarchy
 
 #if UNITY_EDITOR
 	public bool isExpanded { get { return head != null && transform.parent == head; } }
@@ -282,6 +272,6 @@ public class SteamVR_Camera : MonoBehaviour
 			name = name.Substring(0, name.Length - eyeSuffix.Length);
 	}
 
-#endregion
+	#endregion
 }
 

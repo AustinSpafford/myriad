@@ -42,23 +42,23 @@ public class VRDeviceLoader : MonoBehaviour
 		string targetDeviceName = 
 			(StartupVRLoadingEnabled ? "OpenVR" : "None");
 
-		if (VRSettings.loadedDeviceName != targetDeviceName)
+		if (UnityEngine.XR.XRSettings.loadedDeviceName != targetDeviceName)
 		{
-			VRSettings.LoadDeviceByName(targetDeviceName);
+			UnityEngine.XR.XRSettings.LoadDeviceByName(targetDeviceName);
 
 			// Delay for a single frame to permit the load-attempt.
 			yield return null;
 
 			// If we successfully loaded a VR device.
-			if (string.IsNullOrEmpty(VRSettings.loadedDeviceName) == false)
+			if (string.IsNullOrEmpty(UnityEngine.XR.XRSettings.loadedDeviceName) == false)
 			{
-				VRSettings.enabled = true;
+				UnityEngine.XR.XRSettings.enabled = true;
 			
 				if (LoadedVRDeviceChanged != null)
 				{
 					var eventArgs = new LoadedVRDeviceChangedEventArgs();
-					eventArgs.LoadedDeviceName = VRSettings.loadedDeviceName;
-					eventArgs.VRIsEnabled = VRSettings.enabled;
+					eventArgs.LoadedDeviceName = UnityEngine.XR.XRSettings.loadedDeviceName;
+					eventArgs.VRIsEnabled = UnityEngine.XR.XRSettings.enabled;
 
 					LoadedVRDeviceChanged(this, eventArgs);
 				}
@@ -66,7 +66,7 @@ public class VRDeviceLoader : MonoBehaviour
 			else
 			{
 				// We failed to initialize, so fall back to flatscreen-mode.
-				VRSettings.LoadDeviceByName("None");
+				UnityEngine.XR.XRSettings.LoadDeviceByName("None");
 			}
 		}
 		       

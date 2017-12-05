@@ -1,4 +1,4 @@
-SteamVR plugin for Unity - v1.2.0
+SteamVR plugin for Unity - v1.2.2
 Copyright (c) Valve Corporation, All rights reserved.
 
 
@@ -12,7 +12,68 @@ Requirements:
 
 The SteamVR runtime must be installed.  This can be found in Steam under Tools.
 
-The plugin currently only supports Windows / DX11.
+
+Changes for v1.2.2:
+
+* Updated to SteamVR runtime v1497390325 and SDK version 1.0.8.
+
+* [General] Switched caching SteamVR_Events.Actions from Awake to constructors to fix hot-loading of scripts in the Editor.
+
+* [General] Switched remaining coroutines away from using strings (to avoid issues with obfuscators).
+
+* [General] Switched from using deprecated Transform.FindChild to Transform.Find.
+
+* [General] Added #if !UNITY_METRO where required to allow compiling for UWP.
+
+* [UpdatePoses] Switched to using static delegates (Camera.onPreCull or Application.onBeforeRender depending on version) for updating poses.
+
+* [UpdatePoses] Deprecated SteamVR_UpdatePoses component.
+
+* [MixedReality] Added rgba settings to externalcamera.cfg for overriding foreground chroma key (default 0,0,0,0).
+
+* [MixedReality] Exposed SteamVR_ExternalCamera.Config settings in Unity Editor inspector for easy tweaking.
+
+* [MixedReality] Added file watcher to externalcamera.cfg to allow real-time editing.
+
+* [MixedReality] Fixed antialiasing complaint in Unity 5.6+.
+
+* [MixedReality] Added second pass to foreground camera when using PostProcessingBehaviour since those fx screw up the alpha channel.
+
+* [ControllerManager] Added code to protect against double-hiding of controllers.
+
+* [InteractionSystem] Sub-objects now inherit layer and tag of spawning object (ControllerButtonHints, ControllerHoverHighlight, Hand, SpawnRenderModel).
+
+
+Changes for v1.2.1:
+
+* Updated to SteamVR runtime v1485823399 and SDK version 1.0.6.
+
+* Switched SteamVR_Events.SystemAction from using strings to specify event type over to their associated enum values.
+
+* Fixed an issue with using WWW in static constructors.
+
+* Added Unity Preferences for SteamVR to allow disabling automatic enabling of native OpenVR support in Unity 5.4 or newer.
+https://github.com/ValveSoftware/steamvr_unity_plugin/issues/8
+https://github.com/ValveSoftware/steamvr_unity_plugin/pull/9
+
+* Added UNITY_SHADER_NO_UPGRADE to all shaders to avoid log spam in later versions of Unity for issues that have already been fixed but the compiler isn't able to detect.
+
+* Specified Vulkan support for Interaction System shaders.
+
+* Fix for crash in Interaction_Example selecting BowPickup:
+https://github.com/ValveSoftware/steamvr_unity_plugin/issues/4
+
+* Cleaned up unused fields:
+https://github.com/ValveSoftware/steamvr_unity_plugin/issues/2
+
+* Updated Interaction System's LinearDrive to initialize using linearMapping.value.
+https://github.com/ValveSoftware/steamvr_unity_plugin/pull/5
+
+* Updated Interaction System documetation to fix a few errors.
+
+* Added an icon for all Interaction System scripts.
+
+* Fixes for SteamVR on Linux.
 
 
 Changes for v1.2.0:

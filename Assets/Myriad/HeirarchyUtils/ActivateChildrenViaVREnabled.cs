@@ -28,7 +28,7 @@ public class ActivateChildrenViaVREnabled : MonoBehaviour
 	private void UpdateActivationStates()
 	{
 #if VR_SETTINGS_AVAILABLE
-		bool vrIsEnabled = VRSettings.enabled;
+		bool vrIsEnabled = UnityEngine.XR.XRSettings.enabled;
 #else
 		bool vrIsEnabled = false;
 #endif // VR_SETTINGS_AVAILABLE
